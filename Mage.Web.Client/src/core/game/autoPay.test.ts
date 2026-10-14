@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handNeeds, manaOf, nextSource, parseCost, type ManaCostParts, type ManaSource } from './autoPay';
+import { handNeeds, manaOf, nextPoolMana, nextSource, parseCost, type ManaCostParts, type ManaSource } from './autoPay';
 
 const land = (id: string, produces: ManaSource['produces']): ManaSource => ({ id, produces, isLand: true });
 const dork = (id: string, produces: ManaSource['produces']): ManaSource => ({ id, produces, isLand: false });
@@ -86,5 +86,22 @@ describe('generic mana and the rest of the hand', () => {
 
   it('still pays when the hand wants more than is left', () => {
     expect(pay({ generic: 2, colored: {} }, [land('forest', 'G'), land('island', 'U')], ['{G}', '{U}'])).toEqual([]);
+  });
+});
+
+describe('nextPoolMana', () => {
+  it('spends a mixed pool on generic mana, colorless first (Sol Ring and a white mana for Worn Powerstone)', () => {
+    expect(nextPoolMana({ generic: 3, colored: {} }, { C: 2, W: 1 })).toBe('C');
+    expect(nextPoolMana({ generic: 1, colored: {} }, { W: 1 })).toBe('W');
+  });
+  it('pays colored symbols with their own color before generic', () => {
+    expect(nextPoolMana({ generic: 1, colored: { G: 1 } }, { C: 1, G: 1 })).toBe('G');
+  });
+  it('keeps colors the hand needs for last', () => {
+    expect(nextPoolMana({ generic: 1, colored: {} }, { R: 1, G: 2 }, { G: 1 })).toBe('R');
+  });
+  it('leaves a pool that cannot pay the cost alone', () => {
+    expect(nextPoolMana({ generic: 0, colored: { U: 1 } }, { R: 2, C: 1 })).toBeNull();
+    expect(nextPoolMana({ generic: 2, colored: {} }, {})).toBeNull();
   });
 });

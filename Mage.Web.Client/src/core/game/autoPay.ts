@@ -73,6 +73,29 @@ export function handNeeds(costs: string[], spare: number): Partial<Record<ManaCo
 }
 
 /**
+ * The floating mana to spend next on this cost, or null when none of the pool fits. Floating mana empties at the end
+ * of the step, so it pays before any source is tapped: colored symbols with their own color, then generic with
+ * colorless, then the colors `keep` doesn't want, the most plentiful first. The server spends the pool by itself
+ * only when it holds a single kind of mana (XMage's restricted auto-payment), so a mixed pool needs this.
+ */
+export function nextPoolMana(
+  cost: ManaCostParts,
+  pool: Partial<Record<ManaColor, number>>,
+  keep: Partial<Record<ManaColor, number>> = {},
+): ManaColor | null {
+  const has = (color: ManaColor) => (pool[color] ?? 0) > 0;
+  for (const color of COLORS) {
+    if ((cost.colored[color] ?? 0) > 0 && has(color)) return color;
+  }
+  if (cost.generic === 0) return null;
+  const candidates = COLORS.filter(has).sort((a, b) =>
+    Number(b === 'C') - Number(a === 'C')
+    || Number(!keep[b]) - Number(!keep[a])
+    || (pool[b] ?? 0) - (pool[a] ?? 0));
+  return candidates[0] ?? null;
+}
+
+/**
  * The next source to tap for this cost, or null when the payment isn't clear enough to make for the player.
  * Colored symbols are covered first by sources of that color; generic mana then uses lands before creatures,
  * colorless before colors, and of the colors the ones with sources to spare beyond what `keep` (the rest of the

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { GameView } from '../../protocol/generated/views';
-import { askedAboutCards, cleanRevealTitle, revealGroups, revealLabel, revealSeat } from './reveals';
+import { NO_LOOKS, askedAboutCards, cleanRevealTitle, rememberLooks, revealGroups, revealLabel, revealSeat } from './reveals';
 
 const view: GameView = {
   myPlayerId: 'me',
@@ -47,6 +47,35 @@ describe('revealed and looked-at cards', () => {
     expect(revealSeat(revealed, seats, 'me')).toBe('them');
     expect(revealSeat(looked, seats, 'me')).toBe('me');
     expect(revealGroups(null)).toEqual([]);
+  });
+});
+
+describe('rememberLooks', () => {
+  // Mystic Forge: the server sends the top card in one update, then an empty lookedAt
+  const top = (id: string, turn = 5): GameView => ({
+    myPlayerId: 'me', turn, players: [{ playerId: 'me' }],
+    lookedAt: [{ name: 'Top card of your library', cards: { [id]: { id, expansionSetCode: 'M21', cardNumber: '1' } } }],
+  });
+  const quiet = (turn = 5, hand: GameView['myHand'] = {}): GameView => ({ myPlayerId: 'me', turn, players: [{ playerId: 'me' }], myHand: hand, lookedAt: [] });
+
+  test('keeps a look through later updates of the same turn', () => {
+    const first = rememberLooks(NO_LOOKS, top('c1'));
+    const later = rememberLooks(first.memory, quiet());
+    expect(later.groups.map((group) => group.cards.map((card) => card.id))).toEqual([['c1']]);
+    expect(revealLabel(later.groups[0])).toBe('Looked at: Top card of your library');
+  });
+
+  test('a new top card replaces the old one', () => {
+    const first = rememberLooks(NO_LOOKS, top('c1'));
+    const next = rememberLooks(first.memory, top('c2'));
+    expect(next.groups.flatMap((group) => group.cards.map((card) => card.id))).toEqual(['c2']);
+  });
+
+  test('drops a card once it is drawn, and everything at a new turn', () => {
+    const first = rememberLooks(NO_LOOKS, top('c1'));
+    expect(rememberLooks(first.memory, quiet(5, { c1: { id: 'c1', name: 'Sol Ring' } })).groups).toEqual([]);
+    expect(rememberLooks(first.memory, quiet(6)).groups).toEqual([]);
+    expect(rememberLooks(first.memory, null).groups).toEqual([]);
   });
 });
 

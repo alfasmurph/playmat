@@ -2,7 +2,8 @@ import type { CardView, GameView } from '../../protocol/generated/views';
 
 /**
  * Cards revealed to everyone, and cards only this player looked at, as the server lists them in the game view. The
- * server keeps them until the end of the turn, named after what revealed them ("Duress [1a2] [3]").
+ * server keeps revealed cards until the end of the turn, named after what revealed them ("Duress [1a2] [3]"), but
+ * sends looked-at cards in one update only (see rememberLooks).
  */
 export interface RevealGroup {
   /** stable while the same cards stay revealed by the same source */
@@ -70,6 +71,33 @@ export function revealGroups(view: GameView | null | undefined): RevealGroup[] {
     });
   }
   return groups;
+}
+
+/** Looked-at cards carried over from earlier updates of the same turn. */
+export interface LookMemory {
+  turn: number | null;
+  groups: RevealGroup[];
+}
+
+export const NO_LOOKS: LookMemory = { turn: null, groups: [] };
+
+/**
+ * revealGroups, plus the cards this player looked at earlier this turn. The server clears looked-at cards right after
+ * the update that shows them, so without this "you may look at the top card of your library any time" (Mystic Forge)
+ * would flash and vanish. A newer group with the same name replaces an older one (the new top card), and a card
+ * that has since turned up in a public zone or the hand (drawn, cast, milled) is dropped from what was looked at.
+ */
+export function rememberLooks(memory: LookMemory, view: GameView | null | undefined): { groups: RevealGroup[]; memory: LookMemory } {
+  if (!view) return { groups: [], memory: NO_LOOKS };
+  const current = revealGroups(view);
+  const turn = view.turn ?? null;
+  const known = knownCards(view);
+  const fresh = current.filter((group) => group.kind === 'lookedAt');
+  const carried = memory.turn !== turn ? [] : memory.groups
+    .filter((group) => !fresh.some((other) => other.source === group.source))
+    .map((group) => ({ ...group, cards: group.cards.filter((card) => !card.id || !known.has(card.id)) }))
+    .filter((group) => group.cards.length > 0);
+  return { groups: [...carried, ...current], memory: { turn, groups: [...carried, ...fresh] } };
 }
 
 /** Short label for a group: "Revealed: Duress", "Looked at: Opt". */

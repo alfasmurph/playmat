@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { revealGroups, revealLabel, revealSeat, type RevealGroup } from '../../core/game/reveals';
+import { NO_LOOKS, rememberLooks, revealLabel, revealSeat, type RevealGroup } from '../../core/game/reveals';
 import type { GameView } from '../../protocol/generated/views';
 import { CardFace } from '../ui/CardFace';
 import { useMatchUi } from './matchUi';
@@ -11,7 +11,14 @@ import styles from './Reveals.module.css';
  * newest reveal shows; click it to read the cards, dismiss it once seen. Fresh reveals are marked until opened.
  */
 export function Reveals({ view, myPlayerId, opponentIds }: { view: GameView | null; myPlayerId: string | null; opponentIds: string[] }) {
-  const groups = useMemo(() => revealGroups(view), [view]);
+  // looked-at cards come in one update only; keep them for the rest of the turn
+  const [looks, setLooks] = useState(() => ({ view, ...rememberLooks(NO_LOOKS, view) }));
+  let current = looks;
+  if (looks.view !== view) {
+    current = { view, ...rememberLooks(looks.memory, view) };
+    setLooks(current);
+  }
+  const groups = current.groups;
   const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set());
   const openViewer = useMatchUi((state) => state.openViewer);
