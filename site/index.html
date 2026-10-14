@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Playmat · a fan-made web client for XMage</title>
+  <meta name="description" content="Playmat is a fan-made, open-source web client for XMage, the Magic: The Gathering rules engine. Play against friends or the AI on a server you run yourself.">
+  <meta name="theme-color" content="#0b120f">
+  <link rel="icon" href="assets/brand/playmat-mark.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Playmat · a fan-made web client for XMage">
+  <meta property="og:description" content="A hobby project: a browser client for XMage, styled after MTG Arena, for playing with friends on your own server.">
+  <meta property="og:url" content="https://arcanite24.github.io/playmat/">
+  <meta property="og:image" content="https://arcanite24.github.io/playmat/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="brand" href="./" aria-label="Playmat home">
+        <img src="assets/brand/playmat-logo.svg" alt="Playmat" width="172" height="40">
+      </a>
+      <nav aria-label="Sections">
+        <ul class="nav">
+          <li><a href="#play">Playing</a></li>
+          <li><a href="#career">Career</a></li>
+          <li><a href="#download">Download</a></li>
+          <li><a href="#host">Run a server</a></li>
+          <li><a href="https://github.com/arcanite24/playmat">GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap hero-copy">
+        <h1>A fan-made web client for&nbsp;XMage.</h1>
+        <p class="lede">Playmat is a hobby project: a browser client for <a href="https://github.com/magefree/mage">XMage</a>,
+          the open-source Magic: The Gathering rules engine, styled after MTG Arena. Install it on your computer to play
+          XMage's AI, Career or friends on your Wi-Fi, or run a server for your group. It's free, MIT licensed, and not
+          affiliated with Wizards of the Coast.</p>
+        <p class="status">It's a work in progress with rough edges. Bug reports and pull requests are welcome on
+          <a href="https://github.com/arcanite24/playmat">GitHub</a>.</p>
+        <div class="cta">
+          <a class="btn btn-big" id="get" href="#download">Download Playmat</a>
+          <p class="cta-note small" id="get-note">Free for Windows, macOS and Linux. <a href="#download">All downloads</a></p>
+        </div>
+      </div>
+      <div class="wrap">
+        <figure class="hero-shot shot">
+          <img src="assets/screens/match.webp" width="2400" height="1500"
+               alt="A game against the AI: three creatures attack, red arrows run from each to the opponent's life total, and an amber Attack (3) button waits bottom right.">
+        </figure>
+      </div>
+    </section>
+
+
+    <section id="play" class="feature">
+      <div class="wrap feature-row">
+        <div class="feature-copy">
+          <h2>Playing</h2>
+          <p>Pick a deck and press Play to start a game against the AI, or send a friend an invite link to play each
+            other.</p>
+          <ul class="ticks">
+            <li>Attack arrows, a visible stack and priority you can read at a glance</li>
+            <li>Auto-pass with the stops you choose, and keyboard shortcuts</li>
+            <li>Practice mode: a goldfish opponent and any card into your hand or onto the battlefield</li>
+            <li>Spectating, match history and replays of finished games</li>
+            <li>Visible keyboard focus, reduced motion respected, and no state shown by colour alone</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="assets/screens/home.webp" width="1920" height="1200" loading="lazy"
+               alt="The Play screen: a list of decks on the left, the chosen deck's art filling the mat, and a Play panel with an amber Play button.">
+        </figure>
+      </div>
+    </section>
+
+    <section id="decks" class="feature">
+      <div class="wrap feature-row flip">
+        <div class="feature-copy">
+          <h2>Decks</h2>
+          <p>Decks come in from a link (Archidekt, Moxfield and other sites), a pasted list or a <code>.dck</code> file.
+            Every new account gets a set of starter decks, Commander ones included.</p>
+          <ul class="ticks">
+            <li>Card search by name, type, rules text, colour, cost, rarity and set</li>
+            <li>Format checks, a mana curve and colour counts as you build</li>
+            <li>Booster draft, sealed, Jumpstart and constructed events, with AI players in empty seats</li>
+          </ul>
+        </div>
+        <figure class="shot">
+          <img src="assets/screens/deck-builder.webp" width="1920" height="1200" loading="lazy"
+               alt="The deck builder: a grid of dinosaur cards from a rules-text search on the left, the deck list with its mana curve on the right.">
+        </figure>
+      </div>
+    </section>
+
+    <section id="career" class="career">
+      <div class="wrap">
+        <div class="career-head">
+          <h2>Career mode</h2>
+          <p>An optional single-player mode. You start with a starter deck and a hundred coins, win games against the AI,
+            open packs to build a collection, and work through a school for each format.</p>
+        </div>
+
+        <div class="career-shots">
+          <figure class="shot career-hub">
+            <img src="assets/screens/career.webp" width="1920" height="1200" loading="lazy"
+                 alt="The Career hub: the next opponent on the left, tiles for Opponents, Campaign, Academy, Gauntlet, Puzzles, Sealed and Draft, Weekly Challenge, Shop, Collection and Progress, and daily quests on the right.">
+          </figure>
+          <figure class="shot career-pack">
+            <img src="assets/screens/pack.webp" width="1920" height="1200" loading="lazy"
+                 alt="A Lorwyn Eclipsed booster pack half revealed: twelve cards face up, two still face down, one of them glowing.">
+          </figure>
+        </div>
+
+        <dl class="modes">
+          <div><dt>Campaign</dt><dd>Five colour paths, a boss at the end of each.</dd></div>
+          <div><dt>The Academy</dt><dd>A school for every format, from the rules to today's decks.</dd></div>
+          <div><dt>Gauntlet</dt><dd>Build from packs and climb eight bosses.</dd></div>
+          <div><dt>Sealed &amp; draft</dt><dd>Open or draft a set, then play to three wins.</dd></div>
+          <div><dt>Puzzles</dt><dd>Win from a fixed position this turn.</dd></div>
+          <div><dt>Weekly challenge</dt><dd>The same decks for everyone, and a board.</dd></div>
+        </dl>
+
+        <div class="gallery" aria-label="Career art">
+          <div class="bosses">
+            <img src="assets/art/boss-W.webp" width="256" height="256" loading="lazy" alt="The white path's boss">
+            <img src="assets/art/boss-U.webp" width="256" height="256" loading="lazy" alt="The blue path's boss">
+            <img src="assets/art/boss-B.webp" width="256" height="256" loading="lazy" alt="The black path's boss">
+            <img src="assets/art/boss-R.webp" width="256" height="256" loading="lazy" alt="The red path's boss">
+            <img src="assets/art/boss-G.webp" width="256" height="256" loading="lazy" alt="The green path's boss">
+          </div>
+          <div class="crests">
+            <figure><img src="assets/art/crest-standard.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Standard</figcaption></figure>
+            <figure><img src="assets/art/crest-pioneer.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Pioneer</figcaption></figure>
+            <figure><img src="assets/art/crest-modern.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Modern</figcaption></figure>
+            <figure><img src="assets/art/crest-legacy.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Legacy</figcaption></figure>
+            <figure><img src="assets/art/crest-vintage.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Vintage</figcaption></figure>
+            <figure><img src="assets/art/crest-pauper.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Pauper</figcaption></figure>
+            <figure><img src="assets/art/crest-commander.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Commander</figcaption></figure>
+            <figure><img src="assets/art/crest-brawl.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Brawl</figcaption></figure>
+            <figure><img src="assets/art/crest-limited.webp" width="256" height="256" loading="lazy" alt=""><figcaption>Limited</figcaption></figure>
+          </div>
+          <div class="medals">
+            <img src="assets/art/ach-first-win.webp" width="192" height="192" loading="lazy" alt="Achievement: first win">
+            <img src="assets/art/ach-flawless.webp" width="192" height="192" loading="lazy" alt="Achievement: flawless">
+            <img src="assets/art/ach-storm.webp" width="192" height="192" loading="lazy" alt="Achievement: storm">
+            <img src="assets/art/ach-giant.webp" width="192" height="192" loading="lazy" alt="Achievement: giant">
+            <img src="assets/art/ach-one-life.webp" width="192" height="192" loading="lazy" alt="Achievement: win at one life">
+            <img src="assets/art/ach-multicolor-50.webp" width="192" height="192" loading="lazy" alt="Achievement: multicolour">
+            <img src="assets/art/ach-long-game.webp" width="192" height="192" loading="lazy" alt="Achievement: the long game">
+            <img src="assets/art/ach-graduate-9.webp" width="192" height="192" loading="lazy" alt="Achievement: graduate of every school">
+            <img src="assets/art/ach-wins-250.webp" width="192" height="192" loading="lazy" alt="Achievement: 250 wins">
+          </div>
+          <p class="gallery-note">The Career art (boss portraits, format crests, achievement icons and sleeves) is AI-generated for the project in one letterpress style.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="everywhere" class="feature">
+      <div class="wrap feature-row tablet-row">
+        <figure class="shot tablet">
+          <img src="assets/screens/tablet-match.webp" width="1000" height="1597" loading="lazy"
+               alt="The same game on a tablet in portrait: the board stacks vertically with the turn tracker across the middle.">
+        </figure>
+        <div class="feature-copy">
+          <h2>Tablets and Android</h2>
+          <p>The table reflows from a wide monitor down to a tablet in portrait. It installs as a web app, and there's
+            an Android app built from the same code that keeps card pictures on the device.</p>
+          <ul class="ticks">
+            <li>Any modern desktop browser</li>
+            <li>Tablets in landscape and portrait, fullscreen when installed</li>
+            <li>Android app built from the same code</li>
+            <li>English and Spanish</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="more">
+      <div class="wrap">
+        <h2 class="center">From XMage</h2>
+        <p class="center more-intro">Playmat is a new client, not a new engine. All of this comes from XMage:</p>
+        <dl class="also">
+          <div><dt>Multiplayer</dt><dd>Commander, Brawl, Oathbreaker and free-for-all games for up to ten players.</dd></div>
+          <div><dt>Tournaments</dt><dd>Swiss or elimination events with drafting, sealed pools and sideboarding.</dd></div>
+          <div><dt>Lobby</dt><dd>Chat, players online, profiles and a table browser to join or watch any game.</dd></div>
+          <div><dt>Rules on the server</dt><dd>Rules and hidden cards are handled on the server, so a client can't cheat.</dd></div>
+          <div><dt>Accounts</dt><dd>Optional sign-up with passwords, ratings, moderation and admin tools for public servers.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="download" class="download">
+      <div class="wrap">
+        <div class="download-head">
+          <h2>Play on your computer</h2>
+          <p>One download with everything inside, Java included. Nothing else to install and nothing to set up: open
+            Playmat and the game opens in your browser. Play the AI and Career on your own, or have friends on the
+            same Wi-Fi join you.</p>
+        </div>
+
+        <div class="how">
+          <ol class="steps">
+            <li><strong>Install</strong><span>Run the installer, or drag Playmat to Applications on a Mac.</span></li>
+            <li><strong>Open Playmat</strong><span>The first start prepares the card database. That takes a few
+              minutes, once.</span></li>
+            <li><strong>Play</strong><span>The game opens in your browser. Friends on your network join at the
+              address Playmat shows.</span></li>
+          </ol>
+          <figure class="launcher">
+            <img src="assets/screens/launcher.webp" width="575" height="268" loading="lazy"
+                 alt="The Playmat window: Ready to play, a Play button, the address friends on the network can join at, and a Player accounts checkbox.">
+          </figure>
+        </div>
+
+        <ul class="downloads">
+          <li class="zone" id="dl-windows">
+            <h3>Windows</h3>
+            <a class="btn" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe">Download for Windows</a>
+            <p class="small">Windows 10 or 11. Run the installer and press Install. If Windows says it protected your PC,
+              choose <em>More info</em> and then <em>Run anyway</em>: Playmat is a free fan project without a paid
+              signing certificate. Or skip that screen by installing from PowerShell:</p>
+            <code class="oneliner">irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 | iex</code>
+          </li>
+          <li class="zone" id="dl-mac">
+            <h3>macOS</h3>
+            <a class="btn" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-arm64.dmg">Apple silicon (M1 and later)</a>
+            <a class="btn btn-quiet" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-x64.dmg">Intel Mac</a>
+            <p class="small">Not sure? Apple menu, <em>About This Mac</em>: "Apple M…" is Apple silicon. Drag Playmat to
+              Applications. The first time, macOS asks you to allow it: open <em>System Settings, Privacy &amp;
+              Security</em> and choose <em>Open Anyway</em>. Or skip that step by installing from the Terminal:</p>
+            <code class="oneliner">curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh</code>
+          </li>
+          <li class="zone" id="dl-linux">
+            <h3>Linux</h3>
+            <p class="small">Paste this in a terminal. It picks x64 or ARM, installs Playmat in your home folder, adds it
+              to the applications menu and starts it.</p>
+            <code class="oneliner">curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh</code>
+            <p class="small">Or download the <a href="https://github.com/arcanite24/playmat/releases/latest">x64 or ARM
+              archive</a> and run <code>Playmat/playmat</code>.</p>
+          </li>
+        </ul>
+
+        <ul class="facts">
+          <li>Your accounts, decks and Career progress stay on your computer and are kept when you update.</li>
+          <li>Playmat tells you when a new version is out.</li>
+          <li>Card pictures come from Scryfall, so an internet connection helps.</li>
+        </ul>
+        <p class="small center">Release notes and earlier versions are on the
+          <a href="https://github.com/arcanite24/playmat/releases">releases page</a>.</p>
+      </div>
+    </section>
+
+    <section id="host" class="host">
+      <div class="wrap host-row">
+        <div class="host-copy">
+          <h2>Run a server</h2>
+          <p>For a group that plays together from anywhere, someone runs the server with Docker Compose, on a home
+            machine for a LAN or on one with a domain, and everyone else opens the site in a browser.</p>
+          <dl class="stack">
+            <div><dt>xmage</dt><dd>the game server and its WebSocket bridge</dd></div>
+            <div><dt>web</dt><dd>Caddy: automatic HTTPS, security headers, rate limits</dd></div>
+            <div><dt>imgcache</dt><dd>a caching proxy for Scryfall card pictures</dd></div>
+            <div><dt>backup</dt><dd>nightly dumps of the player databases</dd></div>
+          </dl>
+          <p class="small">Also covered: private LAN servers with no domain, running behind another reverse proxy, Discord
+            notifications for new tables, and capacity numbers.
+            See the <a href="https://github.com/arcanite24/playmat/blob/master/ops/web/README.md">deployment guide</a>.</p>
+        </div>
+        <div class="terminal" role="region" aria-label="Commands to start a server">
+<pre><code><span class="c"># get the code</span>
+git clone https://github.com/arcanite24/playmat.git
+cd playmat
+
+<span class="c"># set DOMAIN, XMAGE_ADMIN_PASSWORD, XMAGE_AUTH</span>
+cp ops/web/.env.example ops/web/.env
+
+<span class="c"># build and start the stack</span>
+docker compose -f ops/web/docker-compose.yml up -d --build</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="xmage">
+      <div class="wrap xmage-box zone">
+        <img src="assets/brand/playmat-mark.svg" width="72" height="72" alt="">
+        <div>
+          <h2>Credits</h2>
+          <p>The rules engine, the card implementations and the AI are the work of the XMage project and its
+            contributors since 2010; Playmat merges XMage regularly to pick up new sets and fixes. Card pictures and data
+            come from Scryfall. Magic: The Gathering belongs to Wizards of the Coast.</p>
+          <p><a href="https://github.com/magefree/mage">XMage on GitHub</a> · <a href="https://scryfall.com">Scryfall</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-row">
+      <img src="assets/brand/playmat-logo.svg" alt="Playmat" width="138" height="32">
+      <p><a href="https://github.com/arcanite24/playmat">Source</a> · <a href="https://github.com/arcanite24/playmat/blob/master/LICENSE.txt">MIT License</a> · <a href="https://github.com/arcanite24/playmat/issues">Issues</a></p>
+      <p class="legal">Playmat is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by
+        Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</p>
+    </div>
+  </footer>
+
+  <script>
+    // The hero button: the right installer for this computer when that's clear, the download section otherwise.
+    (function () {
+      var get = document.getElementById('get');
+      var note = document.getElementById('get-note');
+      var base = 'https://github.com/arcanite24/playmat/releases/latest/download/';
+      var ua = navigator.userAgent;
+      var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+      var mobile = /Android|iPhone|iPad|iPod/i.test(ua) || (/Mac/.test(platform) && navigator.maxTouchPoints > 1);
+      if (mobile) return;
+      if (/Win/i.test(platform) || /Windows/.test(ua)) {
+        get.href = base + 'Playmat-Setup-Windows-x64.exe';
+        get.textContent = 'Download for Windows';
+        note.innerHTML = 'Windows 10 or 11, 64-bit. <a href="#download">Other systems and help</a>';
+      } else if (/Mac/i.test(platform)) {
+        get.href = '#dl-mac';
+        get.textContent = 'Download for Mac';
+      } else if (/Linux/i.test(platform)) {
+        get.href = '#dl-linux';
+        get.textContent = 'Download for Linux';
+      }
+    })();
+    // the latest version's number, from GitHub (the page reads fine without it)
+    fetch('https://api.github.com/repos/arcanite24/playmat/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (release) {
+        if (!release || !release.tag_name) return;
+        var note = document.getElementById('get-note');
+        if (note && note.textContent.indexOf('Free for') === 0) note.firstChild.textContent = 'Free for Windows, macOS and Linux. Version ' + release.tag_name.replace(/^v/, '') + '. ';
+      })
+      .catch(function () {});
+  </script>
+</body>
+</html>

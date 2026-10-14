@@ -1,0 +1,32 @@
+/* Painted art from the art pipeline: transparent pictures that keep their box and never catch the pointer. */
+
+.art {
+  display: block;
+  flex: none;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* a printed stand-in opponent: the bust on a flat ground of its colour pressed into the mat (a flat field like the
+   crests' and sleeves', dark enough for the ivory ink and the bust's own accent to read), framed like the drawn ones */
+.portrait {
+  position: relative;
+  display: inline-grid;
+  align-items: end;
+  width: var(--size);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 16%;
+  background: color-mix(in srgb, var(--back-dark) 55%, rgb(var(--mat-rgb)));
+  box-shadow: inset 0 0 0 2px rgb(246 242 232 / 0.5);
+}
+
+.portrait img {
+  width: 100%;
+  height: 100%;
+}
+
+.portraitBoss {
+  box-shadow: inset 0 0 0 3px #d6b36a;
+}

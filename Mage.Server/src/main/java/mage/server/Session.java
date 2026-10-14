@@ -1,0 +1,833 @@
+package mage.server;
+
+import mage.MageException;
+import mage.constants.Constants;
+import mage.interfaces.callback.ClientCallback;
+import mage.interfaces.callback.ClientCallbackMethod;
+import mage.interfaces.callback.ClientCallbacksQueue;
+import mage.players.net.UserData;
+import mage.players.net.UserGroup;
+import mage.remote.CustomThreadPool;
+import mage.server.admin.AccessPolicy;
+import mage.server.admin.Invite;
+import mage.server.admin.RuntimeSettings;
+import mage.server.game.GamesRoom;
+import mage.server.managers.ConfigSettings;
+import mage.server.managers.ManagerFactory;
+import mage.util.RandomUtil;
+import mage.util.ThreadUtils;
+import mage.utils.SystemUtil;
+import org.apache.log4j.Logger;
+import org.jboss.remoting.callback.*;
+import org.jboss.util.threadpool.BlockingMode;
+import org.jboss.remoting.Client;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author BetaSteward_at_googlemail.com, JayDi85
+ */
+public class Session {
+
+    private static final Logger logger = Logger.getLogger(Session.class);
+
+    private static final Pattern alphabetsPattern = Pattern.compile("[a-zA-Z]");
+    private static final Pattern digitsPattern = Pattern.compile("[0-9]");
+
+    public static final String REGISTRATION_DISABLED_MESSAGE = "Registration has been disabled on the server. You can use any name and empty password to login.";
+    static final String REGISTRATION_CLOSED = "New accounts need an invite link on this server right now. Ask someone who plays here for one.";
+
+    // Connection and reconnection logic:
+    // - server allows only one user intance (user name for search, userId for memory/db store)
+    // - if same user connected then all other user's intances must be removed (disconnected)
+    // - for auth mode: identify intance by userId (must disconnect all other clients with same user name)
+    // - for anon mode: identify intance by unique mark like IP/host (must disconnect all other clients with same user name + IP)
+    // - for any mode: optional identify by restore session (must disconnect all other clients with same user name)
+    // - TODO: implement client id mark instead host like md5(mac, os, somefolders)
+    // - if server can't remove another user intance then restrict to connect (example: anon user connected, but there is another anon with diff IP)
+    private static final boolean ANON_IDENTIFY_BY_HOST = true; // for anon mode only: true - kick all other users with same IP; false - keep first connected user
+
+    // TODO: async mode is outdated after network rework in #16434 (before rework it's never really works)
+    //   it's adds 2 secs timeout on each slow client call for client recive signal
+    //   DELETE after few releases
+    //
+    // async data transfer for all callbacks (transfer of game updates from server to client):
+    // - pros:
+    //   * SIGNIFICANT performance boost and pings (yep, that's true);
+    //   * no freeze with disconnected/slow watchers/players;
+    // - cons:
+    //   * data re-sync? TODO: need research, possible problem: outdated battlefield, need click on avatar
+    //   * what about slow connection or big pings? TODO: need research, possible problem: too many re-sync messages in client logs, outdated battlefield, wrong answers
+    //   * what about disconnected players? TODO: need research, possible problem: server can't detect disconnected players too fast
+    //   * what about too many requests to freezed players (too much threads)?
+    //     TODO: need research, possible problem: if something bad with server connection then it can generates
+    //      too many requests to a client and can cause threads overflow/limit (example: watch AI only games?);
+    //      visualvm can help with threads monitor
+    //
+    // TODO: enable after full research
+    // can be enabled by -Dxmage.network.async.messages=true, disabled by default
+    private static final String ASYNC_MESSAGES_PROP = "xmage.network.async.messages";
+    private static final boolean ASYNC_MESSAGES = Boolean.getBoolean(ASYNC_MESSAGES_PROP); // get it from system.property
+
+    private final ManagerFactory managerFactory;
+    private final String sessionId;
+    private UUID userId;
+    private String host;
+    private final AtomicInteger messageId = new AtomicInteger(0);
+    private final Date timeConnected;
+    private boolean isAdmin = false;
+    private volatile String rememberedUserName; // see trustRememberedLogin
+    private final AsynchInvokerCallbackHandler callbackHandler;
+    private boolean valid = true;
+
+    private final ReentrantLock lock;
+    private final ReentrantLock callBackLock;
+    private String lastCallbackInfo = "";
+
+    private final ClientCallbacksQueue callbacksQueue = new ClientCallbacksQueue(); // queue with waiting callback to send
+    private final AtomicBoolean sending = new AtomicBoolean(); // one of the thread sending the callback
+
+    public Session(ManagerFactory managerFactory, String sessionId, InvokerCallbackHandler callbackHandler) {
+        this.managerFactory = managerFactory;
+        this.sessionId = sessionId;
+        this.callbackHandler = (AsynchInvokerCallbackHandler) callbackHandler;
+        this.isAdmin = false;
+        this.timeConnected = new Date();
+        this.lock = new ReentrantLock();
+        this.callBackLock = new ReentrantLock();
+
+        // inject custom thread pool instead buggy jboss's
+        if (ASYNC_MESSAGES) {
+            setupAsyncSendingPool(callbackHandler);
+        }
+    }
+
+    /**
+     * Async mode only, e.g. callbackHandler.handleCallbackOneway(callback, true);
+     *
+     * Inject improved oneway thread for better lifecycle control and memory leaks fixes,
+     * see CustomThreadPool for more details
+     *
+     * Must be called before a first async send
+     */
+    private static void setupAsyncSendingPool(InvokerCallbackHandler handler) {
+        if (!(handler instanceof ServerInvokerCallbackHandler)) {
+            logger.warn("Unknown callback handler, async sending pool is not replaced: " + handler.getClass().getName());
+            return;
+        }
+        Client client = ((ServerInvokerCallbackHandler) handler).getCallbackClient();
+        if (client == null) {
+            logger.warn("Callback client is missing, async sending pool is not replaced");
+            return;
+        }
+        CustomThreadPool pool = new CustomThreadPool("JBossRemoting Client Oneway fixed");
+        pool.setMaximumPoolSize(1); // send one by one, it's help to keep better message order
+        pool.setBlockingMode(BlockingMode.RUN); // if client freeze and wait queue reach the limit in 1024 then parent thread will call it directly without pool (same as default jboss's pool does)
+        client.setOnewayThreadPool(pool);
+    }
+
+    public String registerUser(String userName, String password, String email) {
+        return registerUser(userName, password, email, null);
+    }
+
+    /**
+     * @param inviteCode an invite link's code: lets the account in to a contributors-only server and puts it on the
+     *                   allowlist
+     */
+    public String registerUser(String userName, String password, String email, String inviteCode) {
+        if (!managerFactory.configSettings().isAuthenticationActivated()) {
+            String returnMessage = REGISTRATION_DISABLED_MESSAGE;
+            sendErrorMessageToClient(returnMessage);
+            return returnMessage;
+        }
+        synchronized (AuthorizedUserRepository.getInstance()) {
+            // name
+            String returnMessage = validateUserName(userName);
+            if (returnMessage != null) {
+                sendErrorMessageToClient(returnMessage);
+                return returnMessage;
+            }
+
+            // a password the player chose (web client), or a generated one sent by email (desktop client)
+            boolean chosenPassword = password != null && !password.isEmpty();
+            if (chosenPassword) {
+                returnMessage = validatePassword(password, userName);
+                if (returnMessage != null) {
+                    sendErrorMessageToClient(returnMessage);
+                    return returnMessage;
+                }
+            } else {
+                RandomString randomString = new RandomString(10);
+                password = randomString.nextString();
+                returnMessage = validatePassword(password, userName);
+                if (returnMessage != null) {
+                    sendErrorMessageToClient("Auto-generated password fail, try again: " + returnMessage);
+                    return returnMessage;
+                }
+            }
+
+            // email
+            returnMessage = validateEmail(email);
+            if (returnMessage != null) {
+                sendErrorMessageToClient(returnMessage);
+                return returnMessage;
+            }
+
+            // a contributors-only server: listed already, or an invite that still works
+            returnMessage = admitNewAccount(userName, email, inviteCode);
+            if (returnMessage != null) {
+                sendErrorMessageToClient(returnMessage);
+                return returnMessage;
+            }
+
+            // create
+            AuthorizedUserRepository.getInstance().add(userName, password, email);
+            String text = "You are successfully registered as " + userName + " on " + serverLabel() + '.';
+            if (!chosenPassword) {
+                text += "  Your initial, generated password is: " + password;
+            }
+
+            boolean success;
+            String subject = "Your account on " + serverLabel();
+            boolean mailConfigured = !managerFactory.configSettings().getMailUser().isEmpty()
+                    || !managerFactory.configSettings().getMailgunApiKey().isEmpty();
+            if (chosenPassword && !mailConfigured) {
+                // nothing to send: the player already knows the password
+                success = true;
+            } else if (!managerFactory.configSettings().getMailUser().isEmpty()) {
+                success = managerFactory.mailClient().sendMessage(email, subject, text);
+            } else {
+                success = managerFactory.mailgunClient().sendMessage(email, subject, text);
+            }
+            if (success || (chosenPassword && Main.isTestMode())) {
+                String ok = chosenPassword ? "Account " + userName + " created"
+                        : "Email with initial password sent to " + email + " for a user " + userName;
+                logger.info(ok);
+                sendInfoMessageToClient(ok);
+            } else if (Main.isTestMode()) {
+                String ok = "Email sending failed. Server is in test mode. Your account registered with a password " + password + " for a user " + userName;
+                logger.info(ok);
+                sendInfoMessageToClient(ok);
+            } else if (chosenPassword) {
+                // the account works without the welcome email
+                logger.warn("Welcome email to " + email + " failed for a user " + userName);
+            } else {
+                String err = "Email sending failed. Try use another email address or service. Or reset password by email " + email + " for a user " + userName;
+                logger.error(err);
+                sendErrorMessageToClient(err);
+                return err;
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Null when the new account may be created; an invite is used up here and its account allowlisted.
+     */
+    private static String admitNewAccount(String userName, String email, String inviteCode) {
+        AccessPolicy access = AccessPolicy.get();
+        boolean hasInvite = inviteCode != null && !inviteCode.trim().isEmpty();
+        if (!hasInvite) {
+            String refusal = access.refusal(true, userName, email);
+            if (refusal != null || RuntimeSettings.get().registrationOpen() || access.isOwner(userName)) {
+                return refusal;
+            }
+            try {
+                return access.store().isListed(userName, email) ? null : REGISTRATION_CLOSED;
+            } catch (SQLException e) {
+                logger.error("Allowlist can't be read; refusing to register " + userName, e);
+                return REGISTRATION_CLOSED;
+            }
+        }
+        long now = System.currentTimeMillis();
+        try {
+            Invite invite = access.store().invite(inviteCode.trim());
+            if (invite == null || !access.store().redeemInvite(invite.code, userName, now)) {
+                return access.refusal(true, userName, email) == null ? null
+                        : "That invite link has expired, was used up or was revoked. Ask whoever sent it for a new one.";
+            }
+            String note = invite.note == null || invite.note.isEmpty() ? "invited" : "invited: " + invite.note;
+            access.store().allow(userName, note, "invite", now);
+            access.store().audit(userName, "access.invite.use", userName, "invite " + inviteCode.trim(), null, now);
+            return null;
+        } catch (SQLException e) {
+            logger.error("Invite can't be checked", e);
+            return "The invite can't be checked right now. Try again in a minute.";
+        }
+    }
+
+    private String validateUserNameLength(String userName) {
+        ConfigSettings config = managerFactory.configSettings();
+        if (userName.length() < config.getMinUserNameLength()) {
+            return "User name may not be shorter than " + config.getMinUserNameLength() + " characters";
+        }
+        if (userName.length() > config.getMaxUserNameLength()) {
+            return "User name may not be longer than " + config.getMaxUserNameLength() + " characters";
+        }
+        if (userName.length() <= 2) {
+            return "User name is too short (2 characters or fewer)";
+        }
+        if (userName.length() >= 250) {
+            return "User name is too long (250 characters or more)";
+        }
+        return null;
+    }
+
+    private String validateUserName(String userName) {
+        if (userName.trim().equalsIgnoreCase(User.ADMIN_NAME)) {
+            return "User name already in use";
+        }
+
+        String returnMessage = validateUserNameLength(userName);
+        if (returnMessage != null) {
+            return returnMessage;
+        }
+
+        Pattern invalidUserNamePattern = Pattern.compile(managerFactory.configSettings().getInvalidUserNamePattern(), Pattern.CASE_INSENSITIVE);
+        Matcher m = invalidUserNamePattern.matcher(userName);
+        if (m.find()) {
+            return "User name '" + userName + "' includes not allowed characters: use a-z, A-Z and 0-9";
+        }
+
+        AuthorizedUser authorizedUser = AuthorizedUserRepository.getInstance().getByName(userName);
+        if (authorizedUser != null) {
+            return "User name '" + userName + "' already in use";
+        }
+
+        // all fine
+        return null;
+    }
+
+    /**
+     * Server name for emails: the configured name, or a neutral one.
+     */
+    String serverLabel() {
+        String name = managerFactory.configSettings().getServerName();
+        return name == null || name.trim().isEmpty() ? "the game server" : name.trim();
+    }
+
+    private String validatePassword(String password, String userName) {
+        return passwordProblem(managerFactory.configSettings(), password, userName);
+    }
+
+    /**
+     * @return why a new password is not allowed, or null when it is fine
+     */
+    public static String passwordProblem(ConfigSettings config, String password, String userName) {
+        if (password == null) {
+            return "Choose a password";
+        }
+        if (password.length() < config.getMinPasswordLength()) {
+            return "Password may not be shorter than " + config.getMinPasswordLength() + " characters";
+        }
+        if (password.length() > config.getMaxPasswordLength()) {
+            return "Password may not be longer than " + config.getMaxPasswordLength() + " characters";
+        }
+        if (password.equals(userName)) {
+            return "Password may not be the same as your username";
+        }
+        Matcher alphabetsMatcher = alphabetsPattern.matcher(password);
+        Matcher digitsMatcher = digitsPattern.matcher(password);
+        if (!alphabetsMatcher.find() || !digitsMatcher.find()) {
+            return "Password has to include at least one alphabet (a-zA-Z) and also at least one digit (0-9)";
+        }
+        return null;
+    }
+
+    private static String validateEmail(String email) {
+
+        if (email == null || email.isEmpty()) {
+            return "Email address cannot be blank";
+        }
+        AuthorizedUser authorizedUser = AuthorizedUserRepository.getInstance().getByEmail(email);
+        if (authorizedUser != null) {
+            return "Email address '" + email + "' is associated with another user";
+        }
+        return null;
+    }
+
+    public String connectUser(String userName, String password, String restoreSessionId) throws MageException {
+        // check username
+        String errorMessage = validateUserNameLength(userName);
+        if (errorMessage != null) {
+            return errorMessage;
+        }
+
+        // the admin console's name: nobody signs in as it (with accounts off, a name is all it takes)
+        if (User.ADMIN_NAME.equalsIgnoreCase(userName.trim())) {
+            return "User name already in use";
+        }
+
+        // check auth/anon
+        errorMessage = connectUserHandling(userName, password, restoreSessionId);
+        return errorMessage;
+    }
+
+    /**
+     * The next login as this user needs no password: the web bridge checked a remembered device's token for it.
+     */
+    public void trustRememberedLogin(String userName) {
+        this.rememberedUserName = userName;
+    }
+
+    public boolean isLocked() {
+        return lock.isLocked();
+    }
+
+    /**
+     * Auth user on server (link current session with server's user)
+     * Return null on good or error message on bad
+     */
+    public String connectUserHandling(String userName, String password, String restoreSessionId) {
+        this.isAdmin = false;
+        // a remembered device's token, checked by the web bridge just before this login: good for this login only
+        boolean remembered = userName != null && userName.equals(rememberedUserName);
+        rememberedUserName = null;
+
+        // find auth user
+        AuthorizedUser authorizedUser = null;
+        if (managerFactory.configSettings().isAuthenticationActivated()) {
+            authorizedUser = AuthorizedUserRepository.getInstance().getByName(userName);
+            String errorMsg = "Wrong username or password. You must register your account first.";
+            if (authorizedUser == null) {
+                return errorMsg;
+            }
+
+            // a reconnect with the restore token of the user's live instance stands in for the password (browser reloads)
+            boolean restoring = restoreSessionId != null && !restoreSessionId.isEmpty()
+                    && managerFactory.userManager().getUserByName(userName)
+                    .map(user -> restoreSessionId.equals(user.getRestoreSessionId()))
+                    .orElse(false);
+            if (!Main.isTestMode() && !restoring && !remembered && !authorizedUser.doCredentialsMatch(userName, password)) {
+                return errorMsg;
+            }
+
+            if (!authorizedUser.active) {
+                return "Your profile has been deactivated by admin.";
+            }
+            if (authorizedUser.lockedUntil != null) {
+                if (authorizedUser.lockedUntil.compareTo(Calendar.getInstance().getTime()) > 0) {
+                    return "Your profile has need deactivated by admin until " + SystemUtil.dateFormat.format(authorizedUser.lockedUntil);
+                } else {
+                    // unlock on timeout end
+                    managerFactory.userManager().createUser(userName, host, authorizedUser).ifPresent(user
+                            -> user.setLockedUntil(null)
+                    );
+                }
+            }
+            // a contributors-only server: also stops remembered devices and restored sessions of people taken off the list
+            String refused = AccessPolicy.get().refusal(true, authorizedUser.getName(), authorizedUser.email);
+            if (refused != null) {
+                return refused;
+            }
+        }
+
+        // create new user instance (auth or anon)
+        boolean isReconnection = false;
+        User newUser = managerFactory.userManager().createUser(userName, host, authorizedUser).orElse(null);
+
+        // if user instance already exists then keep only one instance
+        if (newUser == null) {
+            User anotherUser = managerFactory.userManager().getUserByName(userName).orElse(null);
+            if (anotherUser != null) {
+                boolean canDisconnectAuthDueAnotherInstance = managerFactory.configSettings().isAuthenticationActivated();
+                boolean canDisconnectAnonDueSameHost = !managerFactory.configSettings().isAuthenticationActivated()
+                        && ANON_IDENTIFY_BY_HOST
+                        && Objects.equals(anotherUser.getHost(), host);
+                // an empty restore id must never match (a user that never finished connecting has an empty one)
+                boolean canDisconnectAnyDueSessionRestore = restoreSessionId != null && !restoreSessionId.isEmpty()
+                        && Objects.equals(restoreSessionId, anotherUser.getRestoreSessionId());
+                if (canDisconnectAuthDueAnotherInstance
+                        || canDisconnectAnonDueSameHost
+                        || canDisconnectAnyDueSessionRestore) {
+                    anotherUser.updateLastActivity(null);  // minimizes possible expiration
+
+                    // disconnect another user instance, but keep all active tables
+                    if (!anotherUser.getSessionId().isEmpty()) {
+                        // do not use DisconnectReason.Disconnected here - it will remove user from all tables,
+                        // but it must remove only session without any tables
+                        String instanceReason = canDisconnectAnyDueSessionRestore ? " (session reconnect)"
+                                : canDisconnectAnonDueSameHost ? " (same host)"
+                                : canDisconnectAuthDueAnotherInstance ? " (same user)" : "";
+                        String mes = "";
+                        mes += String.format("Disconnecting another user instance for %s (reason: %s)", userName, instanceReason);
+                        if (logger.isDebugEnabled()) {
+                            mes += String.format("\n - reason: auth (%s), anon host (%s), any session (%s)",
+                                    (canDisconnectAuthDueAnotherInstance ? "yes" : "no"),
+                                    (canDisconnectAnonDueSameHost ? "yes" : "no"),
+                                    (canDisconnectAnyDueSessionRestore ? "yes" : "no")
+                            );
+                            mes += String.format("\n - sessionId: %s => %s", anotherUser.getSessionId(), sessionId);
+                            mes += String.format("\n - name: %s => %s", anotherUser.getName(), userName);
+                            mes += String.format("\n - host: %s => %s", anotherUser.getHost(), host);
+                        }
+                        logger.info(mes);
+
+                        // kill another instance
+                        DisconnectReason reason = DisconnectReason.AnotherUserInstance;
+                        if (ANON_IDENTIFY_BY_HOST && Objects.equals(anotherUser.getHost(), host)) {
+                            // if user reconnects by itself then must hide another instance message
+                            reason = DisconnectReason.AnotherUserInstanceSilent;
+                        }
+
+                        managerFactory.userManager().disconnect(anotherUser.getId(), reason);
+                    }
+                    isReconnection = true;
+                    newUser = anotherUser;
+                } else {
+                    return "User " + userName + " already connected or your IP address changed - try another user";
+                }
+            } else {
+                // code never goes here
+                return "Can't find connected user name " + userName;
+            }
+        }
+
+        // link user with current session
+        newUser.setRestoreSessionId("");
+        this.userId = newUser.getId();
+        if (!managerFactory.userManager().connectToSession(sessionId, this.userId)) {
+            return "Error link user " + userName + " with session " + sessionId;
+        }
+
+        // connect to lobby (other chats must be joined from a client side on table panel creating process)
+        GamesRoom lobby = managerFactory.gamesRoomManager().getRoom(managerFactory.gamesRoomManager().getMainRoomId()).orElse(null);
+        if (lobby != null) {
+            managerFactory.chatManager().joinChat(lobby.getChatId(), this.userId);
+        } else {
+            // TODO: outdated code? Need research server logs and fix or delete it, 2023-12-04
+            logger.warn("main room not found"); // after server restart users try to use old rooms on reconnect for some reason
+        }
+
+        // all fine
+        newUser.setUserState(User.UserState.Connected);
+        newUser.setRestoreSessionId(newUser.getSessionId());
+
+        // restore all active tables
+        // run in diff thread, so user will be connected anyway (e.g. on some errors in onReconnect)
+        final User reconnectUser = newUser;
+        if (isReconnection) {
+            managerFactory.threadExecutor().getCallExecutor().execute(reconnectUser::onReconnect);
+        }
+
+        // inform about reconnection
+        if (isReconnection) {
+            managerFactory.chatManager().sendReconnectMessage(this.userId);
+        }
+
+        return null;
+    }
+
+    public void connectAdmin() {
+        this.isAdmin = true;
+        User user = managerFactory.userManager().createUser(User.ADMIN_NAME, host, null)
+                .orElse(managerFactory.userManager().getUserByName(User.ADMIN_NAME).get());
+        UserData adminUserData = UserData.getDefaultUserDataView();
+        adminUserData.setGroupId(UserGroup.ADMIN.getGroupId());
+        user.setUserData(adminUserData);
+        if (!managerFactory.userManager().connectToSession(sessionId, user.getId())) {
+            logger.info("Error connecting as admin");
+        } else {
+            user.setUserState(User.UserState.Connected);
+        }
+        this.userId = user.getId();
+    }
+
+    public boolean setUserData(UserData userData, String clientVersion, String userIdStr) {
+        Optional<User> _user = managerFactory.userManager().getUser(userId);
+        _user.ifPresent(user -> {
+            if (clientVersion != null) {
+                user.setClientVersion(clientVersion);
+            }
+            user.setUserIdStr(userIdStr);
+            if (user.getUserData() == null || user.getUserData().getGroupId() == UserGroup.DEFAULT.getGroupId()) {
+                user.setUserData(userData);
+            } else {
+                user.getUserData().update(userData);
+            }
+            if (user.getUserData().getAvatarId() < Constants.MIN_AVATAR_ID
+                    || user.getUserData().getAvatarId() > Constants.MAX_AVATAR_ID) {
+                user.getUserData().setAvatarId(Constants.DEFAULT_AVATAR_ID);
+            }
+            if (user.getUserData().getAvatarId() == 11) {
+                user.getUserData().setAvatarId(updateAvatar(user.getName()));
+            }
+        });
+        return _user.isPresent();
+    }
+
+    private int updateAvatar(String userName) {
+        //TODO: move to separate class
+        //TODO: add for checking for private key
+        switch (userName) {
+            case "North":
+                return 1006;
+            case "BetaSteward":
+                return 1008;
+            case "Bandit":
+                return 1020;
+            case "fireshoes":
+                return 1021;
+            case "noxx":
+                return 1000;
+            case "magenoxx":
+                return 1018;
+        }
+        return 11;
+    }
+
+    public String getId() {
+        return sessionId;
+    }
+
+    /**
+     * Puts a message to a session queue WITHOUT sending it, a caller is never blocked by a network.
+     * <p>
+     * It's keep messages order so safe for any important callbacks
+     * Don't forget to call flushCallbacksQueue after fill complete
+     * Thread safe
+     */
+    public void addCallback(final ClientCallback call) {
+        List<ClientCallback> droppedAsOverflow = new ArrayList<>();
+        List<ClientCallback> droppedAsOutdated = new ArrayList<>();
+        try {
+            enqueueCallback(call, droppedAsOverflow, droppedAsOutdated);
+        } finally {
+            reportDropped(droppedAsOverflow, droppedAsOutdated);
+        }
+    }
+
+    /**
+     * Register and put new callback to special queue due important status
+     * Thread safe
+     * Real callbacks will be send on flush command or by another events/schedule
+     */
+    private void enqueueCallback(final ClientCallback call,
+                                 List<ClientCallback> droppedAsOverflow, List<ClientCallback> droppedAsOutdated) {
+        synchronized (this.callbacksQueue) {
+            call.setMessageId(messageId.incrementAndGet());
+            // split messages by two types:
+            // - important (sends first one by one)
+            // - not imprtant (sends last)
+            // see more details in ClientCallbacksQueue
+            // TODO: implement important in call.getMethod().getType()
+            boolean isImportant = !call.getMethod().getType().canComeInAnyOrder();
+            if (call.getMethod().getType().mustIgnoreOnOutdated()) {
+                this.callbacksQueue.addUpdate(call, droppedAsOverflow, droppedAsOutdated);
+            } else {
+                this.callbacksQueue.add(call, isImportant, droppedAsOverflow, droppedAsOutdated);
+            }
+        }
+    }
+
+    private void reportDropped(List<ClientCallback> droppedAsOverflow, List<ClientCallback> droppedAsOutdated) {
+        //droppedAsOverflow.forEach(drop -> LabState.onCallbackDroppedByOverflow(this.userId, drop.getMethod()));
+        //droppedAsOutdated.forEach(drop -> LabState.onCallbackDroppedByOutdated(this.userId, drop.getMethod()));
+    }
+
+    /**
+     * Send event/command to the client
+     */
+    public void fireCallback(final ClientCallback call) {
+        List<ClientCallback> droppedAsOverflow = new ArrayList<>();
+        List<ClientCallback> droppedAsOutdated = new ArrayList<>();
+        try {
+            if (call != null) {
+                enqueueCallback(call, droppedAsOverflow, droppedAsOutdated);
+            }
+
+            // only one thread drains a session queue at a time, otherwise two threads can take
+            // two messages and deliver them in a wrong order
+            if (!this.sending.compareAndSet(false, true)) {
+                return;
+            }
+
+            try {
+                // two per call is enough to make a queue shrink while messages keep coming
+                // e.g. increase queue on bad connection and decrease queue on good connection;
+                // the rest of the queue is taken by flush re-run in finally
+                for (int i = 0; i < 2; i++) {
+                    ClientCallback next = this.callbacksQueue.poll();
+                    if (next == null) {
+                        return;
+                    }
+                    if (!sendCallback(next)) {
+                        // could not send, put it back to HEAD and stop trying for now
+                        boolean isImportant = !next.getMethod().getType().canComeInAnyOrder();
+                        this.callbacksQueue.returnBack(next, isImportant, droppedAsOverflow, droppedAsOutdated);
+                        return;
+                    }
+                }
+            } finally {
+                this.sending.set(false);
+                // re-run flush on new messages (if something come from other threads while sending)
+                // test lab's s05 scenarios with slow clients
+                // so no needs to wait 30 secs for global checkExpired
+                if (!this.callbacksQueue.isEmpty()) {
+                    flushCallbacksQueue();
+                }
+            }
+        } finally {
+            // drop stats
+            reportDropped(droppedAsOverflow, droppedAsOutdated);
+        }
+    }
+
+    /**
+     * @return false when a session was busy and a message must stay in a queue
+     */
+    private boolean sendCallback(final ClientCallback call) {
+        boolean lockSet = false;
+        try {
+            int lockMs = call.getMethod().getType().canComeInAnyOrder() ? 300 : 1500;
+            if (valid && callBackLock.tryLock(lockMs, TimeUnit.MILLISECONDS)) {
+                // normal send
+                lastCallbackInfo = call.getInfo();
+                lockSet = true;
+                Callback callback = new Callback(call);
+                boolean sendAsync = ASYNC_MESSAGES
+                        && call.getMethod().getType().canComeInAnyOrder();
+                callbackHandler.handleCallbackOneway(callback, sendAsync);
+                return true;
+            }
+            if (valid) {
+                // connection busy by another message, skip current call and send next time (depends on queue)
+                logger.warn("SESSION LOCK, possible connection problem - fireCallback - userId: "
+                        + userId + ", prev call: " + lastCallbackInfo + ", current call: " + call.getInfo());
+                return false; // keep call
+            }
+            return true; // session is dead, no need to keep a message
+        } catch (InterruptedException ignore) {
+            // nothing to do, app is closing
+            return true;
+        } catch (HandleCallbackException ex) {
+            // general error
+            // can raise on server freeze or normal connection problem from a client side
+            // no need to print a full stack log here
+            logger.warn("SESSION CALLBACK EXCEPTION - " + ThreadUtils.findRootException(ex)
+                    + ", userId " + userId + ", messageId: " + call.getMessageId());
+            this.valid = false; // do not send data anymore (user must reconnect)
+            managerFactory.sessionManager().disconnect(sessionId, DisconnectReason.LostConnection, true);
+            return true;
+        } catch (Throwable ex) {
+            logger.error("SESSION CALLBACK UNKNOWN EXCEPTION - " + ThreadUtils.findRootException(ex)
+                    + ", userId " + userId + ", messageId: " + call.getMessageId(), ex);
+            this.valid = false; // do not send data anymore (user must reconnect)
+            managerFactory.sessionManager().disconnect(sessionId, DisconnectReason.LostConnection, true);
+            return true;
+        } finally {
+            if (lockSet) {
+                callBackLock.unlock();
+            }
+        }
+    }
+
+    /**
+     * Resend not delivered messages to the client, e.g. on slow or bad connection
+     * Call it from any scheduled task like checkExpired
+     */
+    public void flushCallbacksQueue() {
+        //logger.info("flushing user " + this.userId + ", callbacksQueue=" + callbacksQueue.size() + ", sending=" + sending.get());
+        if (this.callbacksQueue.isEmpty() || this.sending.get()) {
+            return;
+        }
+        managerFactory.threadExecutor().getCallExecutor().execute(() -> {
+            // one send round per task (up to two messages, see fireCallback)
+            // if new messages arrive while sending then it's will create a new flush task
+            // no blocking code here, it's safe to call multiple flushes, only one will really work
+            managerFactory.threadExecutor().getCallExecutor().execute(() -> fireCallback(null));
+        });
+    }
+
+    public static boolean isAsyncMessagesEnabled() {
+        return ASYNC_MESSAGES;
+    }
+
+    public static String getAsyncMessagesProperty() {
+        return ASYNC_MESSAGES_PROP;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public Date getConnectionTime() {
+        return timeConnected;
+    }
+
+    public void setHost(String hostAddress) {
+        this.host = hostAddress;
+    }
+
+    public void sendErrorMessageToClient(String message) {
+        List<String> messageData = new LinkedList<>();
+        messageData.add("Error while connecting to server");
+        messageData.add(message);
+        fireCallback(new ClientCallback(ClientCallbackMethod.SHOW_USERMESSAGE, null, messageData));
+    }
+
+    public void sendInfoMessageToClient(String message) {
+        List<String> messageData = new LinkedList<>();
+        messageData.add("Information about connecting to the server");
+        messageData.add(message);
+        fireCallback(new ClientCallback(ClientCallbackMethod.SHOW_USERMESSAGE, null, messageData));
+    }
+
+    public static Throwable getBasicCause(Throwable cause) {
+        Throwable t = cause;
+        while (t.getCause() != null) {
+            t = t.getCause();
+            if (Objects.equals(t, cause)) {
+                throw new IllegalArgumentException("Infinite cycle detected in causal chain");
+            }
+        }
+        return t;
+    }
+}
+
+class RandomString {
+
+    private static final char[] symbols;
+
+    static {
+        StringBuilder tmp = new StringBuilder();
+        for (char ch = '0'; ch <= '9'; ++ch) {
+            tmp.append(ch);
+        }
+        for (char ch = 'a'; ch <= 'z'; ++ch) {
+            tmp.append(ch);
+        }
+        symbols = tmp.toString().toCharArray();
+    }
+
+    private final char[] buf;
+
+    public RandomString(int length) {
+        if (length < 8) {
+            length = 8;
+        }
+        buf = new char[length];
+    }
+
+    public String nextString() {
+        for (int idx = 0; idx < buf.length; ++idx) {
+            buf[idx] = symbols[RandomUtil.nextInt(symbols.length)];
+        }
+        return new String(buf);
+    }
+}

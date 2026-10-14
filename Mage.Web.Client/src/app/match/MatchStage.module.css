@@ -1,0 +1,250 @@
+/* the zones are placed by the layout (matchLayout.ts); this wrapper only carries its seam to the stylesheets */
+.layout {
+  display: contents;
+}
+
+/* two mats meet at a stitched seam across the middle of the table */
+.mat {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 60% at 50% 78%, rgb(var(--gloss-rgb) / 0.035), transparent 70%),
+    radial-gradient(70% 60% at 50% 22%, rgb(var(--shade-rgb) / 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.seam {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  top: calc(var(--seam, 540px) - 1px);
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, var(--thread) 0 14px, transparent 14px 24px);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.row {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  /* the zone printed in ivory ink on the mat */
+  box-shadow: inset 0 0 0 2px rgb(var(--ink-rgb) / 0.09);
+}
+
+.row::before {
+  content: attr(data-label);
+  position: absolute;
+  left: 16px;
+  bottom: 8px;
+  font-family: var(--font-print);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-print-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+.rowFlip::before {
+  top: 8px;
+  bottom: auto;
+}
+
+.printMine,
+.printTheirs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.printTheirs {
+  top: 0;
+  height: var(--seam, 540px);
+  transform: rotate(180deg);
+}
+
+.printMine {
+  top: var(--seam, 540px);
+  bottom: 0;
+}
+
+/* seats and piles are placed by the layout */
+.myPlate,
+.theirPlate {
+  position: absolute;
+  z-index: var(--z-seat);
+}
+
+.myPiles,
+.theirPiles {
+  position: absolute;
+}
+
+/* the piles stand two by two in the seat column */
+.myPiles > *,
+.theirPiles > * {
+  flex-wrap: wrap;
+  width: 240px;
+  row-gap: 10px;
+}
+
+/* tall: they stand in a row in the band beside the seat */
+:global([data-layout='tall']) .myPiles > *,
+:global([data-layout='tall']) .theirPiles > * {
+  flex-wrap: nowrap;
+  width: auto;
+}
+
+.hiddenHand {
+  position: absolute;
+  top: -78px;
+  z-index: 4;
+  width: 0;
+  height: 120px;
+}
+
+.hiddenCard {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 84px;
+  transform: translateX(calc(-50% + var(--i) * 36px)) rotate(calc(var(--i) * -3deg));
+  transform-origin: 50% 0;
+}
+
+.handCount {
+  position: absolute;
+  left: 0;
+  top: 96px;
+  translate: -50% 0;
+  min-width: 32px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(var(--mat-rgb) / 0.85);
+  box-shadow: inset 0 0 0 1px var(--ink-faint);
+  font-family: var(--font-print);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.watchers {
+  position: absolute;
+  right: 92px;
+  top: 28px;
+  z-index: var(--z-vfx);
+}
+
+/* tall: the log's button sits beside the menu, so the watchers move over */
+:global([data-layout='tall']) .watchers {
+  right: calc(160px + var(--touch-target, 0px) / 2);
+}
+
+.menu {
+  position: absolute;
+  right: 24px;
+  top: 20px;
+  z-index: var(--z-vfx);
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: max(52px, var(--touch-target, 0px));
+  height: max(52px, var(--touch-target, 0px));
+  border: 0;
+  border-radius: 12px;
+  background: rgb(var(--mat-rgb) / 0.6);
+  box-shadow: inset 0 0 0 1.5px var(--ink-faint);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.menuButton:hover,
+.menuButton[data-state='open'] {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.menuContent {
+  z-index: var(--z-dialog);
+  min-width: 220px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--mat-800);
+  box-shadow: inset 0 0 0 1.5px var(--ink-faint), var(--shadow-held);
+}
+
+.menuItem {
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: var(--ink-strong);
+  font-size: var(--text-md);
+  cursor: pointer;
+  outline: none;
+}
+
+.menuItem[data-highlighted] {
+  background: rgb(var(--ink-rgb) / 0.1);
+}
+
+.menuItem[data-disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* the menu opens outside the stage, at window size: a finger needs a taller row */
+@media (pointer: coarse) {
+  .menuItem {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+  }
+}
+
+/* multiplayer: each opponent's seat is a column of plate and counters */
+.seat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seat > :first-child {
+  position: relative;
+}
+
+.theirMini {
+  padding-left: 4px;
+}
+
+/* whose half of the table a column is, printed into the mat above their permanents */
+.seatName {
+  position: absolute;
+  top: 108px;
+  z-index: 3;
+  font-family: var(--font-print);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-print-wide);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+/* watching with a broadcast delay: the board stays empty until the first delayed view */
+.delayNote {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: var(--z-rail);
+  max-width: 720px;
+  transform: translate(-50%, -50%);
+  color: var(--ink-dim);
+  font-size: 26px;
+  text-align: center;
+}

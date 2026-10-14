@@ -1,0 +1,71 @@
+name: Web bridge
+
+# The WebSocket bridge, Career and access tests (contract, transport, API docs, Career rules, the contributors
+# server's gate: an unlisted account is refused, an invited one gets in) for every branch and PR that touches
+# the bridge, its shared types or its documentation. The full build in maven.yml runs only on master.
+on:
+  push:
+    paths:
+      - "Mage.Server/src/main/java/mage/server/websocket/**"
+      - "Mage.Server/src/main/java/mage/server/career/**"
+      - "Mage.Server/src/main/java/mage/server/admin/**"
+      - "Mage.Server/src/main/java/mage/server/Moderation.java"
+      - "Mage.Server/src/main/java/mage/server/Maintenance.java"
+      - "Mage.Server/src/main/java/mage/server/Health.java"
+      - "Mage.Server/src/main/java/mage/server/BackupStatus.java"
+      - "Mage.Server/src/main/java/mage/server/StaffWatch.java"
+      - "Mage.Server/src/main/java/mage/server/moderation/**"
+      - "Mage.Server/src/main/java/mage/server/Session.java"
+      - "Mage.Server/src/main/java/mage/server/AuthorizedUserRepository.java"
+      - "Mage.Server/src/main/resources/career/**"
+      - "Mage.Server/src/test/**"
+      - "Mage.Server/pom.xml"
+      - "Mage.Common/**"
+      - "docs/WebSocketAPI.md"
+      - ".github/workflows/web-bridge.yml"
+  pull_request:
+    paths:
+      - "Mage.Server/src/main/java/mage/server/websocket/**"
+      - "Mage.Server/src/main/java/mage/server/career/**"
+      - "Mage.Server/src/main/java/mage/server/admin/**"
+      - "Mage.Server/src/main/java/mage/server/Moderation.java"
+      - "Mage.Server/src/main/java/mage/server/Maintenance.java"
+      - "Mage.Server/src/main/java/mage/server/Health.java"
+      - "Mage.Server/src/main/java/mage/server/BackupStatus.java"
+      - "Mage.Server/src/main/java/mage/server/StaffWatch.java"
+      - "Mage.Server/src/main/java/mage/server/moderation/**"
+      - "Mage.Server/src/main/java/mage/server/Session.java"
+      - "Mage.Server/src/main/java/mage/server/AuthorizedUserRepository.java"
+      - "Mage.Server/src/main/resources/career/**"
+      - "Mage.Server/src/test/**"
+      - "Mage.Server/pom.xml"
+      - "Mage.Common/**"
+      - "docs/WebSocketAPI.md"
+      - ".github/workflows/web-bridge.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bridge-tests:
+    runs-on: ubuntu-latest
+    # Mage.Server depends on Mage.Sets, so the first (uncached) build compiles every card
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: temurin
+          cache: maven
+      - name: Build Mage.Server and its dependencies
+        run: mvn -B -pl Mage.Server -am install -DskipTests
+      - name: Bridge tests
+        run: >
+          mvn -B -pl Mage.Server test
+          -Dtest='mage/server/websocket/**/*Test,mage/server/career/**/*Test,mage/server/admin/**/*Test,mage/server/AccessGateTest'
+          -Dsurefire.failIfNoSpecifiedTests=false
+          -Dxmage.dataCollectors.printGameLogs=false
+          -Dlog4j.configuration=file:${GITHUB_WORKSPACE}/.travis/log4j.properties

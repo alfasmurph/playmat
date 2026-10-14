@@ -1,0 +1,109 @@
+.arrows {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-arrows);
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* the layers below are groups: the filter sits on the group, the strokes are inherited by its paths */
+.ink {
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 3px rgb(var(--shade-rgb) / 0.6));
+}
+
+.ink path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 2 12;
+  animation: march 900ms linear infinite;
+}
+
+.block {
+  filter: drop-shadow(0 2px 3px rgb(var(--shade-rgb) / 0.6));
+}
+
+.block line {
+  stroke: var(--ink-strong);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 12 10;
+}
+
+/* a block being dragged, over an attacker it can be dropped on: the block line, lit as the decision */
+.blockLive {
+  stroke: var(--decision);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 12 10;
+  filter: drop-shadow(0 0 8px var(--decision-glow)) drop-shadow(0 2px 3px rgb(var(--shade-rgb) / 0.6));
+}
+
+.live {
+  fill: none;
+  stroke: var(--decision);
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px var(--decision-glow)) drop-shadow(0 2px 3px rgb(var(--shade-rgb) / 0.6));
+}
+
+@keyframes march {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+/*
+ * an attack: a heavy oxblood stroke with an ember glow, and a bright pulse running toward the target. Glow, body and
+ * pulse are three layers; the pulse layer has no filter, so its marching repaints nothing heavy.
+ */
+.attack {
+  fill: none;
+  stroke-linecap: round;
+  animation: attack-in 260ms var(--ease-out, ease-out) both;
+}
+
+.attackGlow {
+  stroke: color-mix(in srgb, var(--oxblood-lit) 35%, transparent);
+  stroke-width: 22;
+  filter: blur(6px);
+}
+
+.attackBody {
+  stroke: var(--oxblood-lit);
+  stroke-width: 9;
+  filter: drop-shadow(0 3px 4px rgb(var(--shade-rgb) / 0.65));
+}
+
+.attackFlow {
+  stroke: var(--oxblood-ink);
+  stroke-width: 3;
+  stroke-dasharray: 18 70;
+  opacity: 0.85;
+}
+
+.attackFlow .attack {
+  animation: attack-in 260ms var(--ease-out, ease-out) both, march-attack 700ms linear infinite;
+}
+
+@keyframes march-attack {
+  to {
+    stroke-dashoffset: -88;
+  }
+}
+
+@keyframes attack-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attack,
+  .attackFlow .attack,
+  .ink path {
+    animation: none;
+  }
+}

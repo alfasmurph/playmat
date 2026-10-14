@@ -1,0 +1,184 @@
+# Web deployment: XMage server + web client behind Caddy (HTTPS) + nightly backups of the user databases.
+#   cp ops/web/.env.example ops/web/.env   # then edit
+#   docker compose -f ops/web/docker-compose.yml up -d --build
+# Every server setting is documented in ops/web/README.md. Empty values use the image defaults.
+x-server-image: &server-image xmage-web-server:local
+
+services:
+  xmage:
+    image: *server-image
+    build:
+      context: ../..
+      dockerfile: ops/web/Dockerfile.server
+    environment:
+      XMAGE_ALLOWED_ORIGINS: ${XMAGE_ALLOWED_ORIGINS:-https://${DOMAIN:?set DOMAIN}}
+      XMAGE_MEMORY: ${XMAGE_MEMORY:-}
+      XMAGE_HEAP_PERCENT: ${XMAGE_HEAP_PERCENT:-}
+      XMAGE_GC: ${XMAGE_GC:-}
+      XMAGE_METASPACE: ${XMAGE_METASPACE:-}
+      XMAGE_CDS: ${XMAGE_CDS:-}
+      XMAGE_COMPACT_HEADERS: ${XMAGE_COMPACT_HEADERS:-}
+      XMAGE_JAVA_OPTS: ${XMAGE_JAVA_OPTS:-}
+      XMAGE_ADMIN_PASSWORD: ${XMAGE_ADMIN_PASSWORD:-}
+      # the proxy's network: the server trusts X-Forwarded-For only from these addresses
+      XMAGE_TRUSTED_PROXIES: ${XMAGE_TRUSTED_PROXIES:-${CADDY_IP:-10.89.17.10}}
+      XMAGE_DISCORD_WEBHOOK: ${XMAGE_DISCORD_WEBHOOK:-}
+      XMAGE_DISCORD_STAFF_WEBHOOK: ${XMAGE_DISCORD_STAFF_WEBHOOK:-}
+      XMAGE_CAREER: ${XMAGE_CAREER:-on}
+      XMAGE_ACCESS: ${XMAGE_ACCESS:-open}
+      XMAGE_OWNER: ${XMAGE_OWNER:-}
+      XMAGE_ALLOWLIST: ${XMAGE_ALLOWLIST:-}
+      XMAGE_GITHUB_CLIENT_ID: ${XMAGE_GITHUB_CLIENT_ID:-}
+      XMAGE_GITHUB_CLIENT_SECRET: ${XMAGE_GITHUB_CLIENT_SECRET:-}
+      XMAGE_GITHUB_REPO: ${XMAGE_GITHUB_REPO:-}
+      XMAGE_GITHUB_TOKEN: ${XMAGE_GITHUB_TOKEN:-}
+      XMAGE_PUBLIC_URL: ${XMAGE_PUBLIC_URL:-https://${DOMAIN}}
+      XMAGE_SERVER_NAME: ${XMAGE_SERVER_NAME:-}
+      XMAGE_SERVER_ADDRESS: ${XMAGE_SERVER_ADDRESS:-}
+      XMAGE_PORT: ${XMAGE_PORT:-}
+      XMAGE_DESKTOP: ${XMAGE_DESKTOP:-}
+      XMAGE_MONTE_CARLO: ${XMAGE_MONTE_CARLO:-}
+      XMAGE_AI_THREADS: ${XMAGE_AI_THREADS:-}
+      XMAGE_AI_NODE_SCALE: ${XMAGE_AI_NODE_SCALE:-}
+      XMAGE_DB_CACHE: ${XMAGE_DB_CACHE:-}
+      XMAGE_SECONDARY_PORT: ${XMAGE_SECONDARY_PORT:-}
+      XMAGE_MAX_GAME_THREADS: ${XMAGE_MAX_GAME_THREADS:-}
+      XMAGE_MAX_AI_OPPONENTS: ${XMAGE_MAX_AI_OPPONENTS:-}
+      XMAGE_MAX_SECONDS_IDLE: ${XMAGE_MAX_SECONDS_IDLE:-}
+      XMAGE_MAX_POOL_SIZE: ${XMAGE_MAX_POOL_SIZE:-}
+      XMAGE_AUTH: ${XMAGE_AUTH:-}
+      XMAGE_SAVE_GAMES: ${XMAGE_SAVE_GAMES:-}
+      XMAGE_REPLAYS: ${XMAGE_REPLAYS:-}
+      XMAGE_REPLAY_DAYS: ${XMAGE_REPLAY_DAYS:-}
+      XMAGE_REPLAY_MAX: ${XMAGE_REPLAY_MAX:-}
+      XMAGE_MAILGUN_API_KEY: ${XMAGE_MAILGUN_API_KEY:-}
+      XMAGE_MAILGUN_DOMAIN: ${XMAGE_MAILGUN_DOMAIN:-}
+      XMAGE_MAIL_SMTP_HOST: ${XMAGE_MAIL_SMTP_HOST:-}
+      XMAGE_MAIL_SMTP_PORT: ${XMAGE_MAIL_SMTP_PORT:-}
+      XMAGE_MAIL_USER: ${XMAGE_MAIL_USER:-}
+      XMAGE_MAIL_PASSWORD: ${XMAGE_MAIL_PASSWORD:-}
+      XMAGE_MAIL_FROM: ${XMAGE_MAIL_FROM:-}
+    volumes:
+      - xmage-db:/opt/xmage/db         # user data only (accounts, stats, table records, feedback)
+      - xmage-cards:/opt/xmage/cards-db # card database cache, rebuilt when the image changes
+      - xmage-logs:/opt/xmage/logs
+      - xmage-saved:/opt/xmage/saved
+    networks:
+      - xmage
+    # the bridge port opens only after the card database is loaded; the first start builds it (minutes)
+    healthcheck:
+      # /healthz answers on the loopback address only; it reports the version, commit and load
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/17173 && printf 'GET /healthz HTTP/1.0\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep -q ' 200 '"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15m
+    restart: unless-stopped
+    # no published ports: only the proxy reaches the server
+
+  web:
+    # named, like the server's, so a host that receives built images (ops/web/ship-images.sh) runs them without building
+    image: xmage-web:local
+    build:
+      context: ../..
+      dockerfile: ops/web/Dockerfile.web
+      args:
+        VITE_APP_NAME: ${APP_NAME:-Playmat}
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN}
+      # optional: the host's LAN address, served too (with its own certificate) for devices that can't resolve DOMAIN
+      LAN_IP: ${LAN_IP:-}
+      TLS_DEFAULT_SNI: ${LAN_IP:-${DOMAIN}}
+      PUBLIC_HTTPS_PORT: ${HTTPS_PORT:-443}
+      # optional: a public name served over plain HTTP for a reverse proxy in front that holds its certificate, and
+      # the address range that proxy connects from (believed about who the client is)
+      PROXIED_HOST: ${PROXIED_HOST:-proxied.invalid}
+      UPSTREAM_PROXIES: ${UPSTREAM_PROXIES:-127.0.0.1/32}
+      # per client address, at the proxy (the server adds its own cap of concurrent game connections per address)
+      WS_RATE_LIMIT: ${WS_RATE_LIMIT:-30}
+      WS_RATE_WINDOW: ${WS_RATE_WINDOW:-1m}
+      IMG_API_RATE_LIMIT: ${IMG_API_RATE_LIMIT:-300}
+      IMG_API_RATE_WINDOW: ${IMG_API_RATE_WINDOW:-1m}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      xmage:
+        # fixed so the server can trust forwarding headers from Caddy alone
+        ipv4_address: ${CADDY_IP:-10.89.17.10}
+    healthcheck:
+      # Caddy's admin API answers on localhost only
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      xmage:
+        condition: service_healthy
+      imgcache:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Caching proxy for Scryfall card pictures and lookups, served under /img by Caddy (imgcache.conf.template)
+  imgcache:
+    image: nginx:1.30.5-alpine
+    environment:
+      IMGCACHE_IMAGES_MAX_SIZE: ${IMGCACHE_IMAGES_MAX_SIZE:-20g}
+      IMGCACHE_API_MAX_SIZE: ${IMGCACHE_API_MAX_SIZE:-1g}
+      IMGCACHE_API_RATE: ${IMGCACHE_API_RATE:-10r/s}
+      IMGCACHE_API_BURST: ${IMGCACHE_API_BURST:-20}
+    volumes:
+      # rendered into /etc/nginx/conf.d/default.conf (replacing the stock site) on every start
+      - ./imgcache.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - xmage-imgcache:/var/cache/nginx/scryfall
+    networks:
+      - xmage
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    # no published ports: only the proxy reaches it
+
+  backup:
+    image: *server-image
+    pull_policy: never # built by the xmage service
+    entrypoint: ["xmage-backup"]
+    command: ["daemon"]
+    init: true
+    environment:
+      BACKUP_AT: ${BACKUP_AT:-03:30}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - xmage-db:/opt/xmage/db
+      - xmage-backups:/backups
+    # on the server's network so H2 can join the running database for a consistent online dump
+    networks:
+      - xmage
+    depends_on:
+      - xmage
+    restart: unless-stopped
+
+networks:
+  xmage:
+    ipam:
+      config:
+        - subnet: ${XMAGE_SUBNET:-10.89.17.0/24}
+
+volumes:
+  xmage-db:
+  xmage-cards:
+  xmage-logs:
+  xmage-saved:
+  xmage-backups:
+  xmage-imgcache:
+  caddy-data:
+  caddy-config:

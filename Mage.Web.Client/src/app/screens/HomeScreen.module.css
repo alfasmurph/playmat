@@ -1,0 +1,345 @@
+.home {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: var(--space-6);
+  height: 100%;
+}
+
+.roster {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.rosterHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.rosterHead h2 {
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-print-wide);
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.rosterList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  /* room for the lifted deck */
+  padding: 4px 16px 24px 2px;
+  margin-right: -16px;
+  overflow: auto;
+}
+
+.empty {
+  color: var(--ink-dim);
+}
+
+/* the mat itself: your deck's art screen-printed into it */
+.mat {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(320px, 440px);
+  grid-template-rows: 1fr auto;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-zone);
+  /* a screen too short for the play zone scrolls it instead of cutting off the play button */
+  overflow: hidden auto;
+  isolation: isolate;
+}
+
+/* the server's notice, printed in the mat's corner above the deck */
+.serverNotice {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
+  max-width: 52ch;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--decision);
+  border-radius: var(--radius-control);
+  background: rgb(var(--mat-rgb) / 0.6);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  white-space: pre-line;
+}
+
+.deckTitle {
+  position: relative;
+  container-type: inline-size;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.deckNote {
+  font-family: var(--font-print);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* the deck name, printed big on the mat */
+.deckName {
+  max-width: 14ch;
+  /* the narrow column beside the play zone (a tablet) prints it smaller rather than under the zone */
+  font-size: clamp(2rem, 9cqi, 6rem);
+  overflow-wrap: anywhere;
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  text-shadow: 0 3px 18px rgb(var(--shade-rgb) / 0.55);
+}
+
+/* the printed PLAY zone, in card-zone proportions */
+.playZone {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: safe center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-zone);
+  /* printed flat on the mat: an ivory-ink outline, lightly shaded for legibility */
+  background: rgb(var(--mat-rgb) / 0.55);
+  box-shadow: inset 0 0 0 2px var(--ink-soft);
+}
+
+.zoneLabel {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-print-wide);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* who you play: two printed segments, the chosen one outlined in ink */
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.mode {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: rgb(var(--ink-rgb) / 0.04);
+  box-shadow: inset 0 0 0 1.5px var(--ink-ghost);
+  color: var(--ink-soft);
+  font-family: var(--font-print);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: box-shadow var(--dur-quick) linear, background-color var(--dur-quick) linear, color var(--dur-quick) linear;
+}
+
+.mode:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1.5px var(--ink-faint);
+  color: var(--ink-strong);
+}
+
+.modeOn {
+  background: rgb(var(--ink-rgb) / 0.1);
+  box-shadow: inset 0 0 0 2.5px var(--ink-strong);
+  color: var(--ink-strong);
+}
+
+.modeNote {
+  padding: 10px 12px;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.error {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: rgb(var(--oxblood-rgb) / 0.3);
+  color: var(--oxblood-ink);
+  font-size: var(--text-sm);
+}
+
+/* how the AI game is set up, one line, opens the AI settings */
+.aiSetup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: rgb(var(--ink-rgb) / 0.04);
+  box-shadow: inset 0 0 0 1px var(--ink-ghost);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.aiSetup:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1.5px var(--ink-faint);
+  color: var(--ink-strong);
+}
+
+.aiSetup > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.aiSetupAction {
+  font-family: var(--font-print);
+  font-weight: 700;
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.playRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.playButton {
+  min-width: 220px;
+}
+
+@media (max-width: 960px) {
+  .mat {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .deckTitle {
+    grid-row: 1;
+  }
+
+  .playZone {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+/* a portrait tablet: the decks above, the mat below at the height its play zone needs */
+@media (max-width: 860px) {
+  .home {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(160px, 1fr) auto;
+    gap: var(--space-4);
+  }
+
+  .mat {
+    max-height: 100%;
+  }
+
+  /* the roster already names the deck; here the title gives its room to the list */
+  .deckName {
+    font-size: clamp(2rem, 7cqi, 3rem);
+  }
+}
+
+/* short screens (a tablet held sideways): the play zone tightens so PLAY stays on screen */
+@media (max-height: 760px) {
+  .mat {
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+
+  .playZone {
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .zoneLabel {
+    font-size: var(--text-xl);
+  }
+
+  .mode {
+    min-height: 44px;
+  }
+}
+
+.rosterActions {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+/* a deck file, link or list dragged over the roster */
+.dropping {
+  border-radius: var(--radius-zone);
+  box-shadow: inset 0 0 0 2px var(--ink-strong);
+}
+
+/* until the first game: an offer to play a guided one */
+.firstGame {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 0 1.5px var(--decision);
+}
+
+.firstGameText {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.firstGameActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* the way into Career, under the play button: offered only by servers that run it */
+.career {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 12px;
+  border: 0;
+  border-top: 1px solid var(--ink-ghost);
+  border-radius: 0;
+  background: none;
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+}
+
+.career:hover:not(:disabled) {
+  color: var(--ink-strong);
+}
+
+.careerText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.careerText b {
+  font-family: var(--font-print);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.careerText small {
+  font-size: var(--text-sm);
+}

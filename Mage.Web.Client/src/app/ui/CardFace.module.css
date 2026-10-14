@@ -1,0 +1,126 @@
+/* sleeve: a thin matte rim in the deck's color around the card */
+.sleeve {
+  --sleeve: var(--sleeve-default);
+  position: relative;
+  aspect-ratio: var(--card-ratio);
+  width: 100%;
+  padding: 2.2%;
+  border-radius: calc(var(--card-radius) + 1.5%);
+  background:
+    linear-gradient(160deg, rgb(var(--gloss-rgb) / 0.12), transparent 40%),
+    var(--sleeve);
+  box-shadow: var(--shadow-placed);
+  user-select: none;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--card-radius) / calc(var(--card-radius) * 63 / 88);
+  background: var(--card-void);
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-place) linear;
+}
+
+[data-loaded] .image {
+  opacity: 1;
+}
+
+/* text frame shown until the picture arrives */
+.frame {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 6%;
+  gap: 4%;
+  background: linear-gradient(180deg, var(--card-blank-top), var(--card-blank-bottom));
+  color: var(--ink);
+  container-type: inline-size;
+}
+
+/* the frame of a card whose picture is on its way: hidden for a moment, then printed */
+.late {
+  animation: frame-late 180ms linear 700ms both;
+}
+
+@keyframes frame-late {
+  from {
+    opacity: 0;
+  }
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-print);
+  font-weight: 700;
+  font-size: max(9px, 9cqi);
+  line-height: 1.05;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.art {
+  border-radius: 3px;
+  background: radial-gradient(120% 100% at 30% 20%, rgb(var(--ink-rgb) / 0.1), rgb(var(--shade-rgb) / 0.35));
+  box-shadow: inset 0 0 0 1px var(--ink-ghost);
+}
+
+.typeLine {
+  font-size: max(8px, 7cqi);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pt {
+  position: absolute;
+  right: 6%;
+  bottom: 4%;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(var(--shade-rgb) / 0.5);
+  font-family: var(--font-print);
+  font-weight: 700;
+  font-size: max(9px, 9cqi);
+}
+
+/* card back: no WotC back, our own printed weave */
+.back {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgb(var(--ink-rgb) / 0.14), transparent 38%),
+    repeating-linear-gradient(45deg, rgb(var(--ink-rgb) / 0.06) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(-45deg, rgb(var(--ink-rgb) / 0.06) 0 6px, transparent 6px 12px),
+    linear-gradient(180deg, var(--mat-600), var(--mat-900));
+  box-shadow: inset 0 0 0 3px rgb(var(--ink-rgb) / 0.15);
+}
+
+/* a picture back: a Career sleeve's, Playmat's or the classic one (the weave shows through while it loads) */
+.back[data-art] {
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
