@@ -4,13 +4,13 @@ Playmat for one computer, for players who have never heard of Docker, Java or No
 and Linux with everything inside. It starts the XMage server, serves the web client on `http://localhost:17170` and
 opens it in the browser. Friends on the same network join at the address the Playmat window shows.
 
-Players download it from the [latest release](https://github.com/arcanite24/playmat/releases/latest):
+Players download it from the [latest release](https://github.com/alfasmurph/playmat/releases/latest):
 
 | | |
 |---|---|
-| Windows | `Playmat-Setup-Windows-x64.exe`, or in PowerShell `irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 \| iex` |
-| macOS | `Playmat-macOS-arm64.dmg` / `Playmat-macOS-x64.dmg`, or `curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh \| sh` |
-| Linux | `curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh \| sh`, or `Playmat-Linux-x64.tar.gz` / `-arm64` |
+| Windows | `Playmat-Setup-Windows-x64.exe`, or in PowerShell `irm https://github.com/alfasmurph/playmat/releases/latest/download/install.ps1 \| iex` |
+| macOS | `Playmat-macOS-arm64.dmg` / `Playmat-macOS-x64.dmg`, or `curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh \| sh` |
+| Linux | `curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh \| sh`, or `Playmat-Linux-x64.tar.gz` / `-arm64` |
 
 The asset names don't change between versions, so `releases/latest/download/<name>` links always fetch the newest.
 

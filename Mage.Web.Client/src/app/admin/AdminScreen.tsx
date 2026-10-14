@@ -203,7 +203,7 @@ function Overview({ api }: { api: AdminApi }) {
       <p className={styles.quiet}>
         Version {data.version ?? 'unknown'}
         {data.commit
-          ? <> · commit <a className={styles.code} href={`https://github.com/arcanite24/playmat/commit/${data.commit}`} target="_blank" rel="noreferrer">{data.commit.slice(0, 7)}</a></>
+          ? <> · commit <a className={styles.code} href={`https://github.com/alfasmurph/playmat/commit/${data.commit}`} target="_blank" rel="noreferrer">{data.commit.slice(0, 7)}</a></>
           : ' · a development build'}
         {backup && (
           <span className={backup.problem ? styles.backupBad : undefined}>

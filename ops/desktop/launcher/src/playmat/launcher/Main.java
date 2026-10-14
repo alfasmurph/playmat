@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
  */
 public final class Main {
 
-    static final String RELEASES = "https://github.com/arcanite24/playmat/releases/latest";
-    private static final String LATEST_API = "https://api.github.com/repos/arcanite24/playmat/releases/latest";
+    static final String RELEASES = "https://github.com/alfasmurph/playmat/releases/latest";
+    private static final String LATEST_API = "https://api.github.com/repos/alfasmurph/playmat/releases/latest";
 
     private static FileLock instanceLock;
 

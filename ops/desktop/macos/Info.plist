@@ -11,7 +11,7 @@
   <key>CFBundleIconFile</key>
   <string>playmat</string>
   <key>CFBundleIdentifier</key>
-  <string>io.github.arcanite24.playmat</string>
+  <string>io.github.alfasmurph.playmat</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>

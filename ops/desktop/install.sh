@@ -1,14 +1,14 @@
 #!/bin/sh
 # Installs (or updates) Playmat on macOS or Linux and starts it:
 #
-#   curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh
+#   curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh | sh
 #
 # macOS: ~/Applications/Playmat.app.  Linux: ~/.local/opt/Playmat, with an applications menu entry.
 # No administrator password, and nothing else to install: Playmat brings its own Java.
 # Your data (accounts, decks, Career) is kept across updates.
 set -eu
 
-REPO=arcanite24/playmat
+REPO=alfasmurph/playmat
 BASE=${PLAYMAT_DOWNLOAD_BASE:-https://github.com/$REPO/releases/latest/download}
 
 say() { printf '\033[1m%s\033[0m\n' "$*"; }

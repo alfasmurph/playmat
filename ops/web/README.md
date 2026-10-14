@@ -145,7 +145,7 @@ The card build takes minutes and gigabytes even on a fast machine, so a small bo
 From a clean clone (the build context is the whole tree, so a working copy with build output sends gigabytes):
 
 ```bash
-git clone --depth 1 https://github.com/arcanite24/playmat build-src && cd build-src
+git clone --depth 1 https://github.com/alfasmurph/playmat build-src && cd build-src
 podman build --platform linux/arm64 -f ops/web/Dockerfile.server -t xmage-web-server:local .
 podman build --platform linux/arm64 -f ops/web/Dockerfile.web -t xmage-web:local .
 ops/web/ship-images.sh <ssh-host> podman

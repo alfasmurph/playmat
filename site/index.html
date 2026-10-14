@@ -10,8 +10,8 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Playmat · a fan-made web client for XMage">
   <meta property="og:description" content="A hobby project: a browser client for XMage, styled after MTG Arena, for playing with friends on your own server.">
-  <meta property="og:url" content="https://arcanite24.github.io/playmat/">
-  <meta property="og:image" content="https://arcanite24.github.io/playmat/assets/og.png">
+  <meta property="og:url" content="https://alfasmurph.github.io/playmat/">
+  <meta property="og:image" content="https://alfasmurph.github.io/playmat/assets/og.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +32,7 @@
           <li><a href="#career">Career</a></li>
           <li><a href="#download">Download</a></li>
           <li><a href="#host">Run a server</a></li>
-          <li><a href="https://github.com/arcanite24/playmat">GitHub</a></li>
+          <li><a href="https://github.com/alfasmurph/playmat">GitHub</a></li>
         </ul>
       </nav>
     </div>
@@ -47,7 +47,7 @@
           XMage's AI, Career or friends on your Wi-Fi, or run a server for your group. It's free, MIT licensed, and not
           affiliated with Wizards of the Coast.</p>
         <p class="status">It's a work in progress with rough edges. Bug reports and pull requests are welcome on
-          <a href="https://github.com/arcanite24/playmat">GitHub</a>.</p>
+          <a href="https://github.com/alfasmurph/playmat">GitHub</a>.</p>
         <div class="cta">
           <a class="btn btn-big" id="get" href="#download">Download Playmat</a>
           <p class="cta-note small" id="get-note">Free for Windows, macOS and Linux. <a href="#download">All downloads</a></p>
@@ -225,27 +225,27 @@
         <ul class="downloads">
           <li class="zone" id="dl-windows">
             <h3>Windows</h3>
-            <a class="btn" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe">Download for Windows</a>
+            <a class="btn" href="https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe">Download for Windows</a>
             <p class="small">Windows 10 or 11. Run the installer and press Install. If Windows says it protected your PC,
               choose <em>More info</em> and then <em>Run anyway</em>: Playmat is a free fan project without a paid
               signing certificate. Or skip that screen by installing from PowerShell:</p>
-            <code class="oneliner">irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 | iex</code>
+            <code class="oneliner">irm https://github.com/alfasmurph/playmat/releases/latest/download/install.ps1 | iex</code>
           </li>
           <li class="zone" id="dl-mac">
             <h3>macOS</h3>
-            <a class="btn" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-arm64.dmg">Apple silicon (M1 and later)</a>
-            <a class="btn btn-quiet" href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-x64.dmg">Intel Mac</a>
+            <a class="btn" href="https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-macOS-arm64.dmg">Apple silicon (M1 and later)</a>
+            <a class="btn btn-quiet" href="https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-macOS-x64.dmg">Intel Mac</a>
             <p class="small">Not sure? Apple menu, <em>About This Mac</em>: "Apple M…" is Apple silicon. Drag Playmat to
               Applications. The first time, macOS asks you to allow it: open <em>System Settings, Privacy &amp;
               Security</em> and choose <em>Open Anyway</em>. Or skip that step by installing from the Terminal:</p>
-            <code class="oneliner">curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh</code>
+            <code class="oneliner">curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh | sh</code>
           </li>
           <li class="zone" id="dl-linux">
             <h3>Linux</h3>
             <p class="small">Paste this in a terminal. It picks x64 or ARM, installs Playmat in your home folder, adds it
               to the applications menu and starts it.</p>
-            <code class="oneliner">curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh</code>
-            <p class="small">Or download the <a href="https://github.com/arcanite24/playmat/releases/latest">x64 or ARM
+            <code class="oneliner">curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh | sh</code>
+            <p class="small">Or download the <a href="https://github.com/alfasmurph/playmat/releases/latest">x64 or ARM
               archive</a> and run <code>Playmat/playmat</code>.</p>
           </li>
         </ul>
@@ -256,7 +256,7 @@
           <li>Card pictures come from Scryfall, so an internet connection helps.</li>
         </ul>
         <p class="small center">Release notes and earlier versions are on the
-          <a href="https://github.com/arcanite24/playmat/releases">releases page</a>.</p>
+          <a href="https://github.com/alfasmurph/playmat/releases">releases page</a>.</p>
       </div>
     </section>
 
@@ -274,11 +274,11 @@
           </dl>
           <p class="small">Also covered: private LAN servers with no domain, running behind another reverse proxy, Discord
             notifications for new tables, and capacity numbers.
-            See the <a href="https://github.com/arcanite24/playmat/blob/master/ops/web/README.md">deployment guide</a>.</p>
+            See the <a href="https://github.com/alfasmurph/playmat/blob/master/ops/web/README.md">deployment guide</a>.</p>
         </div>
         <div class="terminal" role="region" aria-label="Commands to start a server">
 <pre><code><span class="c"># get the code</span>
-git clone https://github.com/arcanite24/playmat.git
+git clone https://github.com/alfasmurph/playmat.git
 cd playmat
 
 <span class="c"># set DOMAIN, XMAGE_ADMIN_PASSWORD, XMAGE_AUTH</span>
@@ -298,6 +298,8 @@ docker compose -f ops/web/docker-compose.yml up -d --build</code></pre>
           <p>The rules engine, the card implementations and the AI are the work of the XMage project and its
             contributors since 2010; Playmat merges XMage regularly to pick up new sets and fixes. Card pictures and data
             come from Scryfall. Magic: The Gathering belongs to Wizards of the Coast.</p>
+          <p>Playmat is based on <a href="https://github.com/arcanite24/playmat">arcanite24/playmat</a>, the original web client
+            and desktop launcher.</p>
           <p><a href="https://github.com/magefree/mage">XMage on GitHub</a> · <a href="https://scryfall.com">Scryfall</a></p>
         </div>
       </div>
@@ -307,7 +309,7 @@ docker compose -f ops/web/docker-compose.yml up -d --build</code></pre>
   <footer class="foot">
     <div class="wrap foot-row">
       <img src="assets/brand/playmat-logo.svg" alt="Playmat" width="138" height="32">
-      <p><a href="https://github.com/arcanite24/playmat">Source</a> · <a href="https://github.com/arcanite24/playmat/blob/master/LICENSE.txt">MIT License</a> · <a href="https://github.com/arcanite24/playmat/issues">Issues</a></p>
+      <p><a href="https://github.com/alfasmurph/playmat">Source</a> · <a href="https://github.com/alfasmurph/playmat/blob/master/LICENSE.txt">MIT License</a> · <a href="https://github.com/alfasmurph/playmat/issues">Issues</a></p>
       <p class="legal">Playmat is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by
         Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</p>
     </div>
@@ -318,7 +320,7 @@ docker compose -f ops/web/docker-compose.yml up -d --build</code></pre>
     (function () {
       var get = document.getElementById('get');
       var note = document.getElementById('get-note');
-      var base = 'https://github.com/arcanite24/playmat/releases/latest/download/';
+      var base = 'https://github.com/alfasmurph/playmat/releases/latest/download/';
       var ua = navigator.userAgent;
       var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
       var mobile = /Android|iPhone|iPad|iPod/i.test(ua) || (/Mac/.test(platform) && navigator.maxTouchPoints > 1);
@@ -336,7 +338,7 @@ docker compose -f ops/web/docker-compose.yml up -d --build</code></pre>
       }
     })();
     // the latest version's number, from GitHub (the page reads fine without it)
-    fetch('https://api.github.com/repos/arcanite24/playmat/releases/latest')
+    fetch('https://api.github.com/repos/alfasmurph/playmat/releases/latest')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (release) {
         if (!release || !release.tag_name) return;

@@ -7,7 +7,7 @@ import { RichText } from '../i18n/RichText';
 import styles from './AboutScreen.module.css';
 
 const XMAGE_URL = 'https://github.com/magefree/mage';
-const SOURCE_URL = 'https://github.com/arcanite24/playmat';
+const SOURCE_URL = 'https://github.com/alfasmurph/playmat';
 const FAN_CONTENT_POLICY_URL = 'https://company.wizards.com/en/legal/fancontentpolicy';
 const SCRYFALL_URL = 'https://scryfall.com';
 

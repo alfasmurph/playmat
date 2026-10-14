@@ -1,13 +1,13 @@
 # Installs (or updates) Playmat on Windows and starts it. In PowerShell:
 #
-#   irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 | iex
+#   irm https://github.com/alfasmurph/playmat/releases/latest/download/install.ps1 | iex
 #
 # Same as downloading and running Playmat-Setup-Windows-x64.exe, without the browser's download warnings.
 # Installs for the current user only: no administrator prompt.
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is far slower with its progress bar
 
-$base = if ($env:PLAYMAT_DOWNLOAD_BASE) { $env:PLAYMAT_DOWNLOAD_BASE } else { 'https://github.com/arcanite24/playmat/releases/latest/download' }
+$base = if ($env:PLAYMAT_DOWNLOAD_BASE) { $env:PLAYMAT_DOWNLOAD_BASE } else { 'https://github.com/alfasmurph/playmat/releases/latest/download' }
 $setup = Join-Path $env:TEMP 'Playmat-Setup-Windows-x64.exe'
 
 Write-Host 'Downloading Playmat...' -ForegroundColor Yellow

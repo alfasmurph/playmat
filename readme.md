@@ -11,13 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/arcanite24/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-Windows-f0b13d?style=for-the-badge&logo=windows&logoColor=1d1406&labelColor=f0b13d&color=ffc65a"></a>
+  <a href="https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-Windows-f0b13d?style=for-the-badge&logo=windows&logoColor=1d1406&labelColor=f0b13d&color=ffc65a"></a>
   <a href="#play-on-your-computer"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-macOS-f0b13d?style=for-the-badge&logo=apple&logoColor=1d1406&labelColor=f0b13d&color=ffc65a"></a>
   <a href="#play-on-your-computer"><img alt="Download for Linux" src="https://img.shields.io/badge/Download-Linux-f0b13d?style=for-the-badge&logo=linux&logoColor=1d1406&labelColor=f0b13d&color=ffc65a"></a>
 </p>
 
 <p align="center">
-  <a href="https://arcanite24.github.io/playmat/">Website</a> ·
+  <a href="https://alfasmurph.github.io/playmat/">Website</a> ·
   <a href="#play-on-your-computer">Download</a> ·
   <a href="#running-a-server">Run a server</a> ·
   <a href="#working-on-playmat">Working on Playmat</a> ·
@@ -25,8 +25,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/arcanite24/playmat/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/arcanite24/playmat?label=release&color=f0b13d"></a>
-  <a href="https://github.com/arcanite24/playmat/actions/workflows/web-client.yml"><img alt="Web client" src="https://github.com/arcanite24/playmat/actions/workflows/web-client.yml/badge.svg"></a>
+  <a href="https://github.com/alfasmurph/playmat/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/alfasmurph/playmat?label=release&color=f0b13d"></a>
+  <a href="https://github.com/alfasmurph/playmat/actions/workflows/web-client.yml"><img alt="Web client" src="https://github.com/alfasmurph/playmat/actions/workflows/web-client.yml/badge.svg"></a>
   <a href="LICENSE.txt"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-f0b13d"></a>
   <img alt="Built on XMage" src="https://img.shields.io/badge/engine-XMage-3a5a51">
 </p>
@@ -92,21 +92,21 @@ the AI and Career on your own, or have friends on the same Wi-Fi join you. Nothi
 
 | Your computer | Download |
 |---|---|
-| **Windows** 10 or 11 | [Playmat-Setup-Windows-x64.exe](https://github.com/arcanite24/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe): run it and press **Install** |
-| **Mac** with Apple silicon (M1 and later) | [Playmat-macOS-arm64.dmg](https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-arm64.dmg): drag Playmat to Applications |
-| **Mac** with an Intel processor | [Playmat-macOS-x64.dmg](https://github.com/arcanite24/playmat/releases/latest/download/Playmat-macOS-x64.dmg): drag Playmat to Applications |
-| **Linux** (x64 or ARM) | `curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh \| sh` |
+| **Windows** 10 or 11 | [Playmat-Setup-Windows-x64.exe](https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-Setup-Windows-x64.exe): run it and press **Install** |
+| **Mac** with Apple silicon (M1 and later) | [Playmat-macOS-arm64.dmg](https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-macOS-arm64.dmg): drag Playmat to Applications |
+| **Mac** with an Intel processor | [Playmat-macOS-x64.dmg](https://github.com/alfasmurph/playmat/releases/latest/download/Playmat-macOS-x64.dmg): drag Playmat to Applications |
+| **Linux** (x64 or ARM) | `curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh \| sh` |
 
 Prefer a terminal? These download the right file, install it and start Playmat, without the warnings below:
 
 ```bash
 # macOS or Linux
-curl -fsSL https://github.com/arcanite24/playmat/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/alfasmurph/playmat/releases/latest/download/install.sh | sh
 ```
 
 ```powershell
 # Windows (PowerShell)
-irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 | iex
+irm https://github.com/alfasmurph/playmat/releases/latest/download/install.ps1 | iex
 ```
 
 **The first time**
@@ -127,7 +127,7 @@ irm https://github.com/arcanite24/playmat/releases/latest/download/install.ps1 |
 - Card pictures come from Scryfall, so an internet connection helps.
 - The window tells you when a new version is out. Installing it keeps your accounts, decks and Career progress.
 
-Every version is on the [releases page](https://github.com/arcanite24/playmat/releases).
+Every version is on the [releases page](https://github.com/alfasmurph/playmat/releases).
 [ops/desktop/README.md](ops/desktop/README.md) covers how the app works, where it keeps its data and how releases are
 built.
 
@@ -184,6 +184,9 @@ Playmat stands on XMage and the many people who have built it since 2010: the ru
 implementations and the AI are their work. Card and rules bugs usually live in the engine; XMage's
 [issue tracker](https://github.com/magefree/mage/issues) and [wiki](https://github.com/magefree/mage/wiki) are the
 places for those. Card pictures and data come from [Scryfall](https://scryfall.com).
+
+Playmat is based on [arcanite24/playmat](https://github.com/arcanite24/playmat), the original web client and
+desktop launcher for XMage.
 
 Released under the [MIT License](LICENSE.txt), like XMage.
 
