@@ -19,6 +19,8 @@ interface MatchUiState {
   logOpen: boolean;
   /** card opened in the detail view (right click); the id keeps it live as the game changes */
   detail: { id: string; card: CardView } | null;
+  /** card picked up to read and use (a tap): held up in front of the table with what it can do */
+  pickup: { id: string } | null;
   setZoom(zoom: MatchUiState['zoom']): void;
   setPointer(pointer: MatchUiState['pointer']): void;
   setArrowFrom(point: MatchUiState['arrowFrom']): void;
@@ -27,6 +29,8 @@ interface MatchUiState {
   openViewer(viewer: MatchUiState['viewer']): void;
   toggleLog(open?: boolean): void;
   openDetail(detail: MatchUiState['detail']): void;
+  pickUp(id: string): void;
+  putDown(): void;
 }
 
 export const useMatchUi = create<MatchUiState>((set) => ({
@@ -38,6 +42,7 @@ export const useMatchUi = create<MatchUiState>((set) => ({
   viewer: null,
   logOpen: false,
   detail: null,
+  pickup: null,
   setZoom: (zoom) => set({ zoom }),
   setPointer: (pointer) => set({ pointer }),
   setArrowFrom: (arrowFrom) => set({ arrowFrom }),
@@ -45,6 +50,8 @@ export const useMatchUi = create<MatchUiState>((set) => ({
   setBlockDrag: (blockDrag) => set({ blockDrag }),
   openViewer: (viewer) => set({ viewer }),
   toggleLog: (open) => set((state) => ({ logOpen: open ?? !state.logOpen })),
-  // the zoomed copy would sit on top of the detail view
-  openDetail: (detail) => set({ detail, zoom: null }),
+  // the zoomed copy would sit on top of the detail view; a card held up is put down to read it there
+  openDetail: (detail) => set(detail ? { detail, zoom: null, pickup: null } : { detail, zoom: null }),
+  pickUp: (id) => set({ pickup: { id }, zoom: null }),
+  putDown: () => set({ pickup: null }),
 }));

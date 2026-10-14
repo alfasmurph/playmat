@@ -10,31 +10,11 @@ import { AbilityCard } from '../ui/AbilityCard';
 import { CardFace } from '../ui/CardFace';
 import { ManaCost } from '../ui/ManaCost';
 import { PromptText } from '../ui/PromptText';
+import { findCard, typeLine } from './cardLookup';
 import { useMatchUi } from './matchUi';
 import { useStage } from './stageContext';
 import { useLongPress } from './useLongPress';
 import styles from './CardDetail.module.css';
-
-/** Every card the table shows, by id: battlefield, hands, stack, graveyards, exile and revealed cards. */
-function findCard(view: GameView | null, id: string, extra: readonly CardView[]): CardView | null {
-  if (!view) return extra.find((card) => card.id === id) ?? null;
-  const pools: ({ [key: string]: CardView } | undefined)[] = [view.myHand, view.stack];
-  for (const player of view.players ?? []) pools.push(player.battlefield, player.graveyard, player.exile);
-  for (const zone of view.exiles ?? []) pools.push(zone);
-  for (const zone of [...(view.revealed ?? []), ...(view.lookedAt ?? [])]) pools.push(zone.cards);
-  for (const pool of pools) {
-    const card = pool?.[id];
-    if (card) return card;
-  }
-  return extra.find((card) => card.id === id) ?? null;
-}
-
-function typeLine(card: CardView): string {
-  const words = (list: readonly string[] | undefined) => (list ?? []).map((word) => word.charAt(0) + word.slice(1).toLowerCase().replace(/_/g, ' '));
-  const left = [...words(card.superTypes), ...words(card.cardTypes)].join(' ');
-  const right = words(card.subTypes as string[] | undefined).join(' ');
-  return right ? `${left} — ${right}` : left;
-}
 
 /** What the picture can't show: state on the table, changed numbers, who has it, what is attached. */
 function stateOf(card: PermanentView, view: GameView | null, attacking: ReadonlySet<string>, blocking: ReadonlySet<string>) {

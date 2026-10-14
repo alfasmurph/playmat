@@ -53,7 +53,7 @@ export interface AutoPassSettings {
  * A mana ability the server lists among "other" abilities (dual lands, "any color" sources): its text is only a
  * cost and "Add ...".
  */
-function isManaText(text: string | undefined): boolean {
+export function isManaText(text: string | undefined): boolean {
   return !!text && /^[^:]*:\s*Add\b[^.]*\.?$/i.test(text.replace(/<[^>]*>/g, '').trim());
 }
 

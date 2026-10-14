@@ -40,6 +40,11 @@
   }
 }
 
+/* not playable now, but it can still be picked up and read */
+.readable {
+  cursor: pointer;
+}
+
 .playable {
   cursor: grab;
 }

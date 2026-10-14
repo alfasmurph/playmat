@@ -3,7 +3,7 @@ import { keepOpeningHand, playerName, requireServer, signIn, startAiGame } from 
 
 /**
  * The match on a tablet held upright, played by touch: the tall layout, a long press that opens a card's detail
- * instead of playing it, a tap that plays, and the stops on the ring of turn steps. Needs the local server
+ * instead of playing it, a tap that picks a card up to play it from there, and the stops on the ring of turn steps. Needs the local server
  * (MAGE_E2E_REQUIRE_SERVER=1).
  */
 test.describe('app: the match on a tablet, by touch', () => {
@@ -22,7 +22,7 @@ test.describe('app: the match on a tablet, by touch', () => {
     await cdp.detach();
   }
 
-  test('long press reads a card, tap plays it, a tap on the turn ring sets a stop', async ({ page }) => {
+  test('long press reads a card, a tap picks it up to play it, a tap on the turn ring sets a stop', async ({ page }) => {
     test.setTimeout(180_000);
     await signIn(page, playerName('tablet'));
     await startAiGame(page);
@@ -43,8 +43,13 @@ test.describe('app: the match on a tablet, by touch', () => {
     await expect(detail).toBeHidden();
     await expect(hand.getByRole('listitem')).toHaveCount(count);
 
-    // tapped: played (a land, or a spell that goes to the stack)
+    // tapped: picked up, with what it can do; played from there (a land, or a spell that goes to the stack)
     await playable.first().tap();
+    const held = page.getByRole('dialog', { name });
+    await expect(held).toBeVisible();
+    await expect(hand.getByRole('listitem')).toHaveCount(count);
+    await held.getByRole('button', { name: /^(Cast|Play) / }).first().tap();
+    await expect(held).toBeHidden();
     await expect(hand.getByRole('listitem')).toHaveCount(count - 1, { timeout: 20_000 });
 
     // the turn's steps ring the active seat: a tap on a dot toggles the stop there, a finger held on it names it

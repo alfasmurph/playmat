@@ -16,12 +16,14 @@ export interface StackZoneProps {
   selected: ReadonlySet<string>;
   sleeveOf(card: CardView): string;
   onClick(id: string): void;
+  /** a tap (or Enter) on any object: picks it up to read it; without it only legal choices take a click */
+  onTap?(id: string): void;
   /** opponents' spells fly in from their hidden hand */
   originOf(card: CardView): string | undefined;
 }
 
 /** Spells and abilities waiting to resolve, piled down the right of the table; the top one resolves first. */
-export function StackZone({ items, clickable, selected, sleeveOf, onClick, originOf }: StackZoneProps) {
+export function StackZone({ items, clickable, selected, sleeveOf, onClick, onTap, originOf }: StackZoneProps) {
   // a spell keeps its card's identity (abilities have no card of their own): it is the card that left the hand
   const keys = useMemo(() => zoneKeys(items.map((item) => (isStackAbility(item) ? { id: item.id } : item))), [items]);
   if (items.length === 0) return null;
@@ -39,6 +41,7 @@ export function StackZone({ items, clickable, selected, sleeveOf, onClick, origi
             selected={selected.has(item.id!)}
             sleeve={sleeveOf(item)}
             onClick={onClick}
+            onTap={onTap}
             origin={originOf(item)}
           />
         ))}
@@ -47,7 +50,7 @@ export function StackZone({ items, clickable, selected, sleeveOf, onClick, origi
   );
 }
 
-function StackItem({ item, index, total, clickable, selected, sleeve, onClick, origin }: {
+function StackItem({ item, index, total, clickable, selected, sleeve, onClick, onTap, origin }: {
   item: CardView;
   index: number;
   total: number;
@@ -55,6 +58,7 @@ function StackItem({ item, index, total, clickable, selected, sleeve, onClick, o
   selected: boolean;
   sleeve: string;
   onClick(id: string): void;
+  onTap?(id: string): void;
   origin: string | undefined;
 }) {
   const ref = useRef<HTMLLIElement>(null);
@@ -62,15 +66,26 @@ function StackItem({ item, index, total, clickable, selected, sleeve, onClick, o
   const ability = isStackAbility(item) ? item : null;
   const face = ability?.sourceCard ?? item;
   useFlip(ability ? item.id : (item.cardId ?? item.id), ref, { fallbackOrigin: origin });
+  const tap = () => {
+    if (onTap) onTap(item.id!);
+    else if (clickable) onClick(item.id!);
+  };
 
   return (
     <li
       ref={ref}
-      className={[styles.item, index === 0 ? styles.top : '', clickable ? styles.clickable : '', selected ? styles.selected : ''].join(' ')}
+      className={[styles.item, index === 0 ? styles.top : '', clickable ? styles.clickable : '', onTap ? styles.readable : '', selected ? styles.selected : ''].join(' ')}
       style={{ zIndex: total - index, ['--i' as string]: index }}
       onPointerEnter={(event) => setZoom({ card: item, x: event.clientX, y: event.clientY, sleeve })}
       onPointerLeave={() => setZoom(null)}
-      onClick={() => clickable && onClick(item.id!)}
+      tabIndex={clickable || onTap ? 0 : undefined}
+      onClick={tap}
+      onKeyDown={(event) => {
+        if ((clickable || onTap) && event.key === 'Enter') {
+          event.preventDefault();
+          tap();
+        }
+      }}
       data-object-id={item.id}
       aria-label={`${ability ? 'Ability of ' : ''}${face.name}${index === 0 ? ', resolves next' : ''}`}
     >

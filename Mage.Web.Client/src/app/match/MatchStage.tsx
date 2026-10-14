@@ -3,7 +3,7 @@ import { Menu } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { GameSession, GameSessionState } from '../../core/game/gameSession';
-import type { Command } from '../../core/game/interaction';
+import type { Command, InteractionMode } from '../../core/game/interaction';
 import { commanderDamageTo, commandersByPlayer, type CommanderStatus } from '../../core/game/commander';
 import { askedAttacker, defenderChoice, inRange } from '../../core/game/multiplayer';
 import { parsePayment } from '../../core/game/payment';
@@ -54,6 +54,7 @@ import { useAutoOrder } from './useAutoOrder';
 import { Vfx } from './Vfx';
 import { CardPicker, ChoicePanel, GameOverOverlay, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
 import { PermanentStack } from './PermanentStack';
+import { PickedUpCard } from './PickedUpCard';
 import { clothOf, clothStyle } from './playmats';
 import { PracticeTools } from './PracticeTools';
 import { DefenderPicker } from './DefenderPicker';
@@ -72,6 +73,11 @@ const EMPTY: ReadonlySet<string> = new Set();
 const ignore = () => undefined;
 const NO_CARDS: readonly CardView[] = [];
 const NO_COMMANDERS: readonly CommanderStatus[] = [];
+/**
+ * Decisions made by tapping cards on the table (targets, attackers, blockers, mana, damage) or in an overlay: there
+ * a tap is the choice. Anywhere else a tap picks the card up to read it and see what it can do.
+ */
+const TAP_CHOOSES: ReadonlySet<InteractionMode> = new Set(['declareAttackers', 'declareBlockers', 'target', 'pickCards', 'payMana', 'assignDamage', 'mulligan', 'panel']);
 
 /** Attacking and blocking permanents, from the combat groups. */
 function combatSets(combat: GameView['combat']) {
@@ -142,7 +148,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
 
   useEffect(() => setCardMotion(animations), [animations]);
   // a new game starts with a clean table
-  useEffect(() => () => useMatchUi.setState({ zoom: null, dragging: null, viewer: null, logOpen: false, detail: null }), []);
+  useEffect(() => () => useMatchUi.setState({ zoom: null, dragging: null, viewer: null, logOpen: false, detail: null, pickup: null }), []);
 
   const board = useMemo(() => buildBoard(view, playerId), [view, playerId]);
   // combat damage is split on the creatures themselves: clicking one adds a point of damage to it
@@ -201,6 +207,10 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
     if (session.getState().interaction.mode === 'declareAttackers') setLastAttacker(id);
     session.click(id);
   }, [session, damageSplit]);
+
+  const onActivate = useCallback((objectId: string, abilityId: string) => {
+    if (!session.getState().awaitingServer) session.activate(objectId, abilityId);
+  }, [session]);
 
   const blockDrop = useBlockDrag(session, state);
   const onBlockDrop = useCallback((blockerId: string, attackerId: string) => {
@@ -308,6 +318,17 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
     // the creature the question is about: the one just clicked, or one put onto the battlefield attacking
     return defenders ? askedAttacker(view, myId, lastAttacker)?.name ?? null : null;
   }, [prompt, defenders, view, myId, lastAttacker]);
+  // a tap is a choice while the board is being chosen from; otherwise it picks the card up
+  const tapChooses = TAP_CHOOSES.has(interaction.mode) || !!damageSplit || !!defenders || !!pickerCards;
+  const pickUp = useMatchUi((ui) => ui.pickUp);
+  const onTap = useCallback((id: string) => {
+    if (tapChooses) onClick(id);
+    else pickUp(id);
+  }, [tapChooses, onClick, pickUp]);
+  // a decision on the table needs the table: a card held up goes back down
+  useEffect(() => {
+    if (tapChooses) useMatchUi.getState().putDown();
+  }, [tapChooses]);
   // a yes/no question about cards an effect just looked at ("you may put a land from among them..."): show them
   const askCards = useMemo(() => (canAct ? askedAboutCards(prompt, view)?.cards ?? null : null), [canAct, prompt, view]);
   // announcing X: what the player could pay, when the server sets no limit
@@ -372,6 +393,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 targeting={targeting}
                 blocking={blocking}
                 onClick={onClick}
+                onTap={onTap}
                 deciding={!!opponent.player.hasPriority && interaction.mode === 'waiting'}
                 layout={layout}
                 commanders={commanders.get(opponent.player.playerId!) ?? NO_COMMANDERS}
@@ -383,7 +405,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
 
             {board.me && (
               <>
-                <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
+                <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onTap={onTap} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
                 <div className={[styles.myPlate, layout.tall ? '' : styles.myPlateWide].join(' ')} style={layout.myPlate}>
                   <PlayerPlate
                     player={board.me.player}
@@ -408,14 +430,14 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                     isMe={board.me.isMe}
                     commanders={myId ? commanders.get(myId) : undefined}
                     clickable={canAct ? clickable : undefined}
-                    onCast={onClick}
+                    onTap={onTap}
                   />
                 </div>
               </>
             )}
 
             <Reveals view={view} myPlayerId={myId} opponentIds={opponentIds} />
-            <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} originOf={originOf} />
+            <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} onTap={onTap} originOf={originOf} />
 
             {board.me && seatHand && (
               <Hand
@@ -438,6 +460,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 selected={interaction.selected}
                 sleeve={sleeves.mine}
                 onPlay={onClick}
+                onTap={onTap}
                 playLine={layout.playLine}
                 libraryOrigin={`library:${board.me.player.playerId}`}
               />
@@ -534,6 +557,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
               />
             )}
             <CardZoom large={spectating && largeZoom} />
+            <PickedUpCard view={view} interaction={interaction} awaitingServer={awaitingServer} extra={NO_CARDS} sleeveOf={sleeveOf} onActivate={onActivate} />
             <CardDetail view={view} extra={pickerCards ?? viewer?.cards ?? NO_CARDS} sleeveOf={sleeveOf} attacking={attacking} blocking={blocking} />
           </div>
         );
@@ -551,6 +575,8 @@ interface RowProps {
   blocking: ReadonlySet<string>;
   targeting: boolean;
   onClick(id: string): void;
+  /** a tap on any card: a choice while choosing, otherwise it picks the card up */
+  onTap?(id: string): void;
   onBlockDrop?(blockerId: string, attackerId: string): boolean;
 }
 
@@ -637,7 +663,7 @@ function OpponentSide({ board, index, count, sleeve, handCount, deciding, layout
       </div>
       {count === 1 && (
         <div className={styles.theirPiles} style={layout.theirPiles}>
-          <Piles player={player} sleeve={sleeve} isMe={false} commanders={commanders} />
+          <Piles player={player} sleeve={sleeve} isMe={false} commanders={commanders} onTap={row.onTap} />
         </div>
       )}
       {count > 1 && !layout.tall && <span className={styles.seatName} style={{ left: place.left + 16 }} aria-hidden="true">{player.name}</span>}

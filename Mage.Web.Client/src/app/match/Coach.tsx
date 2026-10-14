@@ -13,11 +13,11 @@ const TIPS: Record<CoachTip, { title: string; text: string }> = {
   },
   playLand: {
     title: 'Play a land',
-    text: 'Lands make the mana you cast spells with. Click a land in your hand, or drag it up, to play it. One land per turn.',
+    text: 'Lands make the mana you cast spells with. Tap a land in your hand to pick it up, then Play it, or drag it onto the table. One land per turn.',
   },
   castSpell: {
     title: 'Cast a spell',
-    text: 'Cards you can afford glow. Click one to cast it; the lands it needs are tapped for you. The cost is in its top right corner.',
+    text: 'Cards you can afford glow. Tap one to pick it up, then Cast it, or drag it onto the table; the lands it needs are tapped for you. The cost is in its top right corner.',
   },
   payMana: {
     title: 'Pay the cost',

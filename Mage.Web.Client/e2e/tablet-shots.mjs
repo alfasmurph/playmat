@@ -83,7 +83,9 @@ while (Date.now() < deadline && wanted.some((moment) => !taken.has(moment))) {
   if (mine && step === 'Main' && (playsOnTurn.get(turn) ?? 0) < 3) {
     const playable = page.getByRole('list', { name: /^Your hand/ }).getByRole('listitem', { name: /, playable/ });
     if (await playable.count() > 0) {
+      // a tap picks the card up; it is played from there
       await press(playable.first()).catch(() => undefined);
+      await press(page.getByRole('dialog').getByRole('button', { name: /^(Cast|Play) / }).first()).catch(() => undefined);
       playsOnTurn.set(turn, (playsOnTurn.get(turn) ?? 0) + 1);
       await page.waitForTimeout(1500);
       if (turn >= 3) await shootAll('main');

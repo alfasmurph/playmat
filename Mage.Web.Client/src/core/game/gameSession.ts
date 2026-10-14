@@ -5,7 +5,7 @@ import type { EventBus } from '../rpc/EventBus';
 import type { ServerEvent } from '../rpc/RpcClient';
 import { DelayedRelay } from './broadcastDelay';
 import { deriveInteraction, type Command, type Interaction } from './interaction';
-import { PROMPT_EVENTS, parsePrompt, promptGameView, stripMarkup, type Prompt, type PromptEventName } from './prompt';
+import { abilityChooserSource, PROMPT_EVENTS, parsePrompt, promptGameView, stripMarkup, type Prompt, type PromptEventName } from './prompt';
 import { structuralShare } from './structuralShare';
 
 export type GameSessionMode = 'play' | 'watch' | 'replay';
@@ -75,6 +75,11 @@ export class GameSession {
   private readonly replyTimeoutMs: number;
   /** the last answer sent, for "Send again" */
   private lastCommand: Command | null = null;
+  /**
+   * an ability chosen on a picked-up card: the server is only sent the object, and answers its own "which ability?"
+   * question with this one (see activate)
+   */
+  private pendingAbility: string | null = null;
   /** the newest game event a view has carried; a view repeated from the server's cache carries old ones again */
   private lastEventSeq = 0;
   /** every server event for this game passes through here: at once, or after the broadcast delay when watching */
@@ -180,6 +185,7 @@ export class GameSession {
     if (this.store.getState().gameOver) return;
     this.clearReplyTimer();
     this.clearHold();
+    this.pendingAbility = null;
     this.store.setState({ resyncing: true, awaitingServer: false, stalled: false });
   }
 
@@ -260,6 +266,8 @@ export class GameSession {
   async respond(command: Command): Promise<void> {
     const { gameId, playerId } = this.store.getState();
     if (command.type !== 'action') {
+      // any other answer is a different decision: the ability chosen before (if any) no longer applies
+      this.pendingAbility = null;
       // the server will ask again (or move on); until then clicks are ignored, and the answered prompt fades out
       // only if nothing new arrives soon
       this.lastCommand = command;
@@ -312,6 +320,28 @@ export class GameSession {
     return true;
   }
 
+  /**
+   * Uses one ability of an object the player holds priority for (a card picked up from the table). The server takes
+   * only the object at priority: it uses an object's only ability at once and otherwise asks which one, and that
+   * question is answered here with the ability already chosen, without showing it. Returns false when the object
+   * can't be used now.
+   */
+  activate(objectId: string, abilityId: string): boolean {
+    if (this.store.getState().interaction.mode !== 'priority' || !this.click(objectId)) return false;
+    this.pendingAbility = abilityId || null;
+    return true;
+  }
+
+  /** The server's "which ability?" question for the object just activated, when the ability chosen is among its answers. */
+  private answersPending(prompt: Prompt): string | null {
+    const abilityId = this.pendingAbility;
+    this.pendingAbility = null;
+    if (!abilityId || prompt.kind !== 'chooseAbility') return null;
+    // the same question also chooses modes and triggers: only the one about what to play is answered for the player
+    if (abilityChooserSource(prompt.text) === null) return null;
+    return prompt.choices.some((choice) => choice.id === abilityId) ? abilityId : null;
+  }
+
   private applyView(incoming: GameView | null | undefined, fromPrompt = false): void {
     if (!incoming || typeof incoming !== 'object') return;
     const { view: previous, prompt, awaitingServer } = this.store.getState();
@@ -352,6 +382,12 @@ export class GameSession {
     this.applyView(promptGameView(method, data), true);
     if (this.store.getState().mode !== 'play') return;
     const prompt = parsePrompt(method, data as never);
+    const chosen = this.answersPending(prompt);
+    if (chosen) {
+      // the question was already answered on the picked-up card: no panel flashes up for it
+      void this.respond({ type: 'uuid', id: chosen }).catch(() => undefined);
+      return;
+    }
     this.clearHold();
     this.clearReplyTimer();
     this.store.setState({ prompt, awaitingServer: false, stalled: false, resyncing: false });

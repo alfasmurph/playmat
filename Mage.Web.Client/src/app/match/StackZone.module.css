@@ -90,3 +90,21 @@
   left: calc(var(--i) * 6px);
   width: 170px;
 }
+
+/* any object can be picked up to read it (a tap); from the keyboard, the focused one is ringed */
+.readable {
+  cursor: pointer;
+}
+
+.readable:focus-visible {
+  outline: none;
+}
+
+.readable:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--ink-strong), 0 0 0 6px rgb(var(--ink-rgb) / 0.25);
+  pointer-events: none;
+}

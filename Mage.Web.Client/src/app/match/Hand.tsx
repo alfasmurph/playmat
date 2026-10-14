@@ -16,7 +16,13 @@ export interface HandProps {
   clickable: ReadonlySet<string>;
   selected: ReadonlySet<string>;
   sleeve: string;
+  /** a playable card dragged onto the table: play it */
   onPlay(id: string): void;
+  /**
+   * a tap (or Enter) on any card: picks it up to read it and see what it can do. Without it a tap on a playable card
+   * plays it.
+   */
+  onTap?(id: string): void;
   /** stage y above which a dragged card counts as played */
   playLine: number;
   /** fly drawn cards from here */
@@ -30,8 +36,8 @@ export interface HandProps {
 const CARD_WIDTH = 168;
 const DRAG_THRESHOLD = 12;
 
-/** The player's hand, fanned along the bottom edge. Hover lifts a card; drag it up (or click it) to play it. */
-export function Hand({ cards, choosing = false, clickable, selected, sleeve, onPlay, playLine, libraryOrigin, faceDown = false, label = 'Your hand' }: HandProps) {
+/** The player's hand, fanned along the bottom edge. Hover lifts a card; tap it to pick it up, or drag it up to play it. */
+export function Hand({ cards, choosing = false, clickable, selected, sleeve, onPlay, onTap, playLine, libraryOrigin, faceDown = false, label = 'Your hand' }: HandProps) {
   const t = useT();
   const count = cards.length;
   const spread = Math.min(CARD_WIDTH * 0.78, 1000 / Math.max(1, count));
@@ -56,6 +62,7 @@ export function Hand({ cards, choosing = false, clickable, selected, sleeve, onP
             selected={selected.has(card.id!)}
             sleeve={sleeve}
             onPlay={onPlay}
+            onTap={onTap}
             playLine={playLine}
             libraryOrigin={libraryOrigin}
             faceDown={faceDown}
@@ -77,12 +84,13 @@ interface HandCardProps {
   selected: boolean;
   sleeve: string;
   onPlay(id: string): void;
+  onTap?(id: string): void;
   playLine: number;
   libraryOrigin: string;
   faceDown: boolean;
 }
 
-function HandCard({ card, choosing, index, left, rotate, drop, clickable, selected, sleeve, onPlay, playLine, libraryOrigin, faceDown }: HandCardProps) {
+function HandCard({ card, choosing, index, left, rotate, drop, clickable, selected, sleeve, onPlay, onTap, playLine, libraryOrigin, faceDown }: HandCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const stage = useStage();
   const setZoom = useMatchUi((state) => state.setZoom);
@@ -91,9 +99,12 @@ function HandCard({ card, choosing, index, left, rotate, drop, clickable, select
   // the gesture lives in a ref: pointer events can arrive faster than React re-renders
   const gesture = useRef<{ startX: number; startY: number; moved: boolean } | null>(null);
   useFlip(card.cardId ?? card.id, ref, { rotation: rotate, fallbackOrigin: libraryOrigin });
+  // any card face up can be picked up; only a playable one can be dragged onto the table
+  const tappable = !faceDown && (clickable || !!onTap);
+  const tap = () => (onTap ?? onPlay)(card.id!);
 
   function onPointerDown(event: ReactPointerEvent) {
-    if (!clickable || event.button !== 0) return;
+    if (!tappable || event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     gesture.current = { startX: event.clientX, startY: event.clientY, moved: false };
   }
@@ -104,11 +115,14 @@ function HandCard({ card, choosing, index, left, rotate, drop, clickable, select
     const dx = (event.clientX - current.startX) / stage.scale;
     const dy = (event.clientY - current.startY) / stage.scale;
     if (!current.moved && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+      // a card that can't be played stays in hand: the gesture is just no longer a tap
       current.moved = true;
-      setDragging(card.id!);
-      setZoom(null);
+      if (clickable) {
+        setDragging(card.id!);
+        setZoom(null);
+      }
     }
-    if (current.moved) setDrag({ dx, dy, moved: true });
+    if (current.moved && clickable) setDrag({ dx, dy, moved: true });
   }
 
   function onPointerUp(event: ReactPointerEvent) {
@@ -121,7 +135,9 @@ function HandCard({ card, choosing, index, left, rotate, drop, clickable, select
     setDrag(null);
     setDragging(null);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    if (!current.moved || releaseY < playLine) onPlay(card.id!);
+    // a tap picks the card up; a playable card dragged above the line is played straight away
+    if (!current.moved) tap();
+    else if (clickable && releaseY < playLine) onPlay(card.id!);
   }
 
   const style: CSSProperties = drag?.moved
@@ -132,9 +148,9 @@ function HandCard({ card, choosing, index, left, rotate, drop, clickable, select
     <div
       ref={ref}
       role="listitem"
-      className={[styles.card, faceDown ? styles.faceDown : '', clickable ? (choosing ? styles.choosable : styles.playable) : choosing ? styles.unchoosable : '', selected ? styles.selected : '', drag?.moved ? styles.dragging : ''].join(' ')}
+      className={[styles.card, faceDown ? styles.faceDown : '', clickable ? (choosing ? styles.choosable : styles.playable) : choosing ? styles.unchoosable : tappable ? styles.readable : '', selected ? styles.selected : '', drag?.moved ? styles.dragging : ''].join(' ')}
       style={style}
-      tabIndex={clickable ? 0 : -1}
+      tabIndex={tappable ? 0 : -1}
       aria-label={`${faceDown ? 'Hidden card' : card.name ?? 'Card'}${clickable ? ', playable' : ''}${selected ? ', chosen' : ''}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -145,9 +161,9 @@ function HandCard({ card, choosing, index, left, rotate, drop, clickable, select
         setDragging(null);
       }}
       onKeyDown={(event) => {
-        if (clickable && event.key === 'Enter') {
+        if (tappable && event.key === 'Enter') {
           event.preventDefault();
-          onPlay(card.id!);
+          tap();
         }
       }}
       onPointerEnter={(event) => !drag && !faceDown && setZoom({ card, x: event.clientX, y: event.clientY, sleeve })}

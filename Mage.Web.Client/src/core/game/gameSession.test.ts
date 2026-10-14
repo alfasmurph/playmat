@@ -245,3 +245,72 @@ describe('GameSession watching hands', () => {
     ]);
   });
 });
+
+describe('GameSession using an ability of a picked-up card', () => {
+  const looter = {
+    canPlayObjects: { objects: { looter: { other: [{ id: 'draw', value: '{T}: Draw a card.' }, { id: 'pump', value: '{1}: +1/+1.' }] } } },
+  } as unknown as Partial<GameView>;
+  const chooser = (choices: Record<string, string>, message = 'Choose spell or ability to play<br>Merfolk Looter [a1b]') =>
+    ({ message, choices, gameView: { ...base, ...looter } });
+
+  function started() {
+    const { bus, emit } = fakeBus();
+    const sent: (string | null)[] = [];
+    const api = { sendPlayerUUID: vi.fn(async (_game: string, id: string | null) => { sent.push(id); return true; }) };
+    const session = new GameSession(api as never, bus, { gameId: 'g1', playerId: 'me', mode: 'play' });
+    emit('GAME_SELECT', { message: 'Play spells and abilities', gameView: { ...base, ...looter } });
+    return { session, emit, sent };
+  }
+
+  it('sends the object, then answers the server\'s question about which ability without showing it', () => {
+    const { session, emit, sent } = started();
+    expect(session.activate('looter', 'pump')).toBe(true);
+    expect(sent).toEqual(['looter']);
+    emit('GAME_CHOOSE_ABILITY', chooser({ draw: '1. {T}: Draw a card.', pump: '2. {1}: +1/+1.' }));
+    expect(sent).toEqual(['looter', 'pump']);
+    expect(session.getState().prompt?.kind).toBe('priority');
+    expect(session.getState().awaitingServer).toBe(true);
+  });
+
+  it('answers only once: the next question is the player\'s', () => {
+    const { session, emit, sent } = started();
+    session.activate('looter', 'pump');
+    emit('GAME_CHOOSE_ABILITY', chooser({ draw: 'Draw', pump: 'Pump' }));
+    emit('GAME_CHOOSE_ABILITY', chooser({ draw: 'Draw', pump: 'Pump' }));
+    expect(sent).toEqual(['looter', 'pump']);
+    expect(session.getState().interaction.mode).toBe('panel');
+  });
+
+  it('shows the question when the ability chosen is not among its answers', () => {
+    const { session, emit, sent } = started();
+    session.activate('looter', 'gone');
+    emit('GAME_CHOOSE_ABILITY', chooser({ draw: 'Draw', pump: 'Pump' }));
+    expect(sent).toEqual(['looter']);
+    expect(session.getState().interaction.mode).toBe('panel');
+  });
+
+  it('leaves other questions alone: a mode to choose, a target, or the next priority', () => {
+    const { session, emit, sent } = started();
+    session.activate('looter', 'pump');
+    emit('GAME_CHOOSE_ABILITY', chooser({ pump: 'Pump' }, 'Choose mode'));
+    expect(session.getState().interaction.mode).toBe('panel');
+
+    void session.respond({ type: 'uuid', id: 'pump' });
+    emit('GAME_SELECT', { message: 'Play spells and abilities', gameView: { ...base, ...looter } });
+    session.activate('looter', 'pump');
+    emit('GAME_TARGET', { message: 'Choose a creature', targets: ['bear'], gameView: base });
+    expect(session.getState().interaction.mode).toBe('target');
+    // the target question ended it: a later chooser is the player's to answer
+    emit('GAME_CHOOSE_ABILITY', chooser({ pump: 'Pump' }));
+    expect(sent).toEqual(['looter', 'pump', 'looter']);
+    expect(session.getState().interaction.mode).toBe('panel');
+  });
+
+  it('does nothing without priority or for an object that can\'t be used', () => {
+    const { session, emit, sent } = started();
+    expect(session.activate('bear', 'x')).toBe(false);
+    emit('GAME_TARGET', { message: 'Choose a creature', targets: ['looter'], gameView: base });
+    expect(session.activate('looter', 'pump')).toBe(false);
+    expect(sent).toEqual([]);
+  });
+});

@@ -15,11 +15,12 @@ export interface CommandProps {
   commanders?: readonly CommanderStatus[];
   /** ids that can be clicked now: a commander in the command zone that can be cast */
   clickable?: ReadonlySet<string>;
-  onCast?(id: string): void;
+  /** a tap on a commander waiting in the command zone: picks it up (to cast it, when it can be); without it the zone opens */
+  onTap?(id: string): void;
 }
 
 /** Library, graveyard, exile and command zone of one player, as piles on the mat. */
-export function Piles({ player, sleeve, isMe, commanders = [], clickable, onCast }: { player: PlayerView; sleeve: string; isMe: boolean } & CommandProps) {
+export function Piles({ player, sleeve, isMe, commanders = [], clickable, onTap }: { player: PlayerView; sleeve: string; isMe: boolean } & CommandProps) {
   const t = useT();
   const openViewer = useMatchUi((state) => state.openViewer);
   const libraryRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +51,7 @@ export function Piles({ player, sleeve, isMe, commanders = [], clickable, onCast
         <PileOfCards title={`${name} exile`} label="Exile" cards={exile} sleeve={sleeve} onOpen={() => openViewer({ title: `${name} exile`, cards: exile })} />
       )}
       {waiting.map((commander) => (
-        <CommanderPile key={commander.id} commander={commander} sleeve={sleeve} castable={!!clickable?.has(commander.id)} onCast={onCast} owner={name} />
+        <CommanderPile key={commander.id} commander={commander} sleeve={sleeve} castable={!!clickable?.has(commander.id)} onTap={onTap} owner={name} />
       ))}
       {others.length > 0 && (
         <PileOfCards title={`${name} command zone`} label="Command" cards={others} sleeve={sleeve} onOpen={() => openViewer({ title: `${name} command zone`, cards: others })} />
@@ -68,23 +69,24 @@ function splitCommand(player: PlayerView, commanders: readonly CommanderStatus[]
 }
 
 /** A commander in the command zone, face up: it glows when it can be cast, and says what casting it costs extra. */
-function CommanderPile({ commander, sleeve, castable, onCast, owner }: {
+function CommanderPile({ commander, sleeve, castable, onTap, owner }: {
   commander: CommanderStatus;
   sleeve: string;
   castable: boolean;
-  onCast?(id: string): void;
+  onTap?(id: string): void;
   owner: string;
 }) {
   const setZoom = useMatchUi((state) => state.setZoom);
   const openViewer = useMatchUi((state) => state.openViewer);
-  const label = `${owner} commander, ${commander.name}${commander.tax > 0 ? `, costs ${commander.tax} more` : ''}${castable ? '. Cast it' : ''}`;
+  const label = `${owner} commander, ${commander.name}${commander.tax > 0 ? `, costs ${commander.tax} more` : ''}${castable ? ', can be cast' : ''}`;
   return (
     <button
       type="button"
       className={[styles.pile, castable ? styles.castable : ''].join(' ')}
       aria-label={label}
       data-object-id={commander.id}
-      onClick={() => (castable && onCast ? onCast(commander.id) : openViewer({ title: `${owner} command zone`, cards: [commander.card] }))}
+      // picked up, it is cast from there, and Details reads it in full (what the zone viewer showed)
+      onClick={() => (onTap ? onTap(commander.id) : openViewer({ title: `${owner} command zone`, cards: [commander.card] }))}
       onPointerEnter={(event) => setZoom({ card: commander.card, x: event.clientX, y: event.clientY, sleeve })}
       onPointerLeave={() => setZoom(null)}
     >

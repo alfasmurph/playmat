@@ -401,7 +401,7 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
 /** A zone's cards laid out to read (graveyard, exile, revealed). */
 export function ZoneViewer({ title, cards, onClose }: { title: string; cards: CardView[]; onClose(): void }) {
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && !useMatchUi.getState().detail && onClose();
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && !useMatchUi.getState().detail && !useMatchUi.getState().pickup && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);

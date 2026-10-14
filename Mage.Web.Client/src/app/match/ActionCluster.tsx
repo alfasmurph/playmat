@@ -66,8 +66,9 @@ export function ActionCluster({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      // while a card is open in the detail view, keys belong to it: Space must never pass by accident
-      if (useMatchUi.getState().detail) return;
+      // while a card is open in the detail view or held up, keys belong to it: Space must never pass by accident
+      const ui = useMatchUi.getState();
+      if (ui.detail || ui.pickup) return;
       // Space always answers with the main button (as on the table, the big button is the one decision);
       // a focused real button keeps its own Space and Enter
       if (isEditableEventTarget(event.target) || event.target instanceof HTMLButtonElement) return;

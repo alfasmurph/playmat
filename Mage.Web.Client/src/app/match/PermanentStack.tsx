@@ -28,6 +28,8 @@ export interface PermanentStackProps {
   /** a target is being chosen: the candidates stand out from merely playable cards */
   targeting?: boolean;
   onClick(id: string): void;
+  /** a tap on any card, legal choice or not (picks it up to read it); without it only legal choices take a click */
+  onTap?(id: string): void;
   /** while blockers are declared: a creature dropped on an attacker blocks it (false when nothing was sent) */
   onBlockDrop?(blockerId: string, attackerId: string): boolean;
 }
@@ -125,7 +127,7 @@ interface PlacedCardProps extends PermanentStackProps {
   count?: number;
 }
 
-function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, attacking, blocking, forward, targeting, onClick, onBlockDrop, left, top, depth, count }: PlacedCardProps) {
+function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, attacking, blocking, forward, targeting, onClick, onTap, onBlockDrop, left, top, depth, count }: PlacedCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const id = permanent.id!;
   const tapped = !!permanent.tapped;
@@ -145,6 +147,11 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
   const canDrag = !!onBlockDrop && isClickable && !isAttacking;
   const gesture = useRef<{ startX: number; startY: number; moved: boolean } | null>(null);
   const suppressClick = useRef(false);
+  const tap = () => {
+    if (onTap) onTap(id);
+    else if (isClickable) onClick(id);
+  };
+  const interactive = isClickable || !!onTap;
 
   function onPointerDown(event: ReactPointerEvent) {
     suppressClick.current = false;
@@ -207,8 +214,8 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
         isAttacking ? styles.attacking : '',
       ].join(' ')}
       style={style}
-      role={isClickable ? 'button' : undefined}
-      tabIndex={isClickable ? 0 : undefined}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
       aria-label={describe(permanent, { tapped, asleep, isAttacking, isBlocking, isSelected, keywords: keywords.map((mark) => (mark.gained ? `${mark.name.toLowerCase()} (gained)` : mark.name.toLowerCase())) }) + (isClickable && targeting && !isSelected ? ', can be targeted' : '')}
       aria-pressed={isClickable ? isSelected : undefined}
       onClick={() => {
@@ -216,16 +223,16 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
           suppressClick.current = false;
           return;
         }
-        if (isClickable) onClick(id);
+        tap();
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={(event) => endDrag(event, true)}
       onPointerCancel={(event) => endDrag(event, false)}
       onKeyDown={(event) => {
-        if (isClickable && event.key === 'Enter') {
+        if (interactive && event.key === 'Enter') {
           event.preventDefault();
-          onClick(id);
+          tap();
         }
       }}
       onPointerEnter={(event) => !gesture.current?.moved && setZoom({ card: permanent, x: event.clientX, y: event.clientY, sleeve })}

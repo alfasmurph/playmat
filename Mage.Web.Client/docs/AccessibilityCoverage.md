@@ -4,7 +4,7 @@ This document tracks the automated accessibility checks that guard the web clien
 
 ## Keyboard-only play
 
-Interactive controls must remain reachable without a mouse. The coverage script checks that the shared Dialog is built on Radix (focus trap and return), and `e2e/app-accessibility.spec.ts` runs axe over every screen and a live game; add assertions there for new command surfaces.
+Interactive controls must remain reachable without a mouse. The coverage script checks that the shared Dialog is built on Radix (focus trap and return), and `e2e/app-accessibility.spec.ts` runs axe over every screen and a live game; add assertions there for new command surfaces. In a match every face-up card (hand, battlefield, stack, command zone) takes focus, and Enter picks it up: a Radix dialog whose first button (the spell or ability to use) takes focus, Escape or Put down closes it, and focus goes back to the card.
 
 ## Focus traps
 
