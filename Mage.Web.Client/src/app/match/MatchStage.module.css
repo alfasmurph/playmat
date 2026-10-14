@@ -81,6 +81,14 @@
   z-index: var(--z-seat);
 }
 
+/*
+ * wide: your seat's extras (floating mana, commander damage) hang to its right where a big hand's first card can
+ * reach; the seat draws over the hand so they stay readable
+ */
+.myPlateWide {
+  z-index: calc(var(--z-hand) + 1);
+}
+
 .myPiles,
 .theirPiles {
   position: absolute;

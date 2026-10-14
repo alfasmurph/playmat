@@ -32,6 +32,11 @@ export interface PlayerPlateProps {
   commanderDamage?: readonly { name: string; amount: number }[];
   /** outside your range of influence: you can't affect this player, nor they you */
   outOfRange?: boolean;
+  /**
+   * commander damage, the cost to pay and floating mana stand beside the life instead of under it: for a seat
+   * whose slot has no room to grow downward (yours, at the bottom of the wide layout)
+   */
+  extrasBeside?: boolean;
 }
 
 const ROPE_TICK_MS = 250;
@@ -74,7 +79,7 @@ function useRopeSeconds(player: PlayerView): number {
 }
 
 /** A player's seat: who they are, their life, counters, floating mana and clock. */
-export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false }: PlayerPlateProps) {
+export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false }: PlayerPlateProps) {
   const t = useT();
   const life = player.life ?? 0;
   // a player out of the game (lost, conceded or left: leaving loses) has no life worth showing, however low it went
@@ -100,6 +105,61 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
   const ticking = ropeVisible(player.timerActive, player.hasPriority, timeLeft);
   // the player's sigil from their profile, or their initial
   const initial = sigilOf(player.userData?.avatarId) ?? (player.name ?? '?').slice(0, 1).toUpperCase();
+
+  const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0;
+  const extras = hasExtras && (
+    <div className={[styles.extras, extrasBeside ? styles.beside : ''].join(' ')}>
+      {commanderDamage.length > 0 && (
+        <div className={styles.commanderDamage} aria-label="Commander damage taken">
+          {commanderDamage.map((hit) => (
+            <span
+              key={hit.name}
+              className={[styles.hit, hit.amount >= COMMANDER_DAMAGE_LETHAL - 6 ? styles.hitDanger : ''].join(' ')}
+              title={`${hit.amount} combat damage from ${hit.name}; ${COMMANDER_DAMAGE_LETHAL} loses the game`}
+            >
+              <Swords size={16} aria-hidden="true" /> {hit.name.split(',')[0]} <b>{hit.amount}</b>
+            </span>
+          ))}
+        </div>
+      )}
+      {toPay && (
+        <div className={styles.toPay}>
+          <span className={styles.toPayLabel}>To pay</span>
+          <ManaCost cost={toPay} size="lg" />
+        </div>
+      )}
+      {pool.length > 0 && (
+        <div className={styles.pool} aria-label="Mana pool">
+          {pool.map(({ key, symbol, manaType }) => {
+            const id = poolId(manaType);
+            const content = (
+              <>
+                <i className={`ms ms-cost ms-${symbol}`} aria-hidden="true" />
+                <b>{player.manaPool?.[key]}</b>
+              </>
+            );
+            // floating mana pays the cost being paid: click it like a land
+            return payable?.has(id) && onPay ? (
+              <button
+                key={key}
+                type="button"
+                className={[styles.poolItem, styles.poolPay].join(' ')}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onPay(id);
+                }}
+                aria-label={`Pay with ${key} mana from your pool, ${player.manaPool?.[key]} floating`}
+              >
+                {content}
+              </button>
+            ) : (
+              <span key={key} className={styles.poolItem}>{content}</span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -169,56 +229,9 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
           {player.monarch && <span className={styles.counter}>Monarch</span>}
           {player.initiative && <span className={styles.counter}>Initiative</span>}
         </div>
-        {commanderDamage.length > 0 && (
-          <div className={styles.commanderDamage} aria-label="Commander damage taken">
-            {commanderDamage.map((hit) => (
-              <span
-                key={hit.name}
-                className={[styles.hit, hit.amount >= COMMANDER_DAMAGE_LETHAL - 6 ? styles.hitDanger : ''].join(' ')}
-                title={`${hit.amount} combat damage from ${hit.name}; ${COMMANDER_DAMAGE_LETHAL} loses the game`}
-              >
-                <Swords size={16} aria-hidden="true" /> {hit.name.split(',')[0]} <b>{hit.amount}</b>
-              </span>
-            ))}
-          </div>
-        )}
-        {toPay && (
-          <div className={styles.toPay}>
-            <span className={styles.toPayLabel}>To pay</span>
-            <ManaCost cost={toPay} size="lg" />
-          </div>
-        )}
-        {pool.length > 0 && (
-          <div className={styles.pool} aria-label="Mana pool">
-            {pool.map(({ key, symbol, manaType }) => {
-              const id = poolId(manaType);
-              const content = (
-                <>
-                  <i className={`ms ms-cost ms-${symbol}`} aria-hidden="true" />
-                  <b>{player.manaPool?.[key]}</b>
-                </>
-              );
-              // floating mana pays the cost being paid: click it like a land
-              return payable?.has(id) && onPay ? (
-                <button
-                  key={key}
-                  type="button"
-                  className={[styles.poolItem, styles.poolPay].join(' ')}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onPay(id);
-                  }}
-                  aria-label={`Pay with ${key} mana from your pool, ${player.manaPool?.[key]} floating`}
-                >
-                  {content}
-                </button>
-              ) : (
-                <span key={key} className={styles.poolItem}>{content}</span>
-              );
-            })}
-          </div>
-        )}
+        {!extrasBeside && extras}
       </div>
+      {extrasBeside && extras}
     </div>
   );
 }

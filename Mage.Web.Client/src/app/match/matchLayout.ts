@@ -115,8 +115,10 @@ function computeLayout(stage: Pick<StageContextValue, 'layout' | 'width' | 'heig
     },
     seam: STAGE_HEIGHT / 2,
     playLine: STAGE_HEIGHT - 300,
-    myPlate: { left: 24, top: 936 },
-    myPiles: { left: 24, top: 600 },
+    // the piles start level with your creatures: in Commander they stand two rows high (library, graveyard, exile,
+    // commander) and must end above the seat, which sits at the bottom of the column with its extras beside it
+    myPlate: { left: 24, top: 958 },
+    myPiles: { left: 24, top: 556 },
     theirPlate: (index, count) => ({ left: 24, top: count === 1 ? 24 : 16 + index * SEAT_SPACING }),
     theirPiles: { left: 24, top: 140 },
     hiddenHandX: (index, count) => FIELD_LEFT + (index + 0.5) * (fieldWidth / count),
