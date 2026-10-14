@@ -1,0 +1,537 @@
+{
+  "version": 1,
+  "cues": {
+    "turn": {
+      "kind": "clip",
+      "file": "turn.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "decide": {
+      "kind": "clip",
+      "file": "decide.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "cast": {
+      "kind": "clip",
+      "file": "cast.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "resolve": {
+      "kind": "clip",
+      "file": "resolve.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "land": {
+      "kind": "clip",
+      "file": "land.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "draw": {
+      "kind": "clip",
+      "file": "draw.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "shuffle": {
+      "kind": "clip",
+      "file": "shuffle.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "tap": {
+      "kind": "recipe",
+      "recipe": {
+        "echoFeedback": 0.3,
+        "echoMix": 0,
+        "echoTime": 0,
+        "gain": 0.9,
+        "layers": [
+          {
+            "attack": 0.00255,
+            "c0": 4361,
+            "c1": 984,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 76.95,
+            "f1": 30,
+            "fade": 0.7,
+            "filter": "none",
+            "gap": 0.2567,
+            "hold": 0,
+            "kind": "tone",
+            "on": true,
+            "q": 1.415,
+            "rate": 1.244,
+            "release": 0.1024,
+            "reps": 2,
+            "start": 0,
+            "step": 0,
+            "vibDepth": 152.7,
+            "vibRate": 0,
+            "vol": 1,
+            "wave": "sine",
+            "wobDepth": 0,
+            "wobRate": 0
+          }
+        ],
+        "v": 1
+      }
+    },
+    "untap": {
+      "kind": "recipe",
+      "recipe": {
+        "echoFeedback": 0.3,
+        "echoMix": 0,
+        "echoTime": 0,
+        "gain": 0.99,
+        "layers": [
+          {
+            "attack": 0.005128,
+            "c0": 2553,
+            "c1": 878.2,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 42.83,
+            "f1": 76.35,
+            "fade": 0.7,
+            "filter": "none",
+            "gap": 0.1672,
+            "hold": 0,
+            "kind": "tone",
+            "on": true,
+            "q": 0.6973,
+            "rate": 1.092,
+            "release": 0.1762,
+            "reps": 2,
+            "start": 0,
+            "step": -3,
+            "vibDepth": 0,
+            "vibRate": 0,
+            "vol": 1,
+            "wave": "sine",
+            "wobDepth": 0,
+            "wobRate": 0
+          }
+        ],
+        "v": 1
+      }
+    },
+    "attack": {
+      "kind": "clip",
+      "file": "attack.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "attackBig": {
+      "kind": "clip",
+      "file": "attackBig.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "block": {
+      "kind": "clip",
+      "file": "block.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "damage": {
+      "kind": "clip",
+      "file": "damage.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "damageBig": {
+      "kind": "clip",
+      "file": "damageBig.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "lifeGain": {
+      "kind": "clip",
+      "file": "lifeGain.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "creatureDies": {
+      "kind": "clip",
+      "file": "creatureDies.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "token": {
+      "kind": "recipe",
+      "recipe": {
+        "echoFeedback": 0.12,
+        "echoMix": 0,
+        "echoTime": 0,
+        "gain": 0.7,
+        "layers": [
+          {
+            "attack": 0.002464,
+            "c0": 62.06,
+            "c1": 96.28,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 73.84,
+            "f1": 124.8,
+            "fade": 0.43,
+            "filter": "bandpass",
+            "gap": 0.09,
+            "hold": 0.23,
+            "kind": "tone",
+            "on": true,
+            "q": 4.912,
+            "rate": 0.925,
+            "release": 0.03541,
+            "reps": 3,
+            "start": 0,
+            "step": -6,
+            "vibDepth": 0,
+            "vibRate": 0,
+            "vol": 0.36,
+            "wave": "sine",
+            "wobDepth": 0,
+            "wobRate": 0
+          },
+          {
+            "attack": 0.1297,
+            "c0": 606.7,
+            "c1": 168.6,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 71.18,
+            "f1": 98.82,
+            "fade": 0.8,
+            "filter": "lowpass",
+            "gap": 0.01181,
+            "hold": 0,
+            "kind": "tone",
+            "on": true,
+            "q": 0.7353,
+            "rate": 1.174,
+            "release": 0.4475,
+            "reps": 1,
+            "start": 0,
+            "step": 0,
+            "vibDepth": 0,
+            "vibRate": 0,
+            "vol": 0.25,
+            "wave": "sawtooth",
+            "wobDepth": 0,
+            "wobRate": 0
+          }
+        ],
+        "v": 1
+      }
+    },
+    "exile": {
+      "kind": "clip",
+      "file": "exile.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "counter": {
+      "kind": "recipe",
+      "recipe": {
+        "echoFeedback": 0.45,
+        "echoMix": 0.35,
+        "echoTime": 0.18,
+        "gain": 0.8,
+        "layers": [
+          {
+            "attack": 0.01804,
+            "c0": 1157,
+            "c1": 99.7,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 392.4,
+            "f1": 914.8,
+            "fade": 0.8,
+            "filter": "bandpass",
+            "gap": 0.08497,
+            "hold": 0.2328,
+            "kind": "noise",
+            "on": true,
+            "q": 4.226,
+            "rate": 0.9675,
+            "release": 1.372,
+            "reps": 1,
+            "start": 0,
+            "step": 0,
+            "vibDepth": 58.95,
+            "vibRate": 0,
+            "vol": 0.8,
+            "wave": "sine",
+            "wobDepth": 0.149,
+            "wobRate": 0
+          },
+          {
+            "attack": 0.002538,
+            "c0": 4236,
+            "c1": 1269,
+            "clipFile": "",
+            "drive": 0,
+            "f0": 179.5,
+            "f1": 71.98,
+            "fade": 0.8,
+            "filter": "none",
+            "gap": 0.04536,
+            "hold": 0,
+            "kind": "tone",
+            "on": true,
+            "q": 2.202,
+            "rate": 1.199,
+            "release": 0.441,
+            "reps": 1,
+            "start": 0,
+            "step": 0,
+            "vibDepth": 0,
+            "vibRate": 0,
+            "vol": 0.5,
+            "wave": "sine",
+            "wobDepth": 0.09854,
+            "wobRate": 0
+          }
+        ],
+        "v": 1
+      }
+    },
+    "discard": {
+      "kind": "clip",
+      "file": "discard.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "mulligan": {
+      "kind": "clip",
+      "file": "mulligan.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "timer": {
+      "kind": "clip",
+      "file": "timer.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "victory": {
+      "kind": "clip",
+      "file": "victory.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    },
+    "defeat": {
+      "kind": "clip",
+      "file": "defeat.mp3",
+      "adjust": {
+        "vol": 1,
+        "rate": 1,
+        "trimStart": 0,
+        "length": 0,
+        "fadeOut": 0.04
+      }
+    }
+  },
+  "credits": [
+    {
+      "cue": "turn",
+      "credit": "\"doorClose_4\" by Kenney (Kenney.nl RPG Audio, CC0)",
+      "url": "https://kenney.nl/assets/rpg-audio"
+    },
+    {
+      "cue": "decide",
+      "credit": "\"impactWood_light_002\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+      "url": "https://kenney.nl/assets/impact-sounds"
+    },
+    {
+      "cue": "cast",
+      "credit": "\"Magic Whoosh\" by DustyWind (Freesound #715784, CC0)",
+      "url": "https://freesound.org/people/DustyWind/sounds/715784/"
+    },
+    {
+      "cue": "resolve",
+      "credit": "\"Distant Bells Thrumming Magic\" by el_boss (Freesound #788604, CC0)",
+      "url": "https://freesound.org/people/el_boss/sounds/788604/"
+    },
+    {
+      "cue": "land",
+      "credit": "\"card-place-3\" by Kenney (Kenney.nl Casino Audio, CC0)",
+      "url": "https://kenney.nl/assets/casino-audio"
+    },
+    {
+      "cue": "draw",
+      "credit": "\"Card Game sounds\" by HaelDB (OpenGameArt #card-game-sounds, CC0)",
+      "url": "https://opengameart.org/content/card-game-sounds"
+    },
+    {
+      "cue": "shuffle",
+      "credit": "\"Playing Card Sounds\" by BMacZero (OpenGameArt #playing-card-sounds, CC0)",
+      "url": "https://opengameart.org/content/playing-card-sounds"
+    },
+    {
+      "cue": "attack",
+      "credit": "\"Sword Drawing 2.wav\" by paulfabb (Freesound #577620, CC0)",
+      "url": "https://freesound.org/people/paulfabb/sounds/577620/"
+    },
+    {
+      "cue": "attackBig",
+      "credit": "\"20 Sword Sound Effects (Attacks and Clashes)\" by StarNinjas (OpenGameArt #20-sword-sound-effects-attacks-and-clashes, CC0)",
+      "url": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes"
+    },
+    {
+      "cue": "block",
+      "credit": "\"10 Impact/Shield Blocks\" by StarNinjas (OpenGameArt #10-impactshield-blocks, CC0)",
+      "url": "https://opengameart.org/content/10-impactshield-blocks"
+    },
+    {
+      "cue": "damage",
+      "credit": "\"3 Melee sounds\" by remaxim (OpenGameArt #3-melee-sounds, CC0)",
+      "url": "https://opengameart.org/content/3-melee-sounds"
+    },
+    {
+      "cue": "damageBig",
+      "credit": "\"Boom Explosion\" by BennettFilmTeacher (Freesound #523783, CC0)",
+      "url": "https://freesound.org/people/BennettFilmTeacher/sounds/523783/"
+    },
+    {
+      "cue": "lifeGain",
+      "credit": "\"Heartbeat sounds\" by bart (OpenGameArt #heartbeat-sounds, CC0)",
+      "url": "https://opengameart.org/content/heartbeat-sounds"
+    },
+    {
+      "cue": "creatureDies",
+      "credit": "\"80 CC0 RPG SFX\" by rubberduck (OpenGameArt #80-cc0-rpg-sfx, CC0)",
+      "url": "https://opengameart.org/content/80-cc0-rpg-sfx"
+    },
+    {
+      "cue": "exile",
+      "credit": "\"Low frequency whoosh\" by DianneLaChauveSouris (Freesound #398638, CC0)",
+      "url": "https://freesound.org/people/DianneLaChauveSouris/sounds/398638/"
+    },
+    {
+      "cue": "discard",
+      "credit": "\"Paper Crumple 1\" by WasabiWielder (Freesound #334201, CC0)",
+      "url": "https://freesound.org/people/WasabiWielder/sounds/334201/"
+    },
+    {
+      "cue": "mulligan",
+      "credit": "\"Pounding Cards On Table\" by HogantheLogan (Freesound #466789, CC0)",
+      "url": "https://freesound.org/people/HogantheLogan/sounds/466789/"
+    },
+    {
+      "cue": "timer",
+      "credit": "\"Heartbeat sounds\" by bart (OpenGameArt #heartbeat-sounds, CC0)",
+      "url": "https://opengameart.org/content/heartbeat-sounds"
+    },
+    {
+      "cue": "victory",
+      "credit": "\"French horn and Timpani Fanfare short\" by marlocarlo (Freesound #803823, CC0)",
+      "url": "https://freesound.org/people/marlocarlo/sounds/803823/"
+    },
+    {
+      "cue": "defeat",
+      "credit": "\"Muffled Distant Explosion\" by NenadSimic (OpenGameArt #muffled-distant-explosion, CC0)",
+      "url": "https://opengameart.org/content/muffled-distant-explosion"
+    }
+  ]
+}

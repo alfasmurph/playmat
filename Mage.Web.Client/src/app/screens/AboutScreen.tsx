@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { parseManifest, type SoundCredit } from '../../core/audio/manifest';
 import { APP_NAME } from '../brand';
 import { registerMessages, useT } from '../i18n';
 import messages from '../i18n/en/about';
@@ -13,12 +15,34 @@ const SCRYFALL_URL = 'https://scryfall.com';
 
 registerMessages(messages);
 
+/** Who made the game's sounds, from the sound manifest; empty while it loads, or when the game has no sounds of its own. */
+function useSoundCredits(): SoundCredit[] {
+  const [credits, setCredits] = useState<SoundCredit[]>([]);
+  useEffect(() => {
+    let live = true;
+    fetch(`${import.meta.env.BASE_URL}sounds/manifest.json`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: unknown) => {
+        // one line per recording: two cues can share a pack
+        const seen = new Set<string>();
+        const unique = (parseManifest(data)?.credits ?? []).filter((c) => c.credit && !seen.has(c.credit) && !!seen.add(c.credit));
+        if (live) setCredits(unique);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  return credits;
+}
+
 /** Credits, licences and the legal notices a public server needs. Readable before signing in. */
 export function AboutScreen() {
   const navigate = useNavigate();
   const t = useT();
   const app = { app: APP_NAME };
   const translation = t('about.wotc.translation', app);
+  const soundCredits = useSoundCredits();
   return (
     <main className={styles.page}>
       <div className={styles.column}>
@@ -72,6 +96,18 @@ export function AboutScreen() {
             <li>{t('about.type.ui')}</li>
           </ul>
         </section>
+
+        {soundCredits.length > 0 && (
+          <section className={styles.section} aria-labelledby="about-sounds">
+            <h2 id="about-sounds">{t('about.sounds')}</h2>
+            <p>{t('about.sounds.text')}</p>
+            <ul>
+              {soundCredits.map((c) => (
+                <li key={c.credit}>{/^https:\/\//.test(c.url) ? <a href={c.url} target="_blank" rel="noreferrer">{c.credit}</a> : c.credit}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className={styles.section} aria-labelledby="about-data">
           <h2 id="about-data">{t('about.data')}</h2>

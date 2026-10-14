@@ -24,6 +24,8 @@ export default {
   'about.type.barlow': 'Barlow and Barlow Condensed by Jeremy Tribby, SIL Open Font License.',
   'about.type.mana': 'Mana by Andrew Gioia: font under the SIL Open Font License, code under MIT.',
   'about.type.ui': 'Lucide icons, ISC licence. Radix UI primitives, MIT licence.',
+  'about.sounds': 'Sounds',
+  'about.sounds.text': 'The game\'s sound effects are public-domain (CC0) recordings, with thanks to the people who made them:',
   'about.data': 'What this server keeps',
   'about.data.name': 'Your player name, and for an account your email address and a hashed password.',
   'about.data.decks': 'Decks you save to your account, ratings, finished match results, and game replays (deleted after a set number of days).',

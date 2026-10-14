@@ -487,6 +487,8 @@ const es: Catalog = {
   'about.type.barlow': 'Barlow y Barlow Condensed, de Jeremy Tribby, bajo la SIL Open Font License.',
   'about.type.mana': 'Mana, de Andrew Gioia: la fuente bajo la SIL Open Font License y el código bajo MIT.',
   'about.type.ui': 'Íconos de Lucide, licencia ISC. Componentes de Radix UI, licencia MIT.',
+  'about.sounds': 'Sonidos',
+  'about.sounds.text': 'Los efectos de sonido del juego son grabaciones de dominio público (CC0); gracias a quienes las hicieron:',
   'about.data': 'Qué guarda este servidor',
   'about.data.name': 'Tu nombre de jugador y, si tienes cuenta, tu correo electrónico y un hash de tu contraseña.',
   'about.data.decks': 'Los mazos que guardas en tu cuenta, las calificaciones, los resultados de los enfrentamientos terminados y las repeticiones de partidas (se borran después de cierta cantidad de días).',
