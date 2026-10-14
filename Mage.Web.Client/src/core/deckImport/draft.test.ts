@@ -12,6 +12,7 @@ const PRINTINGS: CardView[] = [
   { name: 'Delver of Secrets', expansionSetCode: 'ISD', cardNumber: '51', manaValue: 1 },
   { name: "Atraxa, Praetors' Voice", expansionSetCode: '2X2', cardNumber: '190', manaValue: 4 },
   { name: 'Sol Ring', expansionSetCode: 'CMR', cardNumber: '472', manaValue: 1 },
+  { name: 'Bala Ged Recovery', displayFullName: 'Bala Ged Recovery // Bala Ged Sanctuary', expansionSetCode: 'ZNR', cardNumber: '180', manaValue: 3 },
 ];
 
 function fakeLookup(): CardLookup & { calls: number } {
@@ -23,7 +24,12 @@ function fakeLookup(): CardLookup & { calls: number } {
         const exact = card.setCode && card.cardNumber
           ? PRINTINGS.find((view) => view.expansionSetCode === card.setCode!.toUpperCase() && view.cardNumber === card.cardNumber)
           : undefined;
-        return exact ?? PRINTINGS.find((view) => view.name!.toLowerCase() === (card.cardName ?? "").toLowerCase()) ?? null;
+        // like the server: the card's name, then its other faces' names
+        const name = (card.cardName ?? '').toLowerCase();
+        return exact
+          ?? PRINTINGS.find((view) => view.name!.toLowerCase() === name)
+          ?? PRINTINGS.find((view) => view.displayFullName?.toLowerCase().split(' // ').includes(name))
+          ?? null;
       });
     },
     async searchCards(criteria: CardCriteria) {
@@ -68,6 +74,18 @@ describe('resolveCards', () => {
     expect(cards.get(importKey(entry))?.name).toBe('Sol Ring');
     expect(foldName('Æther Vial')).toBe('Aether Vial');
     expect(foldName('Andúril, Flame of the West')).toBe('Anduril, Flame of the West');
+  });
+
+  it('finds a double-faced card written with only its back face', async () => {
+    const entry = { amount: 1, cardName: 'Bala Ged Sanctuary', setCode: null, cardNumber: null };
+    const cards = await resolveCards([entry], fakeLookup());
+    expect(cards.get(importKey(entry))?.name).toBe('Bala Ged Recovery');
+  });
+
+  it('takes the paper card for an Alchemy card the database lacks', async () => {
+    const entry = { amount: 1, cardName: 'A-Sol Ring', setCode: 'YSOS', cardNumber: '3' };
+    const cards = await resolveCards([entry], fakeLookup());
+    expect(cards.get(importKey(entry))?.name).toBe('Sol Ring');
   });
 
   it('uses the preferred printing when asked to ignore the site', async () => {

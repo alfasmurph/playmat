@@ -44,11 +44,24 @@ export function foldName(name: string): string {
     .replace(/[‘’`´]/g, "'").replace(/[“”]/g, '"');
 }
 
-function sameCard(a: string, b: string): boolean {
+function sameName(a: string, b: string): boolean {
   const x = foldName(a).trim().toLowerCase();
   const y = foldName(b).trim().toLowerCase();
   return x === y || frontFace(x) === frontFace(y) || x === frontFace(y) || frontFace(x) === y;
 }
+
+/**
+ * The card the server returned is the one the line names: by its name or any other face's (a list that names only
+ * the back of a double-faced card, or one half of a split card, finds the whole card).
+ */
+function sameCard(card: CardView, name: string): boolean {
+  // lookups send a double-faced card's back only inside its full name ("Front // Back")
+  const faces = [card.name, card.alternateName, card.secondCardFace?.name, card.leftSplitName, card.rightSplitName, ...(card.displayFullName?.split(' // ') ?? [])];
+  return faces.some((face) => !!face && sameName(face, name));
+}
+
+/** Arena's rebalanced Alchemy cards ("A-Name"): the card database mostly has only the paper card they rebalance. */
+const ALCHEMY = /^A-(?=\S)/;
 
 function wire(cardName: string, setCode?: string | null, cardNumber?: string | null): WireCard {
   return { cardName: foldName(cardName), setCode: setCode ?? '', cardNumber: cardNumber ?? '', amount: 1 };
@@ -94,7 +107,7 @@ export async function resolveCards(
   keys.forEach((key, index) => {
     const entry = unique.get(key)!;
     const card = found[index];
-    if (card && sameCard(card.name ?? '', entry.cardName)) {
+    if (card && sameCard(card, entry.cardName)) {
       result.set(key, card);
       return;
     }
@@ -117,7 +130,7 @@ export async function resolveCards(
     retryKeys.forEach((key, index) => {
       const entry = unique.get(key)!;
       const card = second[index];
-      if (card && sameCard(card.name ?? '', entry.cardName)) result.set(key, card);
+      if (card && sameCard(card, entry.cardName)) result.set(key, card);
     });
   }
 
@@ -127,7 +140,18 @@ export async function resolveCards(
     const third = await lookupAll(lookup, faces.map((key) => wire(frontFace(unique.get(key)!.cardName))));
     faces.forEach((key, index) => {
       const card = third[index];
-      if (card && sameCard(card.name ?? '', unique.get(key)!.cardName)) result.set(key, card);
+      if (card && sameCard(card, unique.get(key)!.cardName)) result.set(key, card);
+    });
+  }
+
+  // an Alchemy card the database doesn't have under its "A-" name: the paper card it rebalances
+  const alchemy = keys.filter((key) => result.get(key) === null && ALCHEMY.test(unique.get(key)!.cardName));
+  if (alchemy.length > 0) {
+    const paper = alchemy.map((key) => unique.get(key)!.cardName.replace(ALCHEMY, ''));
+    const fourth = await lookupAll(lookup, paper.map((name) => wire(name)));
+    alchemy.forEach((key, index) => {
+      const card = fourth[index];
+      if (card && sameCard(card, paper[index])) result.set(key, card);
     });
   }
   return result;

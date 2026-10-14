@@ -666,6 +666,26 @@
   outline-offset: 1px;
 }
 
+/* what Scryfall says about the card: under the name, before any close matches */
+.verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 0 10px 8px 42px;
+  color: var(--ink-dim);
+  font-size: var(--text-sm);
+}
+
+.verdict b {
+  color: var(--ink);
+}
+
+.verdictUnplayable {
+  color: var(--ink);
+}
+
 .fixOptions {
   max-height: 168px;
   padding: 0 10px 10px;

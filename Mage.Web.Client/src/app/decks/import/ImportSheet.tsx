@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type Keyboard
 import { useNavigate } from 'react-router-dom';
 import { toDeck, type CardIssue, type ImportDraft } from '../../../core/deckImport/draft';
 import { alternatesFor } from '../../../core/deckImport/resolve';
+import { checkMissing, type MissingVerdict } from '../../../core/deckImport/scryfallCheck';
 import { DECK_SITES, exportLinkFor, siteById, type DeckSite } from '../../../core/deckImport/sites';
 import type { CardView } from '../../../protocol/generated/views';
 import type { DeckCardInfo } from '../../../core/decks/types';
@@ -303,7 +304,31 @@ function AssistedStep({ flow, step }: { flow: Flow; step: Extract<ImportStep, { 
   );
 }
 
-function FixRow({ issue, onPick, onSkip, autoFocus }: { issue: CardIssue; onPick(card: CardView): void; onSkip(): void; autoFocus: boolean }) {
+/** What Scryfall says about a card that matched nothing (see checkMissing). */
+function VerdictLine({ verdict, checking, issue, onPick }: { verdict?: MissingVerdict; checking: boolean; issue: CardIssue; onPick(card: CardView): void }) {
+  if (checking) return <p className={styles.verdict}>Checking Scryfall…</p>;
+  switch (verdict?.kind) {
+    case 'unplayable':
+      return (
+        <p className={[styles.verdict, styles.verdictUnplayable].join(' ')}>
+          A real card{verdict.name !== issue.cardName ? <> (<b>{verdict.name}</b>)</> : null}, but {APP_NAME} can’t play it yet. Leave it out, or swap in another card in the builder.
+        </p>
+      );
+    case 'suggest':
+      return (
+        <p className={styles.verdict}>
+          Did you mean <b>{verdict.name}</b>?{' '}
+          <Button size="sm" variant="decision" onClick={() => onPick(verdict.card)}>Use {verdict.name}</Button>
+        </p>
+      );
+    case 'unknown':
+      return <p className={styles.verdict}>Not a card Scryfall knows. Check the spelling, or use Find it.</p>;
+    default:
+      return null;
+  }
+}
+
+function FixRow({ issue, onPick, onSkip, autoFocus, verdict, checking = false }: { issue: CardIssue; onPick(card: CardView): void; onSkip(): void; autoFocus: boolean; verdict?: MissingVerdict; checking?: boolean }) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const options = useQuery({
@@ -329,6 +354,7 @@ function FixRow({ issue, onPick, onSkip, autoFocus }: { issue: CardIssue; onPick
         </Button>
         <Button size="sm" variant="quiet" onClick={onSkip}>Leave out</Button>
       </div>
+      <VerdictLine verdict={verdict} checking={checking} issue={issue} onPick={onPick} />
       {open && (
         <div className={styles.fixOptions}>
           {options.isLoading && <p className={styles.hint}>Looking for close matches…</p>}
@@ -385,6 +411,18 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
   const validation = useValidation(validated, draft.format);
   const issues = flow.issues;
   const site = siteById(draft.source?.site);
+  // ask Scryfall about every name that has needed a look; fixing one doesn't ask again about the rest
+  const asked = useRef(new Set<string>());
+  for (const issue of issues) asked.current.add(issue.cardName);
+  const askedNames = [...asked.current].sort();
+  const verdicts = useQuery({
+    queryKey: ['importVerdicts', askedNames],
+    queryFn: () => checkMissing(askedNames, cardLookup),
+    enabled: askedNames.length > 0,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+  const unplayable = issues.filter((issue) => verdicts.data?.get(issue.cardName)?.kind === 'unplayable').length;
 
   const formats = useMemo(() => {
     const all = (server.data?.deckTypes ?? []).filter((type) => type.startsWith('Constructed - ') || COMMANDER_FORMATS.test(type));
@@ -558,6 +596,13 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
               <h3 className={styles.fixesTitle}>
                 {issues.length === 1 ? '1 card needs a look' : `${issues.length} cards need a look`}
               </h3>
+              {unplayable > 0 && (
+                <p className={styles.hint}>
+                  {unplayable === issues.length
+                    ? `${unplayable === 1 ? 'It’s a real card' : 'They’re all real cards'} ${APP_NAME} can’t play yet.`
+                    : `${unplayable} of them ${unplayable === 1 ? 'is a real card' : 'are real cards'} ${APP_NAME} can’t play yet.`}
+                </p>
+              )}
               <ul className={styles.fixList}>
                 {issues.map((issue, index) => (
                   <FixRow
@@ -566,6 +611,8 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
                     autoFocus={index === 0}
                     onPick={(card) => flow.pick(issue.key, card, issue)}
                     onSkip={() => flow.skip(issue.key)}
+                    verdict={verdicts.data?.get(issue.cardName)}
+                    checking={verdicts.isLoading}
                   />
                 ))}
               </ul>
