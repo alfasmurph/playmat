@@ -9,7 +9,9 @@ import { foldName, type CardLookup } from './resolve';
 export type MissingVerdict =
   /** a real card the card database doesn't have: XMage hasn't implemented it */
   | { kind: 'unplayable'; name: string }
-  /** a real card the database has under this name: a typo, a flavor name, a Universes Beyond name */
+  /** another printed name of a playable card (a Secret Lair or Universes Beyond flavor name): the same card */
+  | { kind: 'alias'; name: string; card: CardView }
+  /** a playable card with a close name: probably a typo */
   | { kind: 'suggest'; name: string; card: CardView }
   /** Scryfall doesn't know the name either */
   | { kind: 'unknown' }
@@ -24,8 +26,8 @@ const COLLECTION_URL = 'https://api.scryfall.com/cards/collection';
 const NAMED_URL = 'https://api.scryfall.com/cards/named';
 /** Scryfall /cards/collection limit */
 const BATCH = 75;
-/** fuzzy lookups are one request each: enough for a list's worth of typos, not a flood */
-const MAX_FUZZY = 25;
+/** exact and fuzzy lookups are a request each: enough for a list's worth of odd names, not a flood */
+const MAX_SINGLE = 40;
 /** Scryfall asks for no more than about ten requests a second */
 const SPACING_MS = 110;
 
@@ -35,9 +37,18 @@ export interface ScryfallCheckOptions {
   imageProxy?: string;
 }
 
-/** Scryfall's name for each name (exact first, then fuzzy for the rest): null when it has none, absent when unchecked. */
-async function canonicalNames(names: string[], options: Required<ScryfallCheckOptions>): Promise<Map<string, string | null> | null> {
-  const result = new Map<string, string | null>();
+/** How Scryfall knows a name: as the card's own name, as another printed name of it, or only as close to one. */
+interface Canonical {
+  name: string;
+  how: 'name' | 'alias' | 'fuzzy';
+}
+
+/**
+ * Scryfall's card for each name: by name in batches, then one at a time by exact name (which also knows flavor
+ * names, like "Paths of the Dead" for Cavern of Souls), then fuzzily. Null when it has none, absent when unchecked.
+ */
+async function canonicalNames(names: string[], options: Required<ScryfallCheckOptions>): Promise<Map<string, Canonical | null> | null> {
+  const result = new Map<string, Canonical | null>();
   const url = (link: string) => proxiedScryfallUrl(link, options.imageProxy || undefined);
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
   try {
@@ -55,25 +66,41 @@ async function canonicalNames(names: string[], options: Required<ScryfallCheckOp
       // found cards come back in request order, without the ones not found
       const found = [...(body.data ?? [])];
       for (const name of batch) {
-        result.set(name, missing.has(foldName(name).toLowerCase()) ? null : found.shift()?.name ?? null);
+        const card = missing.has(foldName(name).toLowerCase()) ? undefined : found.shift();
+        result.set(name, card?.name ? { name: card.name, how: 'name' } : null);
       }
     }
-    let fuzzy = 0;
+    let requests = 0;
+    const single = async (mode: 'exact' | 'fuzzy', name: string): Promise<ScryfallCard | null | undefined> => {
+      requests += 1;
+      await options.sleep(SPACING_MS);
+      const link = new URL(NAMED_URL);
+      link.searchParams.set(mode, foldName(name));
+      const response = await options.fetch(url(link.toString()), { headers: { Accept: 'application/json' } });
+      if (response.status === 404) return null;
+      if (!response.ok) return undefined;
+      return (await response.json()) as ScryfallCard;
+    };
     for (const name of names) {
       if (result.get(name) !== null) continue;
       // past the cap a name stays unchecked rather than called unknown
-      if (fuzzy >= MAX_FUZZY) {
+      if (requests >= MAX_SINGLE) {
         result.delete(name);
         continue;
       }
-      fuzzy += 1;
-      await options.sleep(SPACING_MS);
-      const link = new URL(NAMED_URL);
-      link.searchParams.set('fuzzy', foldName(name));
-      const response = await options.fetch(url(link.toString()), { headers: { Accept: 'application/json' } });
-      if (response.status === 404) continue;
-      if (!response.ok) return null;
-      result.set(name, ((await response.json()) as ScryfallCard).name ?? null);
+      const exact = await single('exact', name);
+      if (exact === undefined) return null;
+      if (exact?.name) {
+        result.set(name, { name: exact.name, how: 'alias' });
+        continue;
+      }
+      if (requests >= MAX_SINGLE) {
+        result.delete(name);
+        continue;
+      }
+      const fuzzy = await single('fuzzy', name);
+      if (fuzzy === undefined) return null;
+      if (fuzzy?.name) result.set(name, { name: fuzzy.name, how: 'fuzzy' });
     }
   } catch {
     return null;
@@ -97,7 +124,7 @@ export async function checkMissing(
   };
   const unique = [...new Set(names)];
   const verdicts = new Map<string, MissingVerdict>();
-  const canonical = unique.length > 0 ? await canonicalNames(unique, settings) : new Map<string, string | null>();
+  const canonical = unique.length > 0 ? await canonicalNames(unique, settings) : new Map<string, Canonical | null>();
   if (!canonical) {
     for (const name of unique) verdicts.set(name, { kind: 'unchecked' });
     return verdicts;
@@ -105,13 +132,13 @@ export async function checkMissing(
 
   // Scryfall's names the card database might have under that spelling
   const renamed = unique.filter((name) => {
-    const real = canonical.get(name);
+    const real = canonical.get(name)?.name;
     return !!real && foldName(real).toLowerCase() !== foldName(name).toLowerCase();
   });
   let found: (CardView | null)[] = [];
   try {
     found = renamed.length > 0
-      ? await lookup.lookupCards(renamed.map((name) => ({ cardName: foldName(canonical.get(name)!), setCode: '', cardNumber: '', amount: 1 })))
+      ? await lookup.lookupCards(renamed.map((name) => ({ cardName: foldName(canonical.get(name)!.name), setCode: '', cardNumber: '', amount: 1 })))
       : [];
   } catch {
     found = [];
@@ -123,8 +150,8 @@ export async function checkMissing(
     const card = playable.get(name);
     if (!canonical.has(name)) verdicts.set(name, { kind: 'unchecked' });
     else if (!real) verdicts.set(name, { kind: 'unknown' });
-    else if (card) verdicts.set(name, { kind: 'suggest', name: real, card });
-    else verdicts.set(name, { kind: 'unplayable', name: real });
+    else if (card) verdicts.set(name, { kind: real.how === 'fuzzy' ? 'suggest' : 'alias', name: real.name, card });
+    else verdicts.set(name, { kind: 'unplayable', name: real.name });
   }
   return verdicts;
 }

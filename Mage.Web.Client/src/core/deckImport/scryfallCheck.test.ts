@@ -6,7 +6,12 @@ import { checkMissing } from './scryfallCheck';
 const SCRYFALL = ['Lightning Bolt', 'Kid Loki', 'Dáin Ironfoot'];
 const FUZZY: Record<string, string> = { 'lightnig bolt': 'Lightning Bolt', 'kid lokki': 'Kid Loki' };
 /** The card database: Kid Loki isn't implemented. */
-const DATABASE: CardView[] = [{ name: 'Lightning Bolt', expansionSetCode: 'M11', cardNumber: '149' }];
+const DATABASE: CardView[] = [
+  { name: 'Lightning Bolt', expansionSetCode: 'M11', cardNumber: '149' },
+  { name: 'Cavern of Souls', expansionSetCode: 'AVR', cardNumber: '226' },
+];
+/** names only Scryfall's exact lookup knows: printed (flavor) names of a card */
+const FLAVOR: Record<string, string> = { 'paths of the dead': 'Cavern of Souls' };
 
 function fakeScryfall(options: { down?: boolean } = {}) {
   const requests: string[] = [];
@@ -22,7 +27,10 @@ function fakeScryfall(options: { down?: boolean } = {}) {
         not_found: identifiers.filter((id) => !known(id.name)),
       });
     }
-    const fuzzy = new URL(url).searchParams.get('fuzzy')!.toLowerCase();
+    const params = new URL(url).searchParams;
+    const exact = params.get('exact')?.toLowerCase();
+    if (exact !== undefined) return FLAVOR[exact] ? Response.json({ name: FLAVOR[exact] }) : Response.json({ object: 'error' }, { status: 404 });
+    const fuzzy = params.get('fuzzy')!.toLowerCase();
     return FUZZY[fuzzy] ? Response.json({ name: FUZZY[fuzzy] }) : Response.json({ object: 'error' }, { status: 404 });
   }) as typeof fetch;
   return { fetch: fetchStub, requests };
@@ -43,9 +51,15 @@ describe('checkMissing', () => {
     expect(verdicts.get('Lightnig Bolt')).toMatchObject({ kind: 'suggest', name: 'Lightning Bolt', card: { expansionSetCode: 'M11' } });
     expect(verdicts.get('Kid Lokki')).toEqual({ kind: 'unplayable', name: 'Kid Loki' });
     expect(verdicts.get('Grumbleflorp')).toEqual({ kind: 'unknown' });
-    // one collection request for all four, then fuzzy only for the three it didn't know
+    // one collection request for all four, then exact and fuzzy only for the three it didn't know
     expect(scryfall.requests.filter((request) => request.startsWith('POST'))).toHaveLength(1);
+    expect(scryfall.requests.filter((request) => request.includes('exact'))).toHaveLength(3);
     expect(scryfall.requests.filter((request) => request.includes('fuzzy'))).toHaveLength(3);
+  });
+
+  it('takes another printed name of a playable card as that card', async () => {
+    const verdicts = await checkMissing(['Paths of the Dead'], lookup, { ...noWait, fetch: fakeScryfall().fetch });
+    expect(verdicts.get('Paths of the Dead')).toMatchObject({ kind: 'alias', name: 'Cavern of Souls', card: { expansionSetCode: 'AVR' } });
   });
 
   it('matches names written with accents', async () => {

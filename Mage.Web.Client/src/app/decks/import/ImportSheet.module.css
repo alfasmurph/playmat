@@ -666,6 +666,19 @@
   outline-offset: 1px;
 }
 
+/* a list that marks no commander: the cards that could be it, one click each */
+.commanderPick {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.commanderChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 /* what Scryfall says about the card: under the name, before any close matches */
 .verdict {
   display: flex;

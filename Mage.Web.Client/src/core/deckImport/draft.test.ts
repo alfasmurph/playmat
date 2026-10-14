@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardCriteria, CardView, DeckCardInfo } from '../../protocol/generated/views';
-import { fixCard, issuesOf, leaveOut, readList, startDraft, toDeck } from './draft';
+import { clearGuessedCommander, commanderCandidates, fixCard, issuesOf, leaveOut, readList, setCommander, startDraft, toDeck } from './draft';
 import { alternatesFor, foldName, importKey, resolveCards, similarity, type CardLookup, type FixStore } from './resolve';
 
 /** A tiny card database: printings by set and number, and a preferred printing per name. */
@@ -10,7 +10,8 @@ const PRINTINGS: CardView[] = [
   { name: 'Mountain', expansionSetCode: 'ANA', cardNumber: '22', manaValue: 0 },
   { name: 'Fire // Ice', expansionSetCode: 'MH2', cardNumber: '290', manaValue: 4 },
   { name: 'Delver of Secrets', expansionSetCode: 'ISD', cardNumber: '51', manaValue: 1 },
-  { name: "Atraxa, Praetors' Voice", expansionSetCode: '2X2', cardNumber: '190', manaValue: 4 },
+  { name: "Atraxa, Praetors' Voice", expansionSetCode: '2X2', cardNumber: '190', manaValue: 4, superTypes: ['LEGENDARY'], cardTypes: ['CREATURE'] },
+  { name: 'Talrand, Sky Summoner', expansionSetCode: 'M13', cardNumber: '73', manaValue: 4, superTypes: ['LEGENDARY'], cardTypes: ['CREATURE'] },
   { name: 'Sol Ring', expansionSetCode: 'CMR', cardNumber: '472', manaValue: 1 },
   { name: 'Bala Ged Recovery', displayFullName: 'Bala Ged Recovery // Bala Ged Sanctuary', expansionSetCode: 'ZNR', cardNumber: '180', manaValue: 3 },
 ];
@@ -173,5 +174,45 @@ describe('a name for a list without one', () => {
   it('keeps the name the list carries', async () => {
     const draft = await startDraft(readList('Name: Izzet Tempo\n4 Delver of Secrets'), fakeLookup());
     expect(draft.name).toBe('Izzet Tempo');
+  });
+});
+
+/** A hundred-card list with no commander marked, like Moxfield's plain text export. */
+function unmarkedCommanderList(legends: string[]): string {
+  return [...legends.map((name) => `1 ${name}`), '1 Sol Ring', '1 Lightning Bolt', `${97 - legends.length} Mountain`, ''].join('\n') + '1 Fire // Ice';
+}
+
+describe('commanders a list doesn\u2019t mark', () => {
+  it('takes the only card that can be the commander', async () => {
+    const draft = await startDraft(readList(unmarkedCommanderList(["Atraxa, Praetors' Voice"])), fakeLookup());
+    expect(draft.guessedCommander).toBe("Atraxa, Praetors' Voice");
+    expect(draft.list.commanders.map((card) => card.cardName)).toEqual(["Atraxa, Praetors' Voice"]);
+    expect(draft.format).toBe('Variant Magic - Commander');
+    const { counts } = toDeck(draft);
+    expect(counts.commanders).toBe(1);
+    expect(counts.main).toBe(99);
+  });
+
+  it('lets the player pick among several, unless the deck name says which', async () => {
+    const list = unmarkedCommanderList(["Atraxa, Praetors' Voice", 'Talrand, Sky Summoner']);
+    const open = await startDraft(readList(list), fakeLookup());
+    expect(open.guessedCommander).toBeUndefined();
+    expect(commanderCandidates(open).map((card) => card.cardName)).toEqual(["Atraxa, Praetors' Voice", 'Talrand, Sky Summoner']);
+    const picked = setCommander(open, importKey({ cardName: 'Talrand, Sky Summoner', setCode: null, cardNumber: null }));
+    expect(picked.list.commanders.map((card) => card.cardName)).toEqual(['Talrand, Sky Summoner']);
+    expect(commanderCandidates(picked)).toEqual([]);
+
+    const named = await startDraft({ ...readList(list), name: 'Talrand Spellslinger' }, fakeLookup());
+    expect(named.guessedCommander).toBe('Talrand, Sky Summoner');
+    const changed = clearGuessedCommander(named);
+    expect(changed.list.commanders).toEqual([]);
+    expect(commanderCandidates(changed)).toHaveLength(2);
+  });
+
+  it('leaves a 60-card deck alone', async () => {
+    const draft = await startDraft(readList("1 Atraxa, Praetors' Voice\n4 Lightning Bolt\n55 Mountain"), fakeLookup());
+    expect(draft.guessedCommander).toBeUndefined();
+    expect(commanderCandidates(draft)).toEqual([]);
+    expect(draft.format).toBe('Constructed - Freeform');
   });
 });

@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Check, ClipboardPaste, ExternalLink, FileUp, Link2, TriangleAlert } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toDeck, type CardIssue, type ImportDraft } from '../../../core/deckImport/draft';
+import { clearGuessedCommander, commanderCandidates, setCommander, toDeck, type CardIssue, type ImportDraft } from '../../../core/deckImport/draft';
+import { importKey } from '../../../core/deckImport/resolve';
 import { alternatesFor } from '../../../core/deckImport/resolve';
 import { checkMissing, type MissingVerdict } from '../../../core/deckImport/scryfallCheck';
 import { DECK_SITES, exportLinkFor, siteById, type DeckSite } from '../../../core/deckImport/sites';
@@ -422,7 +423,22 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
     staleTime: 10 * 60_000,
     retry: false,
   });
+  const candidates = useMemo(() => commanderCandidates(draft), [draft]);
   const unplayable = issues.filter((issue) => verdicts.data?.get(issue.cardName)?.kind === 'unplayable').length;
+  // another printed name of a playable card (Moxfield exports Secret Lair and Universes Beyond flavor names) is the
+  // same card: take it without asking, and say so; the pick is remembered for the next import
+  const [aliased, setAliased] = useState<{ from: string; to: string }[]>([]);
+  useEffect(() => {
+    if (!verdicts.data) return;
+    const taken: { from: string; to: string }[] = [];
+    for (const issue of issues) {
+      const verdict = verdicts.data.get(issue.cardName);
+      if (verdict?.kind !== 'alias') continue;
+      flow.pick(issue.key, verdict.card, issue);
+      taken.push({ from: issue.cardName, to: verdict.name });
+    }
+    if (taken.length > 0) setAliased((before) => [...before, ...taken.filter((item) => !before.some((had) => had.from === item.from))]);
+  }, [verdicts.data, issues, flow]);
 
   const formats = useMemo(() => {
     const all = (server.data?.deckTypes ?? []).filter((type) => type.startsWith('Constructed - ') || COMMANDER_FORMATS.test(type));
@@ -590,6 +606,20 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
           </label>
         </fieldset>
 
+        {candidates.length > 0 && (
+          <div className={styles.commanderPick}>
+            <h3 className={styles.fixesTitle}>Which card is your commander?</h3>
+            <p className={styles.hint}>The list doesn’t say. These can lead a Commander deck:</p>
+            <div className={styles.commanderChoices}>
+              {candidates.map((card) => (
+                <Button key={importKey(card)} size="sm" variant="quiet" onClick={() => flow.updateDraft((current) => setCommander(current, importKey(card)))}>
+                  {card.cardName}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className={styles.fixes} aria-live="polite">
           {issues.length > 0 ? (
             <>
@@ -620,8 +650,15 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
           ) : (
             <p className={styles.allMatched}><Check size={16} aria-hidden="true" /> Every card matched.</p>
           )}
-          {(counts.maybeboard > 0 || counts.sideboardDropped > 0 || counts.missing > 0) && (
+          {(counts.maybeboard > 0 || counts.sideboardDropped > 0 || counts.missing > 0 || aliased.length > 0 || !!draft.guessedCommander) && (
             <ul className={styles.notes}>
+              {draft.guessedCommander && (
+                <li>
+                  {draft.guessedCommander} is the commander: the list didn’t mark one.{' '}
+                  <Button size="sm" variant="quiet" onClick={() => flow.updateDraft(clearGuessedCommander)}>Change</Button>
+                </li>
+              )}
+              {aliased.map((item) => <li key={item.from}>{item.from} is printed as another name for {item.to}: matched.</li>)}
               {counts.maybeboard > 0 && <li>{counts.maybeboard} maybeboard {counts.maybeboard === 1 ? 'card stays' : 'cards stay'} behind.</li>}
               {counts.sideboardDropped > 0 && <li>{counts.sideboardDropped} sideboard {counts.sideboardDropped === 1 ? 'card stays' : 'cards stay'} behind: a commander deck keeps only its commanders there.</li>}
               {counts.missing > 0 && issues.length === 0 && <li>{counts.missing} {counts.missing === 1 ? 'card is' : 'cards are'} left out.</li>}

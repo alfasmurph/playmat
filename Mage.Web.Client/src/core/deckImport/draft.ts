@@ -30,6 +30,8 @@ export interface ImportDraft extends DeckReading {
   cards: ReadonlyMap<string, CardView | null>;
   leftOut: ReadonlySet<string>;
   printings: PrintingPolicy;
+  /** the commander import chose for a list that marked none (see guessCommander) */
+  guessedCommander?: string;
 }
 
 export interface CardIssue {
@@ -79,6 +81,78 @@ export function suggestDeckName(list: ParsedList, cards: ReadonlyMap<string, Car
   return best?.cardName ?? null;
 }
 
+/** A card that can lead a Commander deck: a legendary creature, or one whose text says it can be your commander. */
+export function canBeCommander(view: CardView | null | undefined): boolean {
+  if (!view) return false;
+  const legendaryCreature = !!view.superTypes?.includes('LEGENDARY') && !!view.cardTypes?.includes('CREATURE');
+  return legendaryCreature || (view.rules ?? []).some((rule) => /can be your commander/i.test(rule));
+}
+
+/**
+ * A list that reads like a Commander deck but marks no commander: about a hundred cards, single copies apart from
+ * basic lands and at most one card that allows more (Relentless Rats). Moxfield's plain text export is one.
+ */
+export function needsCommander(draft: Pick<ImportDraft, 'list' | 'format'>): boolean {
+  const { list } = draft;
+  if (list.commanders.length > 0) return false;
+  const total = sum(list.main) + sum(list.side);
+  if (total < 98 || total > 101) return COMMANDER_LIKE.test(draft.format) && total > 0;
+  const repeats = list.main.filter((card) => card.amount > 1 && !BASIC_NAMES.has(card.cardName.replace(/^Snow-Covered /, ''))).length;
+  return repeats <= 1;
+}
+
+/** The main deck's cards that could be the commander of a list that marks none, one line per card. */
+export function commanderCandidates(draft: ImportDraft): DeckCardInfo[] {
+  if (!needsCommander(draft)) return [];
+  const seen = new Set<string>();
+  return draft.list.main.filter((card) => {
+    const key = importKey(card);
+    if (seen.has(key) || draft.leftOut.has(key) || !canBeCommander(draft.cards.get(key))) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/** Move one copy of a main deck line to the commanders, and make the deck a Commander deck. */
+export function setCommander(draft: ImportDraft, key: string): ImportDraft {
+  const line = draft.list.main.find((card) => importKey(card) === key);
+  if (!line) return draft;
+  const main = draft.list.main
+    .map((card) => (card === line ? { ...card, amount: card.amount - 1 } : card))
+    .filter((card) => card.amount > 0);
+  return {
+    ...draft,
+    list: { ...draft.list, main, commanders: [...draft.list.commanders, { ...line, amount: 1 }] },
+    format: COMMANDER_LIKE.test(draft.format) ? draft.format : COMMANDER_FORMAT,
+  };
+}
+
+/**
+ * For a list that marks no commander: the one card that can be it, or the one whose name the deck's name carries
+ * ("Ur-Dragon Tribal"). Several candidates and no name to go by: the player picks (commanderCandidates).
+ */
+export function guessCommander(draft: ImportDraft): ImportDraft {
+  const candidates = commanderCandidates(draft);
+  const named = (draft.name ?? '').toLowerCase();
+  const inName = candidates.filter((card) => {
+    const front = card.cardName.split(' // ')[0].toLowerCase();
+    return named.includes(front) || named.includes(front.split(',')[0]);
+  });
+  const pick = candidates.length === 1 ? candidates[0] : inName.length === 1 ? inName[0] : null;
+  if (!pick) return draft;
+  return { ...setCommander(draft, importKey(pick)), guessedCommander: pick.cardName };
+}
+
+/** Undo guessCommander: the guessed commander goes back to the main deck, for the player to pick another. */
+export function clearGuessedCommander(draft: ImportDraft): ImportDraft {
+  if (!draft.guessedCommander) return draft;
+  return {
+    ...draft,
+    list: { ...draft.list, main: [...draft.list.commanders, ...draft.list.main], commanders: [] },
+    guessedCommander: undefined,
+  };
+}
+
 /** Match every line against the card database and start a draft. */
 export async function startDraft(
   reading: DeckReading,
@@ -87,14 +161,16 @@ export async function startDraft(
 ): Promise<ImportDraft> {
   const printings = options.printings ?? 'site';
   const cards = await resolveCards(importedLines(reading.list), lookup, { fixes: options.fixes, printings });
-  return {
+  const draft: ImportDraft = {
     ...reading,
-    name: reading.name?.trim() || options.fallbackName || suggestDeckName(reading.list, cards) || 'Imported deck',
+    name: reading.name?.trim() || options.fallbackName || '',
     format: reading.format || (reading.list.commanders.length > 0 ? COMMANDER_FORMAT : DEFAULT_FORMAT),
     cards,
     leftOut: new Set(),
     printings,
   };
+  const guessed = guessCommander(draft);
+  return { ...guessed, name: guessed.name || suggestDeckName(guessed.list, cards) || 'Imported deck' };
 }
 
 /** Lines that matched no card and that the player hasn't left out, in deck order. */
