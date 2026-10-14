@@ -228,6 +228,9 @@ public final class Main {
             List<String> lan = Network.lanAddresses();
             String lanUrl = lan.isEmpty() ? null : "http://" + lan.get(0) + ":" + WebServer.PORT;
             Log.info("Ready after " + (System.currentTimeMillis() - started) / 1000 + "s");
+            for (String ip : Network.tailnetAddresses()) {
+                Log.info("Friends on a shared tailnet join at http://" + ip + ":" + WebServer.PORT);
+            }
             ui.ready(url, lanUrl);
             if (openBrowser && !browserOpened) {
                 browserOpened = true;

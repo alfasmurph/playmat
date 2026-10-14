@@ -49,12 +49,37 @@ final class Network {
         return preferred;
     }
 
+    /**
+     * Tailscale addresses (100.64.0.0/10) on any interface, point-to-point ones included, so friends on a shared
+     * tailnet can open the client at this computer's 100.x address.
+     */
+    static List<String> tailnetAddresses() {
+        List<String> addresses = new ArrayList<>();
+        try {
+            for (NetworkInterface nic : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (!nic.isUp()) {
+                    continue;
+                }
+                for (InetAddress address : Collections.list(nic.getInetAddresses())) {
+                    byte[] b = address.getAddress();
+                    if (address instanceof Inet4Address && (b[0] & 0xff) == 100 && (b[1] & 0xc0) == 64) {
+                        addresses.add(address.getHostAddress());
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            Log.warn("Can't list network interfaces: " + e.getMessage());
+        }
+        return addresses;
+    }
+
     /** Browser origins of the pages this launcher serves. */
     static List<String> origins(int port) {
         Set<String> hosts = new LinkedHashSet<>();
         hosts.add("localhost");
         hosts.add("127.0.0.1");
         hosts.addAll(lanAddresses());
+        hosts.addAll(tailnetAddresses());
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ENGLISH);
             if (!host.isEmpty() && !host.equals("localhost")) {
