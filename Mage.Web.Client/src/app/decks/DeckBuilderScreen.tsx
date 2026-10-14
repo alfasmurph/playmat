@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ArrowLeftRight, BarChart3, Check, ChevronLeft, ClipboardPaste, Crown, Images, ListPlus, Minus, Mountain, Plus, Replace, Star, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { CardView } from '../../protocol/generated/views';
 import { BASIC_FOR, MANA_LETTERS, suggestLands, type ManaLetter } from '../../core/decks/analysis';
 import { canCommand, commanderIdentity, formatMenu, formatRules, withinIdentity, type FormatRules } from '../../core/decks/formats';
@@ -54,13 +54,21 @@ export interface BuilderMode {
   onPlay(): void;
 }
 
-/** Opens the deck named in the URL: starter decks are copied into the library first, "new" makes an empty deck. */
+/** A deck type as the server names it, for "/decks/new?format=…" (Play's Commander shelf builds a Commander deck). */
+const DECK_TYPE = /^(Constructed|Variant Magic) - [\w' -]+$/;
+
+/**
+ * Opens the deck named in the URL: starter decks are copied into the library first, "new" makes an empty deck (of the
+ * format the address names, else Freeform).
+ */
 export function DeckBuilderScreen() {
   const { deckId = '' } = useParams();
-  return <DeckLoader key={deckId} deckId={deckId} />;
+  const [params] = useSearchParams();
+  const format = params.get('format') ?? '';
+  return <DeckLoader key={deckId} deckId={deckId} newFormat={DECK_TYPE.test(format) ? format : DEFAULT_FORMAT} />;
 }
 
-function DeckLoader({ deckId }: { deckId: string }) {
+function DeckLoader({ deckId, newFormat }: { deckId: string; newFormat: string }) {
   const navigate = useNavigate();
   const [deck, setDeck] = useState<DeckCardLists | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +77,7 @@ function DeckLoader({ deckId }: { deckId: string }) {
     let cancelled = false;
     (async () => {
       if (deckId === 'new') {
-        const id = await deckStorage.saveDeck({ name: 'New deck', format: DEFAULT_FORMAT, cards: [], sideboard: [] }, { forceNew: true });
+        const id = await deckStorage.saveDeck({ name: 'New deck', format: newFormat, cards: [], sideboard: [] }, { forceNew: true });
         await useDecks.getState().refresh();
         useDecks.getState().select(id);
         if (!cancelled) navigate(`/decks/${id}`, { replace: true });
@@ -89,7 +97,7 @@ function DeckLoader({ deckId }: { deckId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [deckId, navigate]);
+  }, [deckId, newFormat, navigate]);
 
   if (error) {
     return (

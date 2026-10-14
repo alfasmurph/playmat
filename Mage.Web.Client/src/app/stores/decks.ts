@@ -15,12 +15,18 @@ export interface StarterDeck {
   format?: string;
 }
 
+/** The two shelves of Play: commander decks, and every other (60-card) deck. */
+export type DeckKind = 'commander' | 'standard';
+
 /** A deck in the roster: one the player saved, or a starter deck not saved yet. */
 export interface RosterDeck {
   id: string;
   name: string;
   note: string;
   cardCount: number;
+  kind: DeckKind;
+  /** when the player last saved it; starters have none */
+  updatedAt?: number;
   cover: { name?: string; setCode: string; cardNumber: string } | null;
   colors: string[];
   starter: StarterDeck | null;
@@ -40,6 +46,17 @@ const COLOR_LETTER: Record<(typeof COLOR_ORDER)[number], string> = { white: 'W',
 /** Sleeve colors: matte dyes, picked to stay readable around card art. */
 export const SLEEVE_COLORS = ['#20302b', '#1f2a44', '#3b1f2b', '#4a2a17', '#2c2c2e', '#3e3a2a', '#24403f', '#5a2320'];
 
+/**
+ * Which shelf a deck sits on. Its format decides; a deck with no format, or Freeform (which says nothing about its
+ * shape), goes by its shape: one or two cards in the command zone and about a hundred in all is a commander deck.
+ */
+export function deckKind(deck: { format?: string | null; cards: number; sideboard: number }): DeckKind {
+  if (isCommanderFormat(deck.format)) return 'commander';
+  if (deck.format && !/Freeform/.test(deck.format)) return 'standard';
+  const total = deck.cards + deck.sideboard;
+  return deck.sideboard >= 1 && deck.sideboard <= 2 && total >= 98 && total <= 101 ? 'commander' : 'standard';
+}
+
 function summaryToRoster(deck: DeckSummary): RosterDeck {
   const colors = COLOR_ORDER.filter((color) => deck.colors?.[color]).map((color) => COLOR_LETTER[color]);
   const size = `${deck.cardCount ?? 0} cards${deck.sideboardCount ? ` + ${deck.sideboardCount}` : ''}`;
@@ -48,6 +65,8 @@ function summaryToRoster(deck: DeckSummary): RosterDeck {
     name: deck.name || 'Untitled deck',
     note: deck.format ? `${formatRules(deck.format).label} · ${size}` : size,
     cardCount: deck.cardCount ?? 0,
+    kind: deckKind({ format: deck.format, cards: deck.cardCount ?? 0, sideboard: deck.sideboardCount ?? 0 }),
+    updatedAt: deck.updatedAt,
     cover: deck.coverCard ?? null,
     colors,
     starter: null,
@@ -61,6 +80,7 @@ function starterToRoster(starter: StarterDeck): RosterDeck {
     name: starter.name,
     note: `${isCommanderFormat(starter.format) ? 'Commander starter' : 'Starter deck'} · ${starter.cards} cards`,
     cardCount: starter.cards,
+    kind: deckKind({ format: starter.format, cards: starter.cards, sideboard: 0 }),
     cover: starter.cover,
     colors: [],
     starter,

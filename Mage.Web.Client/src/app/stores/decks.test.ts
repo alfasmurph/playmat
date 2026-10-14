@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { deckStorage } from '../../core/decks/DeckStorageService';
 import type { DeckCardLists } from '../../core/decks/types';
-import { rosterOf, STARTER_PREFIX, useDecks } from './decks';
+import { deckKind, rosterOf, STARTER_PREFIX, useDecks } from './decks';
 
 const BURN: DeckCardLists = {
   name: 'Burn',
@@ -83,5 +83,41 @@ describe('deck library', () => {
     expect(starter.name).toBe('Red Starter');
     expect(starter.cards.reduce((sum, card) => sum + card.amount, 0)).toBe(60);
     expect(await deckStorage.listDecks()).toHaveLength(1);
+  });
+});
+
+describe('deckKind', () => {
+  test('a commander format is a commander deck, whatever its size', () => {
+    expect(deckKind({ format: 'Variant Magic - Commander', cards: 99, sideboard: 1 })).toBe('commander');
+    expect(deckKind({ format: 'Variant Magic - Brawl', cards: 59, sideboard: 1 })).toBe('commander');
+    expect(deckKind({ format: 'Variant Magic - Freeform Commander', cards: 0, sideboard: 0 })).toBe('commander');
+  });
+
+  test('any other named format is a 60-card deck, even at a hundred cards', () => {
+    expect(deckKind({ format: 'Constructed - Modern', cards: 60, sideboard: 15 })).toBe('standard');
+    expect(deckKind({ format: 'Constructed - Canadian Highlander', cards: 100, sideboard: 0 })).toBe('standard');
+    expect(deckKind({ format: 'Constructed - Pauper', cards: 99, sideboard: 1 })).toBe('standard');
+    expect(deckKind({ format: 'Limited', cards: 40, sideboard: 0 })).toBe('standard');
+  });
+
+  test('no format, or Freeform, goes by the shape: a commander or two and about a hundred cards', () => {
+    expect(deckKind({ cards: 99, sideboard: 1 })).toBe('commander');
+    expect(deckKind({ format: 'Constructed - Freeform', cards: 98, sideboard: 2 })).toBe('commander');
+    expect(deckKind({ format: '', cards: 100, sideboard: 1 })).toBe('commander');
+    expect(deckKind({ format: 'Constructed - Freeform', cards: 60, sideboard: 0 })).toBe('standard');
+    expect(deckKind({ format: 'Constructed - Freeform', cards: 60, sideboard: 1 })).toBe('standard');
+    // a hundred cards without a command zone, or a sideboard bigger than one, is not a commander deck
+    expect(deckKind({ cards: 100, sideboard: 0 })).toBe('standard');
+    expect(deckKind({ cards: 85, sideboard: 15 })).toBe('standard');
+  });
+
+  test('the roster sorts saved decks and starters onto their shelves', async () => {
+    const commanderStarter = { ...STARTER, file: 'krenko.dck', name: 'Krenko', cards: 100, format: 'Variant Magic - Commander' };
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([STARTER, commanderStarter]), { status: 200 })));
+    await deckStorage.saveDeck(BURN, { forceNew: true });
+    await deckStorage.saveDeck({ name: 'Atraxa', cards: [{ amount: 99, cardName: 'Forest' }], sideboard: [{ amount: 1, cardName: 'Atraxa, Praetors\' Voice' }] }, { forceNew: true });
+    await useDecks.getState().refresh();
+    const kinds = Object.fromEntries(rosterOf(useDecks.getState()).map((deck) => [deck.name, deck.kind]));
+    expect(kinds).toEqual({ Burn: 'standard', Atraxa: 'commander', 'Red Starter': 'standard', Krenko: 'commander' });
   });
 });

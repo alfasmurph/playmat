@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { isCommanderFormat } from '../../core/decks/formats';
-import { rosterOf, useDecks } from '../stores/decks';
+import { rosterOf, useDecks, type DeckKind } from '../stores/decks';
 import { useT } from '../i18n';
 import { DEFAULT_AI_OPTIONS, usePlay } from '../stores/play';
 import { AI_TYPES, DIFFICULTIES, difficultyOf, offeredAiTypes } from './aiSetup';
@@ -33,14 +32,19 @@ function Segmented<T extends string | number>({ label, value, options, onChange 
   );
 }
 
-/** How the next game against the AI is set up. Changes apply right away and are remembered in this browser. */
-export function AiSettingsDialog({ open, onOpenChange }: { open: boolean; onOpenChange(open: boolean): void }) {
+/**
+ * How the next game against the AI is set up, for the shelf's kind of deck: the AI's deck is one of that kind, and the
+ * table size is Commander's. Changes apply right away and are remembered in this browser.
+ */
+export function AiSettingsDialog({ open, onOpenChange, kind }: { open: boolean; onOpenChange(open: boolean): void; kind: DeckKind }) {
   const options = usePlay((state) => state.aiOptions);
   const setOptions = usePlay((state) => state.setAiOptions);
   const decks = useDecks();
-  const roster = useMemo(() => rosterOf(decks), [decks]);
+  const roster = useMemo(() => rosterOf(decks).filter((deck) => deck.kind === kind), [decks, kind]);
   const starters = roster.filter((deck) => deck.starter);
   const mine = roster.filter((deck) => !deck.starter);
+  // a deck of the other kind is never the AI's in this kind of game: it gets a random starter
+  const opponentDeckId = roster.some((deck) => deck.id === options.opponentDeckId) ? options.opponentDeckId : null;
   const difficulty = difficultyOf(options.skill);
   const t = useT();
   // a server can leave the Monte Carlo AI out
@@ -76,16 +80,13 @@ export function AiSettingsDialog({ open, onOpenChange }: { open: boolean; onOpen
           <select
             id="ai-deck"
             className={styles.select}
-            value={options.opponentDeckId ?? ''}
+            value={opponentDeckId ?? ''}
             onChange={(event) => setOptions({ opponentDeckId: event.target.value || null })}
           >
             <option value="">{t('ai.deck.random')}</option>
-            <optgroup label={t('ai.deck.starters')}>
-              {starters.filter((deck) => !isCommanderFormat(deck.starter?.format)).map((deck) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
-            </optgroup>
-            {starters.some((deck) => isCommanderFormat(deck.starter?.format)) && (
-              <optgroup label={t('ai.deck.commanderStarters')}>
-                {starters.filter((deck) => isCommanderFormat(deck.starter?.format)).map((deck) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
+            {starters.length > 0 && (
+              <optgroup label={t(kind === 'commander' ? 'ai.deck.commanderStarters' : 'ai.deck.starters')}>
+                {starters.map((deck) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
               </optgroup>
             )}
             {mine.length > 0 && (
@@ -136,16 +137,18 @@ export function AiSettingsDialog({ open, onOpenChange }: { open: boolean; onOpen
           </p>
         </section>
 
-        <section className={styles.row}>
-          <h3 className={styles.label}>{t('ai.pod')}</h3>
-          <Segmented
-            label={t('ai.pod.label')}
-            value={options.opponents}
-            options={[{ value: 1 as const, label: t('ai.pod.one') }, { value: 2 as const, label: t('ai.pod.three') }, { value: 3 as const, label: t('ai.pod.four') }]}
-            onChange={(opponents) => setOptions({ opponents })}
-          />
-          <p className={styles.detail}>{t('ai.pod.detail')}</p>
-        </section>
+        {kind === 'commander' && (
+          <section className={styles.row}>
+            <h3 className={styles.label}>{t('ai.pod')}</h3>
+            <Segmented
+              label={t('ai.pod.label')}
+              value={options.opponents}
+              options={[{ value: 1 as const, label: t('ai.pod.one') }, { value: 2 as const, label: t('ai.pod.three') }, { value: 3 as const, label: t('ai.pod.four') }]}
+              onChange={(opponents) => setOptions({ opponents })}
+            />
+            <p className={styles.detail}>{t('ai.pod.detail')}</p>
+          </section>
+        )}
       </div>
     </Dialog>
   );

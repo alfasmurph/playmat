@@ -10,7 +10,7 @@ import { DECK_SITES, exportLinkFor, siteById, type DeckSite } from '../../../cor
 import type { CardView } from '../../../protocol/generated/views';
 import type { DeckCardInfo } from '../../../core/decks/types';
 import { useServerState } from '../../queries';
-import { sleeveFor, useDecks, type RosterDeck } from '../../stores/decks';
+import { deckKind, sleeveFor, useDecks, type RosterDeck } from '../../stores/decks';
 import { useImportSheet } from '../../stores/importSheet';
 import { usePlay } from '../../stores/play';
 import { notify } from '../../stores/toasts';
@@ -450,6 +450,7 @@ function PreviewStep({ flow, draft, onDone }: { flow: Flow; draft: ImportDraft; 
     name: draft.name || 'Imported deck',
     note: `${shortFormat(draft.format)} · ${counts.main} cards${counts.side ? ` + ${counts.side}` : ''}`,
     cardCount: counts.main,
+    kind: deckKind({ format: deck.format, cards: counts.main, sideboard: deck.sideboard.reduce((total, card) => total + card.amount, 0) }),
     cover: finished.coverCard ?? null,
     colors,
     starter: null,

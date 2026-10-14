@@ -1,4 +1,5 @@
 import type { MessageKey, Translate } from '../i18n';
+import type { DeckKind } from '../stores/decks';
 import type { AiOptions, AiType } from '../stores/play';
 
 /** The server AI's skill (1-10) behind each difficulty. */
@@ -28,14 +29,13 @@ export function difficultyOf(skill: number) {
   return DIFFICULTIES.reduce((best, item) => (Math.abs(item.skill - skill) < Math.abs(best.skill - skill) ? item : best));
 }
 
-/** One line describing the AI setup, for the Play zone. */
-export function describeAi(t: Translate, options: AiOptions, deckName: string | null): string {
-  const difficulty = t(difficultyOf(options.skill).label);
-  const parts = [
-    options.opponents > 1 ? t('ai.summary.many', { count: options.opponents, difficulty }) : t('ai.summary.one', { difficulty }),
-    deckName ?? t('ai.summary.randomDeck'),
-    t(options.winsNeeded === 2 ? 'ai.summary.bestOf3' : 'ai.summary.bestOf1'),
-  ];
+/**
+ * One line describing the AI setup, for the Play zone. The setting each shelf prints beside it (Commander's table,
+ * Standard's match length) is left out; a 60-card game always has one opponent.
+ */
+export function describeAi(t: Translate, options: AiOptions, deckName: string | null, kind: DeckKind): string {
+  const parts = [t('ai.summary.one', { difficulty: t(difficultyOf(options.skill).label) }), deckName ?? t('ai.summary.randomDeck')];
+  if (kind === 'commander') parts.push(t(options.winsNeeded === 2 ? 'ai.summary.bestOf3' : 'ai.summary.bestOf1'));
   if (options.rules === 'deck') parts.push(t('ai.summary.deckFormat'));
   if (options.startingLife !== null) parts.push(t('ai.summary.life', { count: options.startingLife }));
   return parts.join(' · ');

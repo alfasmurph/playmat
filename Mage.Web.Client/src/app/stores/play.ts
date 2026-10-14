@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../connection';
-import { useDecks, STARTER_PREFIX } from './decks';
+import { deckKind, useDecks, STARTER_PREFIX } from './decks';
 import { useEvents } from './events';
 import { warmCards } from '../ui/imageCache';
 import { useSession } from './session';
@@ -163,7 +163,9 @@ export const usePlay = create<PlayState>((set, get) => ({
       // both decks' pictures download while the table is set up, before the first card is drawn: nothing either
       // player casts should wait on the network
       warmCards([...deck.cards, ...deck.sideboard].map((card) => ({ name: card.cardName, setCode: card.setCode ?? undefined, cardNumber: card.cardNumber ?? undefined })));
-      const rules = formatRules(deck.format);
+      // a Freeform deck shaped like a commander deck sits on the Commander shelf, and plays as Freeform Commander
+      const kind = deckKind({ format: deck.format, cards: cardCount(deck.cards), sideboard: cardCount(deck.sideboard) });
+      const rules = formatRules(kind === 'commander' && !isCommanderFormat(deck.format) ? FREEFORM_COMMANDER : deck.format);
       const commander = rules.commandZone !== null;
       const size = cardCount(deck.cards) + (commander ? cardCount(deck.sideboard) : 0);
       const needed = commander ? rules.minDeck : MIN_DECK_SIZE;
@@ -174,7 +176,7 @@ export const usePlay = create<PlayState>((set, get) => ({
         throw new Error(`${deck.name || 'This deck'} has no commander. Choose one in the deck builder.`);
       }
       // a commander deck always plays a commander game; "casual" relaxes the deck rules, not the game
-      const deckType = options.rules === 'deck' ? (deck.format || FREEFORM) : commander ? FREEFORM_COMMANDER : FREEFORM;
+      const deckType = options.rules === 'deck' ? rules.deckType : commander ? FREEFORM_COMMANDER : FREEFORM;
       const opponents = commander ? options.opponents : 1;
       const seats = opponents + 1;
       const gameType = gameTypeFor(deckType, seats, await api.getGameTypes());
