@@ -1,23 +1,23 @@
+import { CueGate, type Voice } from '../../core/audio/cueGate';
+import { parseManifest, playClip, recipeClipFile, type ClipAdjust, type SoundManifest } from '../../core/audio/manifest';
+import { playRecipe, recipeClipIds, type Recipe } from '../../core/audio/recipe';
 import { useSettings } from '../stores/settings';
 import { cueAllowed, type Cue } from './cueRules';
+import { renderSynth, type Bus } from './synthCues';
 
 export type { Cue } from './cueRules';
+export { bell, knock, noise, NOTE, thud, tone, type Bus } from './synthCues';
 
 /**
- * Game cues, synthesized with Web Audio: no sound files to license or load. Each cue is short and quiet, tuned to
- * sit under conversation: wood, felt, paper and small bells, felt more than heard, like cards on a mat. All cues go
- * through one bus (a gentle compressor and a short room) so they sound like one set.
+ * Game cues. What each one plays comes from the sound manifest (public/sounds/manifest.json, from the owner's picks):
+ * a recorded clip, a made sound (a recipe) or silence. Without a manifest, or for a cue it leaves out, the client's
+ * own synthesized sound plays (synthCues.ts), and a cue that has none stays quiet. All cues go through one bus (a
+ * gentle compressor and a short room) so they sound like one set; the gate keeps bursts from piling up.
  */
-
-export interface Bus {
-  ctx: AudioContext;
-  input: GainNode;
-  noise: AudioBuffer;
-}
 
 let bus: Bus | null = null;
 
-/** The one audio bus every synthesized sound goes through (game cues, Career's sounds and music). */
+/** The one audio bus every sound goes through (game cues, Career's sounds and music). */
 export function audio(): Bus | null {
   if (typeof window === 'undefined' || !('AudioContext' in window)) return null;
   if (!bus) {
@@ -55,166 +55,180 @@ export function audio(): Bus | null {
   return bus;
 }
 
-interface ToneOptions {
-  freq: number;
-  start: number;
-  length: number;
-  type?: OscillatorType;
-  gain?: number;
-  /** glide to this frequency over the tone */
-  slide?: number;
-  attack?: number;
-  detune?: number;
+const SOUNDS = `${import.meta.env.BASE_URL}sounds/`;
+/** a cue whose sound takes longer than this to load is skipped (it plays in time the next time) */
+const LATE_MS = 1000;
+/** how long a voice's room echo rings on after its sound */
+const TAIL_SECS = 0.6;
+/** the cues a game plays most, loaded ahead after the first click or key */
+const FREQUENT: readonly Cue[] = ['tap', 'land', 'draw', 'cast', 'resolve', 'attack', 'damage', 'decide', 'turn', 'untap'];
+
+/** What a cue plays, ready to start: its samples decoded. */
+type Sound =
+  | { kind: 'silent' }
+  | { kind: 'synth' }
+  | { kind: 'clip'; buffer: AudioBuffer; adjust: ClipAdjust }
+  | { kind: 'recipe'; recipe: Recipe; clips: Record<string, AudioBuffer> };
+
+let manifest: Promise<SoundManifest | null> | null = null;
+const buffers = new Map<string, Promise<AudioBuffer | null>>();
+const sounds = new Map<Cue, Promise<Sound>>();
+
+/** The manifest, fetched once; null when there is none (the dev server answers a missing file with the page). */
+function loadManifest(): Promise<SoundManifest | null> {
+  manifest ??= fetch(`${SOUNDS}manifest.json`)
+    .then((response) => (response.ok ? response.json() : null))
+    .then(parseManifest)
+    .catch(() => null);
+  return manifest;
 }
 
-export function tone({ ctx }: Bus, out: AudioNode, { freq, start, length, type = 'sine', gain = 0.3, slide, attack = 0.008, detune = 0 }: ToneOptions) {
-  const osc = ctx.createOscillator();
-  const env = ctx.createGain();
-  osc.type = type;
-  osc.detune.value = detune;
-  osc.frequency.setValueAtTime(freq, start);
-  if (slide) osc.frequency.exponentialRampToValueAtTime(slide, start + length);
-  env.gain.setValueAtTime(0.0001, start);
-  env.gain.exponentialRampToValueAtTime(gain, start + attack);
-  env.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  osc.connect(env).connect(out);
-  osc.start(start);
-  osc.stop(start + length + 0.05);
+/** A sample under public/sounds, decoded once; null when it is missing or not audio. */
+function loadBuffer(ctx: AudioContext, file: string): Promise<AudioBuffer | null> {
+  let buffer = buffers.get(file);
+  if (!buffer) {
+    buffer = fetch(`${SOUNDS}${file}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`${file}: ${response.status}`);
+        return response.arrayBuffer();
+      })
+      .then((data) => ctx.decodeAudioData(data))
+      .catch(() => null);
+    buffers.set(file, buffer);
+  }
+  return buffer;
 }
 
-/** A small bell: a few inharmonic partials that die away at different speeds. */
-export function bell(b: Bus, out: AudioNode, freq: number, start: number, length: number, gain: number) {
-  const partials: [number, number, number][] = [[1, 1, 1], [2.01, 0.42, 0.6], [3.02, 0.2, 0.4], [4.17, 0.1, 0.28]];
-  for (const [ratio, level, decay] of partials) {
-    tone(b, out, { freq: freq * ratio, start, length: length * decay, gain: gain * level, attack: 0.004 });
+async function load(b: Bus, cue: Cue): Promise<Sound> {
+  const entry = (await loadManifest())?.cues[cue];
+  if (!entry) return { kind: 'synth' };
+  switch (entry.kind) {
+    case 'silent':
+      return entry;
+    case 'clip': {
+      const buffer = await loadBuffer(b.ctx, entry.file);
+      return buffer ? { kind: 'clip', buffer, adjust: entry.adjust } : { kind: 'synth' };
+    }
+    case 'recipe': {
+      // a clip layer whose sample isn't there stays silent
+      const clips: Record<string, AudioBuffer> = {};
+      await Promise.all(recipeClipIds(entry.recipe).map(async (id) => {
+        const file = recipeClipFile(id);
+        const buffer = file ? await loadBuffer(b.ctx, file) : null;
+        if (buffer) clips[id] = buffer;
+      }));
+      return { kind: 'recipe', recipe: entry.recipe, clips };
+    }
   }
 }
 
-/** Filtered noise: felt, paper, breath. */
-export function noise(b: Bus, out: AudioNode, { start, length, from, to, gain = 0.25, type = 'bandpass', q = 1.2 }: {
-  start: number;
-  length: number;
-  from: number;
-  to: number;
-  gain?: number;
-  type?: BiquadFilterType;
-  q?: number;
-}) {
-  const { ctx } = b;
-  const source = ctx.createBufferSource();
-  source.buffer = b.noise;
-  const filter = ctx.createBiquadFilter();
-  filter.type = type;
-  filter.Q.value = q;
-  filter.frequency.setValueAtTime(from, start);
-  filter.frequency.exponentialRampToValueAtTime(to, start + length);
-  const env = ctx.createGain();
-  env.gain.setValueAtTime(0.0001, start);
-  env.gain.exponentialRampToValueAtTime(gain, start + Math.min(0.02, length / 3));
-  env.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  source.connect(filter).connect(env).connect(out);
-  source.start(start, Math.random() * 0.4, length + 0.05);
+function prepare(b: Bus, cue: Cue): Promise<Sound> {
+  let sound = sounds.get(cue);
+  if (!sound) {
+    sound = load(b, cue);
+    sounds.set(cue, sound);
+  }
+  return sound;
 }
 
-/** A knock on wood: a quick pitched click with a little body. */
-export function knock(b: Bus, out: AudioNode, freq: number, start: number, gain: number) {
-  tone(b, out, { freq, start, length: 0.07, type: 'triangle', gain, attack: 0.002, slide: freq * 0.82 });
-  noise(b, out, { start, length: 0.03, from: freq * 3, to: freq * 2, gain: gain * 0.5, q: 3 });
-}
-
-/** A thud on felt: low and soft, more pressure than pitch. */
-export function thud(b: Bus, out: AudioNode, start: number, gain: number, freq = 95) {
-  tone(b, out, { freq, start, length: 0.22, gain, attack: 0.003, slide: freq * 0.5 });
-  noise(b, out, { start, length: 0.08, from: 700, to: 180, gain: gain * 0.45, type: 'lowpass', q: 0.7 });
-}
-
-export const NOTE = { C4: 261.63, D4: 293.66, E4: 329.63, G4: 392, A4: 440, Bb4: 466.16, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, C6: 1046.5 };
-
-function render(b: Bus, out: AudioNode, cue: Cue, t: number) {
-  switch (cue) {
-    case 'turn':
-      // your turn: two bells a fifth apart, rising
-      bell(b, out, NOTE.C5, t, 1.1, 0.16);
-      bell(b, out, NOTE.G5, t + 0.13, 1.3, 0.13);
-      break;
-    case 'decide':
-      // a decision is yours: a light knock and a tiny bell
-      knock(b, out, 820, t, 0.12);
-      bell(b, out, NOTE.E5 * 2, t + 0.05, 0.35, 0.05);
-      break;
-    case 'cast':
-      // a spell leaves the hand: breath rising into a shimmer
-      noise(b, out, { start: t, length: 0.34, from: 500, to: 4200, gain: 0.12 });
-      tone(b, out, { freq: NOTE.G4, start: t + 0.04, length: 0.36, gain: 0.06, slide: NOTE.G5 });
-      [NOTE.C6, NOTE.E5 * 2].forEach((freq, i) => tone(b, out, { freq, start: t + 0.18 + i * 0.05, length: 0.3, gain: 0.025 }));
-      break;
-    case 'resolve':
-      // it happens: the shimmer settles onto the mat
-      tone(b, out, { freq: NOTE.E5, start: t, length: 0.3, gain: 0.05, slide: NOTE.C5 });
-      noise(b, out, { start: t, length: 0.22, from: 2600, to: 500, gain: 0.07 });
-      thud(b, out, t + 0.12, 0.14, 120);
-      break;
-    case 'land':
-      // a land put down: a card on felt, low and earthy
-      noise(b, out, { start: t, length: 0.06, from: 3500, to: 1500, gain: 0.06, type: 'highpass', q: 0.7 });
-      thud(b, out, t + 0.03, 0.26, 80);
-      break;
-    case 'attack':
-      // to battle: two drum hits
-      thud(b, out, t, 0.34, 98);
-      thud(b, out, t + 0.17, 0.3, 92);
-      noise(b, out, { start: t + 0.17, length: 0.12, from: 1200, to: 300, gain: 0.08 });
-      break;
-    case 'block':
-      // a shield: a short, hard clank over a thud
-      [420, 1130, 1810].forEach((freq, i) => tone(b, out, { freq, start: t, length: 0.18 - i * 0.04, type: 'triangle', gain: 0.07 - i * 0.015, attack: 0.002 }));
-      thud(b, out, t, 0.2, 110);
-      break;
-    case 'damage':
-      // an impact: a crack and a low drop
-      noise(b, out, { start: t, length: 0.12, from: 2200, to: 260, gain: 0.2, q: 0.9 });
-      tone(b, out, { freq: 140, start: t, length: 0.28, gain: 0.36, slide: 52, attack: 0.002 });
-      break;
-    case 'lifeGain':
-      // healing: three soft notes rising
-      [NOTE.C5, NOTE.E5, NOTE.G5].forEach((freq, i) => tone(b, out, { freq, start: t + i * 0.08, length: 0.45, gain: 0.07, attack: 0.02 }));
-      break;
-    case 'draw':
-      // a card slides off the library
-      noise(b, out, { start: t, length: 0.11, from: 1800, to: 5200, gain: 0.08, type: 'highpass', q: 0.8 });
-      break;
-    case 'timer':
-      // your clock is running out: a clock's double tick, twice
-      [0, 0.12, 0.5, 0.62].forEach((offset, i) => knock(b, out, i % 2 === 0 ? 1650 : 1350, t + offset, 0.13));
-      break;
-    case 'victory':
-      // a bright arpeggio landing on a held chord
-      [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6].forEach((freq, i) => bell(b, out, freq, t + i * 0.11, 1.4, 0.11));
-      [NOTE.C5, NOTE.E5, NOTE.G5].forEach((freq) => tone(b, out, { freq, start: t + 0.45, length: 1.6, type: 'triangle', gain: 0.045, attack: 0.08 }));
-      break;
-    case 'defeat':
-      // a soft fall in minor
-      [NOTE.G4, NOTE.E4 * 0.944, NOTE.C4].forEach((freq, i) => tone(b, out, { freq, start: t + i * 0.2, length: 0.9, gain: 0.12, attack: 0.03 }));
-      tone(b, out, { freq: NOTE.C4 / 2, start: t + 0.4, length: 1.4, type: 'triangle', gain: 0.06, attack: 0.1 });
-      break;
+/** Plays a prepared sound into out at t; returns when it ends. */
+function render(b: Bus, out: AudioNode, cue: Cue, sound: Sound, t: number): number {
+  switch (sound.kind) {
+    case 'silent':
+      return t;
+    case 'clip':
+      return playClip(b.ctx, out, sound.buffer, sound.adjust, t);
+    case 'recipe':
+      return playRecipe(b.ctx, out, sound.recipe, t, sound.clips);
+    case 'synth':
+      // the longest synthesized cue rings about this long
+      return renderSynth(b, out, cue, t) ? t + 2 : t;
   }
 }
 
-/** Plays a cue if the player's sound settings allow it. */
-export function playCue(cue: Cue) {
+/** A cue's own gain into the bus: volume on a curve that feels even across the slider. */
+function level(volume: number) {
+  return volume * volume * 0.9;
+}
+
+/** Starts a cue `delay` seconds from now at `gain`; its voice can cut it short. */
+function startCue(cue: Cue, gain: number, delay = 0): Voice | null {
+  const b = audio();
+  if (!b || gain <= 0) return null;
+  const out = b.ctx.createGain();
+  out.gain.value = gain;
+  out.connect(b.input);
+  const asked = performance.now();
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    out.disconnect();
+  };
+  void prepare(b, cue).then((sound) => {
+    const waited = performance.now() - asked;
+    if (done || waited > LATE_MS) return finish();
+    const t = b.ctx.currentTime + 0.01 + Math.max(0, delay - waited / 1000);
+    let end = t;
+    // a recipe with numbers the Web Audio API refuses plays nothing rather than breaking the game
+    try {
+      end = render(b, out, cue, sound, t);
+    } catch {
+      return finish();
+    }
+    setTimeout(finish, (end - b.ctx.currentTime + TAIL_SECS) * 1000);
+  });
+  return {
+    stop() {
+      if (done) return;
+      // a quick fade rather than a click
+      out.gain.setTargetAtTime(0, b.ctx.currentTime, 0.015);
+      setTimeout(finish, 80);
+    },
+  };
+}
+
+const gate = new CueGate({
+  same: { max: 2, windowMs: 80 },
+  // six lands tapped for one spell: one tap, a little louder
+  bursts: { tap: 120, shuffle: 150 },
+  // the log says "countered" around when the board shows the spell leave the stack
+  replaces: { counter: ['resolve'] },
+  replaceWindowMs: 400,
+});
+
+let warmed = false;
+
+/** Loads the manifest and the frequent cues' samples, so the first of each plays in time. */
+function warm() {
+  if (warmed) return;
+  const b = audio();
+  if (!b) return;
+  warmed = true;
+  for (const cue of FREQUENT) void prepare(b, cue);
+}
+
+// the audio context needs a user gesture before it runs: load ahead on the first one
+if (typeof window !== 'undefined') {
+  const onGesture = () => {
+    window.removeEventListener('pointerdown', onGesture, true);
+    window.removeEventListener('keydown', onGesture, true);
+    if (useSettings.getState().settings.sound) warm();
+  };
+  window.addEventListener('pointerdown', onGesture, true);
+  window.addEventListener('keydown', onGesture, true);
+}
+
+/** Plays a cue if the player's sound settings allow it, `delay` seconds from now. */
+export function playCue(cue: Cue, delay = 0) {
   const settings = useSettings.getState().settings;
   if (!cueAllowed(cue, settings)) return;
-  previewCue(cue, settings.volume);
+  warm();
+  gate.play(cue, (boost) => startCue(cue, level(useSettings.getState().settings.volume) * boost, delay));
 }
 
 /** Plays a cue regardless of the on/off settings (the volume preview in Settings). */
 export function previewCue(cue: Cue, volume = useSettings.getState().settings.volume) {
-  const b = audio();
-  if (!b || volume <= 0) return;
-  const out = b.ctx.createGain();
-  // a curve that feels even across the slider
-  out.gain.value = volume * volume * 0.9;
-  out.connect(b.input);
-  render(b, out, cue, b.ctx.currentTime + 0.01);
-  setTimeout(() => out.disconnect(), 2500);
+  if (volume <= 0) return;
+  startCue(cue, level(volume));
 }

@@ -492,7 +492,10 @@ function Switch({ checked, onChange, label }: { checked: boolean; onChange(value
   );
 }
 
-/** the synthesizer belongs to the match screen; load it only when someone tries the volume */
+/**
+ * the sound engine belongs to the match screen; load it only when someone tries the volume. It plays the turn cue as
+ * a game would: the picked sound when the manifest has one.
+ */
 function previewTurnCue() {
   void import('../match/sound').then(({ previewCue }) => previewCue('turn'));
 }

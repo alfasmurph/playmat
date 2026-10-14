@@ -37,7 +37,7 @@ export interface PlaySettings {
   abilitiesOnTheirTurn: boolean;
   /** don't take priority back after casting a spell or activating an ability: it resolves unless the opponent responds */
   passAfterCasting: boolean;
-  /** game sounds (synthesized, local only); M toggles it during a game */
+  /** game sounds (local only); M toggles it during a game */
   sound: boolean;
   /** master volume, 0 to 1 */
   volume: number;
