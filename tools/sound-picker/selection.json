@@ -1,0 +1,69 @@
+{
+ "events": [
+  {"group":"Turns","id":"turn","name":"Your turn","what":"Your turn starts: low drum hit, deep gong, war horn swell, heavy door","cap":3.5,"cands":[
+    ["F",415200],["F",436486],["O","100-cc0-sfx","100-CC0-SFX_0/gong_01.ogg"],["O","their-coming-generic-horn-sound","theircoming3_0.ogg"],
+    ["K","impact-sounds","impactBell_heavy_000"],["K","rpg-audio","doorClose_4"]]},
+  {"group":"Turns","id":"decide","name":"Decision needed","what":"The game needs your decision: soft but noticeable tap, quill/knock, low bell","cap":1.2,"cands":[
+    ["K","impact-sounds","impactWood_light_002"],["K","interface-sounds","bong_001"],["F",846108],["F",742356],["F",62964],
+    ["O","rpg-sound-pack","rpg_sound_pack/RPG Sound Pack/inventory/wood-small.wav"]]},
+  {"group":"Cards","id":"cast","name":"Cast spell","what":"You cast a spell: dark magical whoosh","cap":1.2,"cands":[
+    ["F",657795],["F",715784],["F",420677],["F",455205],["O","magic-spell-sfx","magical_2.ogg"],
+    ["O","rpg-sound-pack","rpg_sound_pack/RPG Sound Pack/battle/magic1.wav"]]},
+  {"group":"Cards","id":"resolve","name":"Spell resolves","what":"A spell resolves: low magical thrum, impact with rumble","cap":1.2,"cands":[
+    ["F",873747],["F",527525],["F",788604],["F",794196],["O","magic-spell-sfx","magical_6_0.ogg"],["K","impact-sounds","impactSoft_heavy_001"]]},
+  {"group":"Cards","id":"land","name":"Play land","what":"A land is played: card set down, stone set down","cap":1.2,"cands":[
+    ["K","casino-audio","card-place-1"],["K","casino-audio","card-place-3"],["F",513694],["F",843547],["O","80-cc0-rpg-sfx","80-CC0-RPG-SFX_0/stones_01.ogg"]]},
+  {"group":"Cards","id":"draw","name":"Draw card","what":"Draw a card: slide/flick from the deck","cap":1.2,"cands":[
+    ["K","casino-audio","card-slide-2"],["K","casino-audio","card-slide-5"],["K","casino-audio","card-shove-1"],["F",817579],["F",571581],
+    ["O","card-game-sounds","Cardsounds/cockatrice/draw.wav"]]},
+  {"group":"Cards","id":"shuffle","name":"Shuffle library","what":"Shuffle the library: riffle shuffle","cap":1.2,"cands":[
+    ["K","casino-audio","card-shuffle"],["O","playing-card-sounds","shuffle.wav"],["O","card-game-sounds","Cardsounds/cockatrice/shuffle.wav"],
+    ["F",817574],["F",662329],["F",784517]]},
+  {"group":"Cards","id":"tap","name":"Tap permanent","what":"Tap a permanent: short card rotate/scrape on felt","cap":1.2,"cands":[
+    ["K","casino-audio","card-shove-3"],["K","casino-audio","card-slide-8"],["O","card-game-sounds","Cardsounds/cockatrice/tap.wav"],
+    ["O","playing-card-sounds","contact2.wav"],["F",188055]]},
+  {"group":"Cards","id":"untap","name":"Untap","what":"Untap step: quick soft flurry of cards","cap":1.2,"cands":[
+    ["K","casino-audio","card-fan-1"],["K","casino-audio","card-fan-2"],["O","card-game-sounds","Cardsounds/cockatrice/untap.wav"],["F",502662],["F",808202]]},
+  {"group":"Combat","id":"attack","name":"Declare attackers","what":"Declare attackers: sword draw, metal ring","cap":1.2,"cands":[
+    ["K","rpg-audio","drawKnife2"],["O","rpg-sound-pack","rpg_sound_pack/RPG Sound Pack/battle/sword-unsheathe3.wav"],
+    ["O","fantasy-sound-effects-tinysized-sfx","tinysized/sfx-cc0/seax-unsheathe-02.wav"],["F",417035],["F",684749],["F",577620]]},
+  {"group":"Combat","id":"attackBig","name":"Big attack","what":"A big attack with several creatures: heavier, more metal","cap":1.2,"cands":[
+    ["F",326868],["F",364531],["K","impact-sounds","impactMetal_heavy_000"],["K","impact-sounds","impactPlate_heavy_000"],
+    ["O","20-sword-sound-effects-attacks-and-clashes","sword_clash_-_starninjas_0/sword_clash.6.ogg"],
+    ["O","fantasy-sound-effects-tinysized-sfx","tinysized/sfx-cc0/sword-clash-01.wav"]]},
+  {"group":"Combat","id":"block","name":"Declare blockers","what":"Declare blockers: shield thud, wooden/metal block","cap":1.2,"cands":[
+    ["O","10-impactshield-blocks","impact_-_starninjas/impact.2.ogg"],["O","10-impactshield-blocks","impact_-_starninjas/impact.7.ogg"],
+    ["F",370203],["F",440069],["K","impact-sounds","impactWood_heavy_000"],["K","impact-sounds","impactMetal_medium_002"]]},
+  {"group":"Combat","id":"damage","name":"Damage","what":"Damage dealt: punch, slash, impact","cap":1.2,"cands":[
+    ["K","impact-sounds","impactPunch_medium_002"],["K","rpg-audio","knifeSlice"],["K","rpg-audio","chop"],
+    ["O","3-melee-sounds","melee sounds/melee sounds/melee sound.wav"],["F",276600],["F",842508]]},
+  {"group":"Combat","id":"damageBig","name":"Big damage","what":"5 or more damage: heavy crunch, bone, explosion-ish thud","cap":1.2,"cands":[
+    ["K","impact-sounds","impactPunch_heavy_002"],["O","deep-bone-crackbreak-sfx","deep_breaks/Deep Break 4.wav"],
+    ["O","deep-bone-crackbreak-sfx","deep_breaks/Deep Break 7.wav"],["F",350977],["F",523783],["F",718005]]},
+  {"group":"Life","id":"lifeGain","name":"Gain life","what":"Gain life: warm low swell, soft pad, heartbeat","cap":3.5,"cands":[
+    ["F",340140],["F",776760],["F",430894],["O","heartbeat-sounds","heartbeat_slow_reverb.wav"],["F",249716],["O","heartbeat-single-sound","heartbeat.mp3_.flac"]]},
+  {"group":"Life","id":"creatureDies","name":"Creature dies","what":"A creature dies: body fall, bone crack, dark puff","cap":1.2,"cands":[
+    ["F",504626],["F",417994],["O","fleshy-bone-breaksnap-sfx","wet_breaks/Wet Break 3.wav"],["O","bones-2","bones-2.wav"],
+    ["O","80-cc0-rpg-sfx","80-CC0-RPG-SFX_0/creature_die_01.ogg"],["K","impact-sounds","impactSoft_heavy_003"]]},
+  {"group":"Cards","id":"token","name":"Token appears","what":"A token appears: summon puff, cloth flourish","cap":1.2,"cands":[
+    ["F",714257],["F",208111],["K","rpg-audio","cloth2"],["O","rpg-sound-pack","rpg_sound_pack/RPG Sound Pack/inventory/cloth-heavy.wav"],
+    ["F",391945],["F",740776]]},
+  {"group":"Cards","id":"exile","name":"Exile","what":"A card is exiled: dark vanish, reverse whoosh, void","cap":3.5,"cands":[
+    ["F",446010],["F",402818],["F",398638],["F",444710],["F",856174],["O","100-cc0-sfx","100-CC0-SFX_0/weird_01.ogg"]]},
+  {"group":"Cards","id":"counter","name":"Spell countered","what":"A spell is countered: fizzle, snuff, broken glass","cap":1.2,"cands":[
+    ["F",861043],["F",560768],["K","impact-sounds","impactGlass_heavy_001"],["F",388247],["F",826338],["O","100-cc0-sfx","100-CC0-SFX_0/glass_03.ogg"]]},
+  {"group":"Cards","id":"discard","name":"Discard","what":"Discard a card: tossed or crumpled","cap":1.2,"cands":[
+    ["F",334201],["F",508598],["F",398898],["K","casino-audio","card-shove-4"],["O","100-cc0-sfx","100-CC0-SFX_0/paper_01.ogg"],["K","casino-audio","card-slide-7"]]},
+  {"group":"Cards","id":"mulligan","name":"Mulligan","what":"Mulligan: cards gathered and reshuffled","cap":1.2,"cands":[
+    ["K","casino-audio","cards-pack-take-out-1"],["K","casino-audio","cards-pack-open-2"],["O","playing-card-sounds","shuffleandbridge.wav"],
+    ["K","casino-audio","cards-pack-take-out-2"],["F",466789]]},
+  {"group":"Turns","id":"timer","name":"Timer running low","what":"Priority timer running low: clock tick, low heartbeat","cap":1.2,"cands":[
+    ["F",534094],["F",117280],["O","clock-tick-0","Timetick.ogg"],["O","ticking-clock","ticks/ticking clock - tick2.wav"],
+    ["O","heartbeat-sounds","heartbeat_slow_0.wav"],["F",547305]]},
+  {"group":"Outcome","id":"victory","name":"Victory","what":"You win: short triumphant brass/drums stinger","cap":3.5,"cands":[
+    ["F",803823],["F",521639],["F",706753],["F",770801],["O","classic-fanfare-lick","fanfare_3.ogg"],["F",456966]]},
+  {"group":"Outcome","id":"defeat","name":"Defeat","what":"You lose: low somber stinger, falling impact","cap":3.5,"cands":[
+    ["F",664606],["F",467289],["F",826217],["O","muffled-distant-explosion","NenadSimic - Muffled Distant Explosion.wav"],
+    ["K","impact-sounds","impactBell_heavy_004"],["F",840810]]}
+ ]
+}

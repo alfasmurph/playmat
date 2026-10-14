@@ -1,0 +1,553 @@
+<title>Playmat Sound Picks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column of sound moments like rows in a ledger, a sticky table edge with progress and the turn preview, and the sound bench sliding up from the bottom. Single dark look: Playmat's own felt and ink. */
+:root {
+  color-scheme: dark;
+  --felt: #0d1512;        /* page ground, the mat */
+  --felt-raised: #15211c; /* a moment's row */
+  --felt-deep: #08100c;   /* bars and the bench */
+  --rule: #2a3a33;
+  --ink: #e9e4d6;
+  --ink-dim: #a8a493;
+  --ink-faint: #6f7468;
+  --amber: #f0b13d;       /* decisions: your pick, primary actions */
+  --amber-ink: #1a1305;
+  --oxblood: #a3443c;     /* Freesound source mark, warnings */
+  --brass: #c9a862;       /* Kenney source mark */
+  --sage: #8fc19a;        /* OpenGameArt mark, playing */
+  --font-print: 'Barlow Condensed', 'Barlow', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: 'Barlow', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--felt); color: var(--ink); }
+body { font: 500 15px/1.5 var(--font-ui); }
+.wrap { max-width: 1000px; margin: 0 auto; padding-inline: 16px; }
+header.top { padding-block: 34px 22px; border-bottom: 1px solid var(--rule); background: radial-gradient(120% 140% at 0% 0%, #1b2c25 0%, var(--felt) 60%); }
+header.top h1 { font: 700 clamp(34px, 6vw, 56px)/0.95 var(--font-print); letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 10px; text-wrap: balance; }
+header.top p { margin: 0; max-width: 64ch; color: var(--ink-dim); }
+header.top b { color: var(--ink); font-weight: 600; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--felt-deep); border-bottom: 1px solid var(--rule); }
+.bar .wrap { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding-block: 10px; }
+.meter { flex: 1 1 200px; display: flex; align-items: center; gap: 10px; font: 700 15px var(--font-print); letter-spacing: 0.06em; text-transform: uppercase; }
+.meter .track { flex: 1; height: 6px; background: var(--rule); overflow: hidden; border-radius: 3px; }
+.meter .fill { height: 100%; width: 0; background: var(--amber); transition: width .25s; }
+.bar label { display: flex; gap: 6px; align-items: center; font-weight: 600; font-size: 14px; cursor: pointer; }
+.status { font-size: 13px; color: var(--ink-faint); }
+nav.groups { display: flex; flex-wrap: wrap; gap: 6px; }
+nav.groups a { color: var(--ink-dim); text-decoration: none; font: 700 13px var(--font-print); letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--rule); border-radius: 4px; }
+nav.groups a:hover { color: var(--ink); border-color: var(--ink-faint); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.btn { font: 700 14px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; background: var(--felt-raised); color: var(--ink); border: 1px solid var(--rule); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--ink-faint); }
+.btn.primary { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+main.wrap { padding-block: 20px 80px; display: grid; gap: 28px; }
+section h2 { font: 700 15px/1 var(--font-print); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 10px; }
+.events { display: grid; gap: 10px; }
+.ev { background: var(--felt-raised); border: 1px solid var(--rule); border-left: 3px solid var(--rule); border-radius: 4px; padding: 12px 14px; display: grid; gap: 10px; }
+.ev.done { border-left-color: var(--amber); }
+.ev header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; align-items: baseline; }
+.ev h3 { margin: 0; font: 700 21px/1.1 var(--font-print); letter-spacing: 0.03em; text-transform: uppercase; }
+.ev .what { color: var(--ink-dim); font-size: 14px; }
+.ev .pick { font: 700 13px var(--font-print); letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { display: flex; align-items: stretch; background: var(--felt); border: 1px solid var(--rule); border-radius: 4px; max-width: 100%; min-width: 0; }
+.opt.on { border-color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+.opt button { background: none; border: 0; cursor: pointer; }
+.opt .play { width: 34px; flex: none; display: grid; place-items: center; border-right: 1px solid var(--rule); }
+.opt .play svg { width: 12px; height: 12px; fill: currentColor; }
+.opt.playing .play { color: var(--sage); }
+.opt .use { display: flex; gap: 8px; align-items: center; padding: 6px 12px 6px 8px; font-size: 14px; text-align: left; min-width: 0; }
+.opt.on .use { color: var(--ink); font-weight: 600; }
+.opt .use .l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 26ch; }
+.src { font: 700 11px var(--font-print); letter-spacing: 0.08em; padding: 1px 5px; border-radius: 3px; color: var(--felt-deep); flex: none; }
+.src.k { background: var(--brass); } .src.f { background: var(--oxblood); color: var(--ink); } .src.o { background: var(--sage); } .src.d { background: var(--amber); }
+.dur { font: 500 11.5px var(--font-mono); color: var(--ink-faint); font-variant-numeric: tabular-nums; flex: none; }
+.opt.silent .use { padding-left: 12px; font-style: italic; color: var(--ink-dim); }
+.opt .edit { padding: 6px 10px; border-left: 1px solid var(--rule); font: 700 12px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+.opt .edit:hover { color: var(--ink); }
+.make { font: 700 13px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); background: transparent; border: 1px dashed var(--ink-faint); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.make:hover { color: var(--ink); border-color: var(--amber); }
+.credit { font-size: 12.5px; color: var(--ink-faint); }
+.credit a { color: inherit; }
+.adjusted { font: 500 11.5px var(--font-mono); color: var(--amber); }
+.hide-done .ev.done { display: none; }
+footer.wrap { font-size: 13px; color: var(--ink-faint); padding-block: 0 40px; }
+/* the bench: designer and clip adjuster share it */
+#bench { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--felt-deep); border-top: 2px solid var(--amber); box-shadow: 0 -12px 30px rgb(0 0 0 / 0.5); max-height: 74vh; overflow-y: auto; padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+#bench .in { max-width: 1000px; margin: 0 auto; display: grid; gap: 12px; }
+.bz-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bz-top h3 { margin: 0 12px 0 0; font: 700 22px var(--font-print); letter-spacing: 0.04em; text-transform: uppercase; }
+.bz-top h3 small { display: block; font: 500 13px var(--font-ui); letter-spacing: 0; text-transform: none; color: var(--ink-dim); }
+.bz-top .spacer { flex: 1; }
+.bz-top label { display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 600; }
+select { font: 600 14px var(--font-ui); color: var(--ink); background: var(--felt-raised); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; }
+canvas#wave { width: 100%; height: 72px; background: var(--felt); border: 1px solid var(--rule); border-radius: 4px; display: block; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tab { font: 700 13px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--rule); background: transparent; border-radius: 4px; padding: 5px 11px; cursor: pointer; }
+.tab.on { border-color: var(--amber); color: var(--amber); }
+.tab.off { opacity: 0.5; text-decoration: line-through; }
+.groups2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+fieldset { border: 1px solid var(--rule); border-radius: 4px; margin: 0; padding: 8px 12px 10px; display: grid; gap: 6px; min-width: 0; }
+legend { font: 700 12px var(--font-print); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); padding: 0 4px; }
+.sl { display: grid; grid-template-columns: 100px 1fr 62px; gap: 8px; align-items: center; font-size: 13.5px; font-weight: 600; }
+.sl input[type=range] { width: 100%; accent-color: var(--amber); }
+.sl output { font: 500 11.5px var(--font-mono); text-align: right; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.seg button { font: 700 13px var(--font-print); letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--rule); border-radius: 4px; padding: 3px 9px; background: transparent; cursor: pointer; }
+.seg button.on { border-color: var(--amber); color: var(--amber); }
+.note { font-size: 13px; color: var(--ink-dim); margin: 0; }
+body.bench-open main { padding-bottom: 76vh; }
+/* the turn preview: a strip of the moments as they play */
+#turn { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+#turn .step { font: 700 12px var(--font-print); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 2px 6px; border-radius: 3px; }
+#turn .step.now { background: var(--amber); color: var(--amber-ink); }
+#turn .step.silent { text-decoration: line-through; }
+@media (max-width: 560px) { .sl { grid-template-columns: 82px 1fr 54px; } .opt .use .l { max-width: 16ch; } }
+@media (prefers-reduced-motion: reduce) { .meter .fill { transition: none; } }
+</style>
+
+<header class="top"><div class="wrap">
+  <h1>Playmat Sound Picks</h1>
+  <p>Every sound moment at the table, with free public-domain (CC0) candidates from Kenney, Freesound and OpenGameArt, trimmed and level-matched so they compare fairly. Press ▶ to listen and tap a name to choose it. <b>Adjust</b> changes a pick's volume, pitch and length; <b>Make a sound</b> builds one from tones, noise and your picked clips. <b>Hear a turn</b> plays a whole turn with your current picks. Picks save as you go, and Claude wires them into the game from here.</p>
+</div></header>
+<div class="bar"><div class="wrap">
+  <div class="meter"><span id="count">0 of 0</span><div class="track"><div class="fill" id="fill"></div></div></div>
+  <button class="btn primary" id="turnBtn" type="button">▶ Hear a turn</button>
+  <label for="onlyOpen"><input type="checkbox" id="onlyOpen"> Hide chosen</label>
+  <nav class="groups" id="groups"></nav>
+  <span class="status" id="status" role="status">Loading your saved picks…</span>
+  <div id="turn" aria-live="polite"></div>
+</div></div>
+<main class="wrap" id="main"></main>
+<footer class="wrap">Every clip is CC0 (public domain); each pick links to its source. Sounds you make here are recipes, not recordings, and are yours outright.</footer>
+<div id="bench" hidden></div>
+
+<script>
+// ---------- sound recipes (the same engine the game will play them with) ----------
+const WAVES = ['sine', 'triangle', 'square', 'sawtooth'];
+const FILTERS = ['none', 'lowpass', 'highpass', 'bandpass'];
+function newLayer(kind = 'tone') {
+  return { on: true, kind, wave: 'sine', clipFile: '', rate: 1, f0: 440, f1: 440, start: 0, attack: 0.005, hold: 0.05, release: 0.2, vol: 0.8,
+    filter: 'none', c0: 2000, c1: 2000, q: 1, vibRate: 0, vibDepth: 0, wobRate: 0, wobDepth: 0, reps: 1, gap: 0.08, step: 0, fade: 0.8, drive: 0 };
+}
+function newRecipe() { return { v: 1, gain: 0.8, echoTime: 0, echoFeedback: 0.3, echoMix: 0, layers: [newLayer('tone')] }; }
+function normaliseRecipe(r) {
+  const base = newRecipe(); const out = { ...base, ...(r || {}) };
+  out.layers = ((r && r.layers) || base.layers).slice(0, 4).map((l) => ({ ...newLayer(l && l.kind), ...l }));
+  return out;
+}
+const noiseCache = new WeakMap();
+function noiseBuffer(ctx) {
+  let b = noiseCache.get(ctx); if (b) return b;
+  const n = Math.floor(ctx.sampleRate * 2); b = ctx.createBuffer(1, n, ctx.sampleRate); const d = b.getChannelData(0);
+  let s = 22222; for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) & 0x7fffffff; d[i] = (s / 0x3fffffff) - 1; }
+  noiseCache.set(ctx, b); return b;
+}
+const driveCurves = new Map();
+function driveCurve(amount) {
+  const k = Math.round(amount * 100); if (driveCurves.has(k)) return driveCurves.get(k);
+  const c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = (i / 1023) * 2 - 1; c[i] = ((1 + k) * x) / (1 + k * Math.abs(x)); }
+  driveCurves.set(k, c); return c;
+}
+const ramp = (param, v0, v1, t0, t1) => {
+  param.setValueAtTime(v0, t0);
+  if (v0 > 0 && v1 > 0) param.exponentialRampToValueAtTime(v1, Math.max(t1, t0 + 0.001)); else param.linearRampToValueAtTime(v1, Math.max(t1, t0 + 0.001));
+};
+function recipeLength(recipe) {
+  const r = normaliseRecipe(recipe); let end = 0;
+  for (const l of r.layers) if (l.on) end = Math.max(end, l.start + (l.reps - 1) * l.gap + l.attack + l.hold + l.release);
+  if (r.echoMix > 0 && r.echoTime > 0) end += r.echoTime * Math.min(8, 1 + Math.log(0.01) / Math.log(Math.max(0.05, r.echoFeedback)));
+  return end;
+}
+// Plays a recipe into dest at `when`; clips maps a clip option id to its decoded AudioBuffer. Returns the end time.
+function playRecipe(ctx, dest, recipe, when = ctx.currentTime, clips = {}) {
+  const r = normaliseRecipe(recipe);
+  const bus = ctx.createGain(); bus.gain.value = r.gain; bus.connect(dest);
+  if (r.echoMix > 0 && r.echoTime > 0) {
+    const d = ctx.createDelay(1.5); d.delayTime.value = r.echoTime; const fb = ctx.createGain(); fb.gain.value = Math.min(0.9, r.echoFeedback); const wet = ctx.createGain(); wet.gain.value = r.echoMix;
+    bus.connect(d); d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(dest);
+  }
+  let end = when;
+  for (const l of r.layers) {
+    if (!l.on) continue;
+    for (let i = 0; i < Math.max(1, Math.round(l.reps)); i++) {
+      const t0 = when + l.start + i * l.gap; const t1 = t0 + l.attack + l.hold + l.release; end = Math.max(end, t1);
+      const k = Math.pow(2, (l.step * i) / 12);
+      let src;
+      if (l.kind === 'clip') {
+        const buf = clips[l.clipFile]; if (!buf) continue;
+        src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = Math.max(0.05, l.rate * k);
+      } else if (l.kind === 'noise') {
+        src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx); src.loop = true; src.playbackRate.value = Math.max(0.05, k);
+      } else {
+        src = ctx.createOscillator(); src.type = WAVES.includes(l.wave) ? l.wave : 'sine';
+        ramp(src.frequency, Math.max(1, l.f0 * k), Math.max(1, l.f1 * k), t0, t1);
+      }
+      if (l.vibRate > 0 && l.vibDepth > 0 && src.detune) {
+        const lfo = ctx.createOscillator(); lfo.frequency.value = l.vibRate; const g = ctx.createGain(); g.gain.value = l.vibDepth;
+        lfo.connect(g); g.connect(src.detune); lfo.start(t0); lfo.stop(t1 + 0.05);
+      }
+      let head = src;
+      if (l.drive > 0) { const ws = ctx.createWaveShaper(); ws.curve = driveCurve(l.drive); ws.oversample = '2x'; head.connect(ws); head = ws; }
+      if (l.filter !== 'none' && FILTERS.includes(l.filter)) {
+        const f = ctx.createBiquadFilter(); f.type = l.filter; f.Q.value = l.q; ramp(f.frequency, Math.max(20, l.c0), Math.max(20, l.c1), t0, t1);
+        head.connect(f); head = f;
+      }
+      const env = ctx.createGain(); const peak = l.vol * Math.pow(l.fade, i);
+      env.gain.setValueAtTime(0, t0); env.gain.linearRampToValueAtTime(peak, t0 + Math.max(0.002, l.attack));
+      env.gain.setValueAtTime(peak, t0 + Math.max(0.002, l.attack) + l.hold); env.gain.exponentialRampToValueAtTime(0.0001, t1 + 0.001);
+      head.connect(env); head = env;
+      if (l.wobRate > 0 && l.wobDepth > 0) {
+        const trem = ctx.createGain(); trem.gain.value = 1 - l.wobDepth / 2; const lfo = ctx.createOscillator(); lfo.frequency.value = l.wobRate; const g = ctx.createGain(); g.gain.value = l.wobDepth / 2;
+        lfo.connect(g); g.connect(trem.gain); lfo.start(t0); lfo.stop(t1 + 0.05); head.connect(trem); head = trem;
+      }
+      head.connect(bus); src.start(t0); src.stop(t1 + 0.05);
+    }
+  }
+  return end;
+}
+// Starting points for a made sound: table, stone, iron and dark magic.
+const L = (o) => ({ ...newLayer(o.kind || 'tone'), ...o });
+const PRESETS = {
+  'Card snap': { gain: 0.9, layers: [L({ kind: 'noise', filter: 'bandpass', c0: 3200, c1: 1800, q: 1.4, attack: 0.001, hold: 0.004, release: 0.05, vol: 0.9 }), L({ wave: 'sine', f0: 240, f1: 120, attack: 0.001, hold: 0.005, release: 0.06, vol: 0.5 })] },
+  'Card slide': { gain: 0.8, layers: [L({ kind: 'noise', filter: 'bandpass', c0: 1400, c1: 3600, q: 0.9, attack: 0.03, hold: 0.06, release: 0.08, vol: 0.7 })] },
+  'Felt thud': { gain: 0.9, layers: [L({ wave: 'sine', f0: 140, f1: 60, attack: 0.002, hold: 0.02, release: 0.16, vol: 1 }), L({ kind: 'noise', filter: 'lowpass', c0: 900, c1: 200, attack: 0.001, hold: 0.01, release: 0.06, vol: 0.5 })] },
+  'Stone set': { gain: 0.85, layers: [L({ wave: 'triangle', f0: 380, f1: 260, attack: 0.001, hold: 0.006, release: 0.09, vol: 0.8, drive: 0.3 }), L({ kind: 'noise', filter: 'bandpass', c0: 2200, c1: 900, q: 3, attack: 0.001, hold: 0.004, release: 0.05, vol: 0.5 })] },
+  'Iron ring': { gain: 0.7, echoTime: 0.11, echoFeedback: 0.3, echoMix: 0.25, layers: [L({ wave: 'triangle', f0: 1180, f1: 1150, attack: 0.001, hold: 0.01, release: 0.7, vol: 0.5, vibRate: 5, vibDepth: 12 }), L({ wave: 'sine', f0: 1730, f1: 1720, attack: 0.001, hold: 0.01, release: 0.45, vol: 0.25 }), L({ kind: 'noise', filter: 'highpass', c0: 3000, c1: 3000, attack: 0.001, hold: 0.003, release: 0.04, vol: 0.4 })] },
+  'War drum': { gain: 0.9, echoTime: 0.22, echoFeedback: 0.3, echoMix: 0.25, layers: [L({ wave: 'sine', f0: 110, f1: 52, attack: 0.002, hold: 0.03, release: 0.32, vol: 1, drive: 0.25 }), L({ kind: 'noise', filter: 'lowpass', c0: 900, c1: 200, attack: 0.001, hold: 0.01, release: 0.08, vol: 0.4 })] },
+  'Gong': { gain: 0.7, echoTime: 0.25, echoFeedback: 0.35, echoMix: 0.3, layers: [L({ wave: 'sine', f0: 98, f1: 92, attack: 0.01, hold: 0.05, release: 2.2, vol: 0.8, wobRate: 4, wobDepth: 0.25 }), L({ wave: 'triangle', f0: 263, f1: 255, attack: 0.01, hold: 0.03, release: 1.5, vol: 0.3 })] },
+  'Dark whoosh': { gain: 0.8, layers: [L({ kind: 'noise', filter: 'bandpass', c0: 300, c1: 1600, q: 2, attack: 0.18, hold: 0.04, release: 0.3, vol: 0.9 }), L({ wave: 'sawtooth', f0: 55, f1: 82, attack: 0.15, hold: 0.05, release: 0.3, vol: 0.25, filter: 'lowpass', c0: 400, c1: 300 })] },
+  'Void': { gain: 0.8, echoTime: 0.18, echoFeedback: 0.45, echoMix: 0.35, layers: [L({ kind: 'noise', filter: 'bandpass', c0: 2400, c1: 200, q: 4, attack: 0.01, hold: 0.05, release: 0.6, vol: 0.8 }), L({ wave: 'sine', f0: 320, f1: 40, attack: 0.005, hold: 0.05, release: 0.5, vol: 0.5 })] },
+  'Fizzle': { gain: 0.8, layers: [L({ kind: 'noise', filter: 'highpass', c0: 1800, c1: 5200, q: 1, attack: 0.005, hold: 0.08, release: 0.25, vol: 0.7, wobRate: 30, wobDepth: 0.8 }), L({ wave: 'sine', f0: 600, f1: 120, attack: 0.001, hold: 0.02, release: 0.2, vol: 0.4 })] },
+  'Bone crack': { gain: 0.9, layers: [L({ kind: 'noise', filter: 'highpass', c0: 1500, c1: 2500, q: 1.5, attack: 0.001, hold: 0.003, release: 0.03, vol: 1, reps: 3, gap: 0.025, fade: 0.6 }), L({ wave: 'sine', f0: 180, f1: 70, attack: 0.001, hold: 0.01, release: 0.15, vol: 0.7, drive: 0.5 })] },
+  'Heartbeat': { gain: 0.9, layers: [L({ wave: 'sine', f0: 70, f1: 48, attack: 0.004, hold: 0.02, release: 0.12, vol: 1, reps: 2, gap: 0.2, fade: 0.7 })] },
+  'Low swell': { gain: 0.7, layers: [L({ wave: 'triangle', f0: 196, f1: 196, attack: 0.25, hold: 0.25, release: 0.6, vol: 0.5, vibRate: 4, vibDepth: 10 }), L({ wave: 'sine', f0: 294, f1: 294, attack: 0.3, hold: 0.2, release: 0.6, vol: 0.3, start: 0.05 })] },
+  'Clock tick': { gain: 0.8, layers: [L({ kind: 'noise', filter: 'bandpass', c0: 3800, c1: 3800, q: 6, attack: 0.001, hold: 0.002, release: 0.02, vol: 0.9, reps: 2, gap: 0.5 }), L({ wave: 'sine', f0: 1900, f1: 1700, attack: 0.001, hold: 0.002, release: 0.02, vol: 0.3, reps: 2, gap: 0.5 })] },
+};
+const SUGGEST = { turn: 'War drum', decide: 'Stone set', cast: 'Card snap', resolve: 'Dark whoosh', land: 'Felt thud', draw: 'Card slide', shuffle: 'Card slide', tap: 'Card slide', untap: 'Card slide', attack: 'Iron ring', attackBig: 'War drum', block: 'Felt thud', damage: 'Bone crack', damageBig: 'Bone crack', lifeGain: 'Low swell', creatureDies: 'Bone crack', token: 'Dark whoosh', exile: 'Void', counter: 'Fizzle', discard: 'Card slide', mulligan: 'Card slide', timer: 'Clock tick', victory: 'Gong', defeat: 'Gong' };
+
+// ---------- the catalog (from tools/sound-picker/catalog.json) ----------
+const CATALOG = __CATALOG__;
+
+// ---------- state ----------
+const PLAY = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5z"/></svg>';
+const STOP = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="2" width="8" height="8" rx="1"/></svg>';
+const picks = {}, designs = {}; let db = null; let playingId = null;
+const local = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? d; } catch { return d; } };
+const keep = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage unavailable */ } };
+Object.assign(picks, local('picks', {})); Object.assign(designs, local('designs', {}));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const byId = Object.fromEntries(CATALOG.map((e) => [e.id, e]));
+const OPTION = Object.fromEntries(CATALOG.flatMap((e) => e.options.map((o) => [o.id, { ev: e, o }])));
+const groups = [...new Set(CATALOG.map((e) => e.group))];
+document.getElementById('groups').innerHTML = groups.map((g) => `<a href="#${g.toLowerCase()}">${esc(g)}</a>`).join('');
+const setStatus = (t) => { document.getElementById('status').textContent = t; };
+const ADJUST0 = { vol: 1, rate: 1, trimStart: 0, length: 0, fadeOut: 0.04 };
+const adjustOf = (evId) => ({ ...ADJUST0, ...((picks[evId] && picks[evId].adjust) || {}) });
+const isClip = (opt) => !!opt && opt !== 'none' && opt !== 'design';
+
+// ---------- audio ----------
+let ctx = null; const buffers = {};
+const actx = () => { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+async function bufferFor(optId) {
+  if (buffers[optId]) return buffers[optId];
+  const o = OPTION[optId]; if (!o) throw new Error('unknown clip');
+  const b = await fetch(o.o.file).then((r) => { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); }).then((a) => actx().decodeAudioData(a));
+  buffers[optId] = b; return b;
+}
+let voices = [];
+function stopAll() { for (const v of voices) { try { v.stop(); } catch { /* ended */ } } voices = []; }
+// A clip through its adjustments: volume, speed (pitch), trimmed start, length and fade-out. Returns its end time.
+function playClip(c, buf, adj, when) {
+  const src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = adj.rate;
+  const g = c.createGain(); src.connect(g); g.connect(c.destination);
+  const avail = Math.max(0.01, buf.duration - adj.trimStart);
+  const len = Math.min(avail, adj.length > 0 ? adj.length : avail) / adj.rate;
+  const fade = Math.min(adj.fadeOut, len * 0.9);
+  g.gain.setValueAtTime(adj.vol, when); g.gain.setValueAtTime(adj.vol, when + len - fade); g.gain.linearRampToValueAtTime(0.0001, when + len);
+  src.start(when, adj.trimStart, len * adj.rate + 0.01); voices.push(src);
+  return when + len;
+}
+async function clipsFor(recipe) {
+  const out = {};
+  for (const l of recipe.layers) if (l.on && l.kind === 'clip' && l.clipFile && OPTION[l.clipFile]) { try { out[l.clipFile] = await bufferFor(l.clipFile); } catch { /* silent layer */ } }
+  return out;
+}
+// Plays what an event would play in the game right now: its pick (adjusted), its made sound, or a candidate.
+async function playEvent(evId, optId, when) {
+  const c = actx(); const t = when ?? c.currentTime + 0.02; const p = picks[evId];
+  const opt = optId ?? (p && p.option);
+  if (opt === 'none') return t;
+  if (opt === 'design') { const d = designs[evId]; if (!d) return t; const clips = await clipsFor(d.recipe); return playRecipe(c, c.destination, d.recipe, t, clips); }
+  if (!isClip(opt)) return t;
+  const buf = await bufferFor(opt);
+  const adj = p && p.option === opt ? adjustOf(evId) : ADJUST0;
+  return playClip(c, buf, adj, t);
+}
+async function preview(optId, evId) {
+  stopAll();
+  if (playingId === optId) { playingId = null; render(); return; }
+  playingId = optId; render();
+  try { const end = await playEvent(evId, optId); setTimeout(() => { if (playingId === optId) { playingId = null; render(); } }, Math.max(0, (end - actx().currentTime) * 1000) + 60); }
+  catch { playingId = null; render(); setStatus('That clip could not be loaded'); }
+}
+
+// ---------- the list ----------
+function optLabel(e, id) { if (id === 'none') return 'Silent'; if (id === 'design') return 'Your sound'; const o = e.options.find((x) => x.id === id); return o ? o.label : ''; }
+const SRC = { Kenney: ['k', 'K'], Freesound: ['f', 'FS'], OpenGameArt: ['o', 'OGA'] };
+function adjustNote(evId) {
+  const a = adjustOf(evId); const bits = [];
+  if (a.vol !== 1) bits.push(`vol ${Math.round(a.vol * 100)}%`); if (a.rate !== 1) bits.push(`speed ${a.rate.toFixed(2)}×`);
+  if (a.trimStart > 0) bits.push(`from ${a.trimStart.toFixed(2)}s`); if (a.length > 0) bits.push(`${a.length.toFixed(2)}s long`);
+  return bits.length ? `adjusted: ${bits.join(', ')}` : '';
+}
+function render() {
+  document.getElementById('main').innerHTML = groups.map((g) => `<section id="${g.toLowerCase()}"><h2>${esc(g)}</h2><div class="events">${CATALOG.filter((e) => e.group === g).map((e) => {
+    const p = picks[e.id]; const chosen = p && p.option; const o = isClip(chosen) && e.options.find((x) => x.id === chosen); const d = designs[e.id];
+    const note = isClip(chosen) ? adjustNote(e.id) : '';
+    return `<article class="ev ${chosen ? 'done' : ''}" id="ev-${e.id}"><header><div><h3>${esc(e.name)}</h3><div class="what">${esc(e.what)}</div></div>${chosen ? `<span class="pick">✓ ${esc(optLabel(e, chosen))}</span>` : ''}</header>
+      <div class="opts">${e.options.map((x) => { const [cls, mark] = SRC[x.source] || ['o', '?']; return `<div class="opt ${chosen === x.id ? 'on' : ''} ${playingId === x.id ? 'playing' : ''}"><button class="play" type="button" data-play="${x.id}" data-ev="${e.id}" aria-label="Play ${esc(x.label)}">${playingId === x.id ? STOP : PLAY}</button><button class="use" type="button" data-pick="${e.id}" data-opt="${x.id}" title="${esc(x.credit)}"><span class="src ${cls}">${mark}</span><span class="l">${esc(x.label)}</span><span class="dur">${(+x.dur).toFixed(1)}s</span></button>${chosen === x.id ? `<button class="edit" type="button" data-adjust="${e.id}">Adjust</button>` : ''}</div>`; }).join('')}
+        ${d ? `<div class="opt ${chosen === 'design' ? 'on' : ''}"><button class="play" type="button" data-playdesign="${e.id}" aria-label="Play your sound">${PLAY}</button><button class="use" type="button" data-pick="${e.id}" data-opt="design"><span class="src d">✦</span><span class="l">Your sound</span><span class="dur">${recipeLength(d.recipe).toFixed(1)}s</span></button><button class="edit" type="button" data-design="${e.id}">Edit</button></div>` : ''}
+        <div class="opt silent ${chosen === 'none' ? 'on' : ''}"><button class="use" type="button" data-pick="${e.id}" data-opt="none">Silent</button></div>
+        ${d ? '' : `<button class="make" type="button" data-design="${e.id}">✦ Make a sound</button>`}</div>
+      ${o ? `<div class="credit">${esc(o.credit)} · <a href="${esc(o.url)}" target="_blank" rel="noopener">source</a>${note ? ` · <span class="adjusted">${esc(note)}</span>` : ''}</div>` : chosen === 'design' ? '<div class="credit">Your own sound, made here</div>' : ''}</article>`;
+  }).join('')}</div></section>`).join('');
+  const n = CATALOG.filter((e) => picks[e.id] && picks[e.id].option).length;
+  document.getElementById('count').textContent = `${n} of ${CATALOG.length} chosen`;
+  document.getElementById('fill').style.width = `${(100 * n) / Math.max(1, CATALOG.length)}%`;
+}
+async function savePick(evId, next, adjust) {
+  if (next) picks[evId] = { option: next, at: new Date().toISOString(), ...(adjust ? { adjust } : {}) }; else delete picks[evId];
+  keep('picks', picks); render();
+  if (!db) return;
+  try { const ref = db.doc(`picks/${evId}`); if (next) await ref.set(picks[evId]); else await ref.delete(); setStatus('Saved'); }
+  catch (e) { setStatus(e && e.code === 'not_granted' ? 'View only: picks stay in this browser' : 'Could not save; your picks are kept in this browser'); }
+}
+function choose(evId, opt) {
+  const cur = picks[evId] && picks[evId].option;
+  const next = cur === opt ? null : opt; // tapping your pick again clears it
+  savePick(evId, next);
+  if (next && next !== 'none') { stopAll(); playEvent(evId, next).catch(() => setStatus('That clip could not be loaded')); }
+}
+
+// ---------- the bench: designer and adjuster ----------
+const SLIDERS = {
+  gain: { label: 'Volume', min: 0, max: 1.5, step: 0.01 }, echoTime: { label: 'Echo delay', min: 0, max: 0.6, step: 0.01, unit: 's' },
+  echoFeedback: { label: 'Echo repeats', min: 0, max: 0.85, step: 0.01 }, echoMix: { label: 'Echo level', min: 0, max: 1, step: 0.01 },
+  f0: { label: 'Start pitch', min: 30, max: 6000, log: true, unit: 'Hz' }, f1: { label: 'End pitch', min: 30, max: 6000, log: true, unit: 'Hz' },
+  rate: { label: 'Speed', min: 0.25, max: 3, step: 0.01, unit: '×' }, start: { label: 'Delay', min: 0, max: 1.5, step: 0.005, unit: 's' },
+  attack: { label: 'Attack', min: 0.001, max: 0.6, log: true, unit: 's' }, hold: { label: 'Hold', min: 0, max: 1.5, step: 0.005, unit: 's' },
+  release: { label: 'Release', min: 0.01, max: 2.5, log: true, unit: 's' }, vol: { label: 'Layer volume', min: 0, max: 1.2, step: 0.01 },
+  c0: { label: 'Cutoff start', min: 40, max: 12000, log: true, unit: 'Hz' }, c1: { label: 'Cutoff end', min: 40, max: 12000, log: true, unit: 'Hz' },
+  q: { label: 'Resonance', min: 0.1, max: 20, log: true }, vibRate: { label: 'Vibrato speed', min: 0, max: 30, step: 0.1, unit: 'Hz' },
+  vibDepth: { label: 'Vibrato depth', min: 0, max: 1200, step: 5, unit: '¢' }, wobRate: { label: 'Wobble speed', min: 0, max: 60, step: 0.5, unit: 'Hz' },
+  wobDepth: { label: 'Wobble depth', min: 0, max: 1, step: 0.01 }, reps: { label: 'Count', min: 1, max: 12, step: 1 },
+  gap: { label: 'Gap', min: 0.01, max: 0.5, step: 0.005, unit: 's' }, step: { label: 'Pitch step', min: -12, max: 12, step: 1, unit: 'st' },
+  fade: { label: 'Fade', min: 0.2, max: 1, step: 0.01 }, drive: { label: 'Grit', min: 0, max: 1, step: 0.01 },
+  // the adjuster's own
+  aVol: { label: 'Volume', min: 0, max: 2, step: 0.01, key: 'vol' }, aRate: { label: 'Speed / pitch', min: 0.5, max: 2, step: 0.01, unit: '×', key: 'rate' },
+  aTrim: { label: 'Start at', min: 0, max: 2, step: 0.005, unit: 's', key: 'trimStart' }, aLen: { label: 'Length', min: 0, max: 3.5, step: 0.01, unit: 's', key: 'length' },
+  aFade: { label: 'Fade out', min: 0.005, max: 1, log: true, unit: 's', key: 'fadeOut' },
+};
+const toPos = (k, v) => { const s = SLIDERS[k]; return s.log ? Math.round(1000 * Math.log(Math.max(s.min, v) / s.min) / Math.log(s.max / s.min)) : v; };
+const fromPos = (k, p) => { const s = SLIDERS[k]; return s.log ? +(s.min * Math.pow(s.max / s.min, p / 1000)).toPrecision(4) : +p; };
+const fmt = (k, v) => { if (k === 'aLen' && v === 0) return 'full'; const u = SLIDERS[k].unit || ''; const n = Math.abs(v) >= 100 ? Math.round(v) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2); return `${n}${u}`; };
+let bench = null; // { mode: 'design', evId, recipe, layer } | { mode: 'adjust', evId, opt, adjust }
+let autoplay = local('autoplay', true);
+function slider(k, v, scope, max) {
+  const s = SLIDERS[k]; const hi = max ?? s.max;
+  return `<div class="sl"><label for="s-${scope}-${k}">${s.label}</label><input type="range" id="s-${scope}-${k}" data-k="${k}" data-scope="${scope}" min="${s.log ? 0 : s.min}" max="${s.log ? 1000 : hi}" step="${s.log ? 1 : s.step}" value="${toPos(k, v)}"><output>${fmt(k, v)}</output></div>`;
+}
+const segBtns = (name, opts, cur) => `<div class="seg">${opts.map(([v, t]) => `<button type="button" data-seg="${name}" data-v="${v}" class="${cur === v ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+const pickedClips = () => CATALOG.filter((e) => picks[e.id] && isClip(picks[e.id].option));
+function benchTop(title, sub, extra) {
+  return `<div class="bz-top"><h3>${esc(title)}<small>${esc(sub)}</small></h3>${extra}
+    <button class="btn" type="button" data-bz="play">▶ Play</button>
+    <label for="autoplay"><input type="checkbox" id="autoplay" ${autoplay ? 'checked' : ''}> Play as I adjust</label>
+    <span class="spacer"></span><button class="btn primary" type="button" data-bz="save">Use this</button><button class="btn" type="button" data-bz="close">Close</button></div>
+    <canvas id="wave" width="1600" height="144" aria-label="Waveform of the sound"></canvas>`;
+}
+function renderBench() {
+  const el = document.getElementById('bench');
+  if (!bench) { el.hidden = true; document.body.classList.remove('bench-open'); return; }
+  el.hidden = false; document.body.classList.add('bench-open');
+  const e = byId[bench.evId];
+  if (bench.mode === 'adjust') {
+    const a = bench.adjust; const dur = OPTION[bench.opt] ? +OPTION[bench.opt].o.dur : 2;
+    el.innerHTML = `<div class="in">${benchTop(`Adjust · ${e.name}`, OPTION[bench.opt] ? OPTION[bench.opt].o.label : '', '<button class="btn" type="button" data-bz="reset">Reset</button>')}
+      <fieldset><legend>This clip</legend><div class="groups2">${slider('aVol', a.vol, 'a')}${slider('aRate', a.rate, 'a')}${slider('aTrim', a.trimStart, 'a', Math.max(0.05, +(dur - 0.05).toFixed(2)))}${slider('aLen', a.length, 'a', Math.max(0.05, dur))}${slider('aFade', a.fadeOut, 'a')}</div></fieldset>
+      <p class="note">Speed changes pitch too: below 1× is lower and heavier, above is higher and lighter. Length 0 plays to the end.</p></div>`;
+    drawWave(); return;
+  }
+  const r = bench.recipe; const l = r.layers[bench.layer]; const srcs = pickedClips();
+  el.innerHTML = `<div class="in">${benchTop(`✦ ${e.name}`, e.what, `<select id="preset" aria-label="Start from a preset"><option value="">Start from…</option>${Object.keys(PRESETS).map((p) => `<option>${esc(p)}</option>`).join('')}</select><button class="btn" type="button" data-bz="random">Randomize</button><button class="btn" type="button" data-bz="mutate">Mutate</button>`)}
+    <fieldset><legend>Whole sound</legend><div class="groups2">${['gain', 'echoTime', 'echoFeedback', 'echoMix'].map((k) => slider(k, r[k], 'r')).join('')}</div></fieldset>
+    <div class="tabs">${r.layers.map((x, i) => `<button type="button" class="tab ${i === bench.layer ? 'on' : ''} ${x.on ? '' : 'off'}" data-tab="${i}">Layer ${i + 1} · ${x.kind === 'clip' ? 'clip' : x.kind === 'noise' ? 'noise' : x.wave}</button>`).join('')}
+      ${r.layers.length < 4 ? '<button class="btn" type="button" data-bz="add">+ Layer</button>' : ''}
+      <button class="btn" type="button" data-bz="toggle">${l.on ? 'Mute layer' : 'Unmute layer'}</button>${r.layers.length > 1 ? '<button class="btn" type="button" data-bz="remove">Remove layer</button>' : ''}</div>
+    <div class="groups2">
+      <fieldset><legend>Source</legend>${segBtns('kind', [['tone', 'Tone'], ['noise', 'Noise'], ['clip', 'Clip']], l.kind)}
+        ${l.kind === 'tone' ? segBtns('wave', WAVES.map((w) => [w, w === 'sawtooth' ? 'saw' : w]), l.wave) + slider('f0', l.f0, 'l') + slider('f1', l.f1, 'l') : ''}
+        ${l.kind === 'clip' ? `<div class="sl"><label for="clipsrc">Clip</label><select id="clipsrc" style="grid-column: span 2">${CATALOG.map((ev) => `<optgroup label="${esc(ev.name)}">${ev.options.map((o) => `<option value="${o.id}" ${o.id === l.clipFile ? 'selected' : ''}>${esc(o.label)}${picks[ev.id] && picks[ev.id].option === o.id ? ' (picked)' : ''}</option>`).join('')}</optgroup>`).join('')}</select></div>${slider('rate', l.rate, 'l')}` : ''}
+        ${l.kind === 'noise' ? '<p class="note">White noise: shape it with the filter (low-pass for thuds, high-pass for scrapes and hiss).</p>' : ''}
+        ${l.kind === 'clip' && !srcs.length ? '<p class="note">Any candidate clip can be layered here, picked or not.</p>' : ''}</fieldset>
+      <fieldset><legend>Timing</legend>${['start', 'attack', 'hold', 'release', 'vol'].map((k) => slider(k, l[k], 'l')).join('')}</fieldset>
+      <fieldset><legend>Filter</legend>${segBtns('filter', FILTERS.map((f) => [f, f === 'none' ? 'off' : f.replace('pass', '')]), l.filter)}${l.filter !== 'none' ? ['c0', 'c1', 'q'].map((k) => slider(k, l[k], 'l')).join('') : ''}</fieldset>
+      <fieldset><legend>Motion</legend>${(l.kind === 'tone' ? ['vibRate', 'vibDepth'] : []).concat(['wobRate', 'wobDepth']).map((k) => slider(k, l[k], 'l')).join('')}</fieldset>
+      <fieldset><legend>Repeat</legend>${['reps', 'gap', 'step', 'fade'].map((k) => slider(k, l[k], 'l')).join('')}</fieldset>
+      <fieldset><legend>Grit</legend>${slider('drive', l.drive, 'l')}</fieldset>
+    </div></div>`;
+  drawWave();
+}
+let waveTimer = null;
+function drawWave() {
+  clearTimeout(waveTimer);
+  waveTimer = setTimeout(async () => {
+    const cv = document.getElementById('wave'); if (!cv || !bench) return;
+    let data; let len;
+    try {
+      if (bench.mode === 'adjust') {
+        const buf = await bufferFor(bench.opt); const a = bench.adjust;
+        len = Math.min(buf.duration - a.trimStart, a.length > 0 ? a.length : Infinity) / a.rate + 0.02;
+        const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(len * 22050)), 22050);
+        const src = off.createBufferSource(); src.buffer = buf; src.playbackRate.value = a.rate; const g = off.createGain(); src.connect(g); g.connect(off.destination);
+        const fade = Math.min(a.fadeOut, len * 0.9); g.gain.setValueAtTime(a.vol, 0); g.gain.setValueAtTime(a.vol, Math.max(0, len - fade)); g.gain.linearRampToValueAtTime(0.0001, len);
+        src.start(0, a.trimStart); data = (await off.startRendering()).getChannelData(0);
+      } else {
+        len = Math.min(6, recipeLength(bench.recipe) + 0.05);
+        const off = new OfflineAudioContext(1, Math.max(1, Math.ceil(len * 22050)), 22050);
+        playRecipe(off, off.destination, bench.recipe, 0, await clipsFor(bench.recipe)); data = (await off.startRendering()).getChannelData(0);
+      }
+    } catch { return; }
+    const g = cv.getContext('2d'); const W = cv.width, H = cv.height; const css = getComputedStyle(document.documentElement);
+    g.clearRect(0, 0, W, H); g.fillStyle = css.getPropertyValue('--amber').trim();
+    const per = data.length / W;
+    for (let x = 0; x < W; x++) { let lo = 0, hi = 0; for (let i = Math.floor(x * per); i < Math.floor((x + 1) * per); i++) { const v = data[i] || 0; if (v < lo) lo = v; if (v > hi) hi = v; } g.fillRect(x, H / 2 - hi * H / 2, 1, Math.max(1, (hi - lo) * H / 2)); }
+    g.fillStyle = css.getPropertyValue('--ink-faint').trim(); g.font = '22px JetBrains Mono, monospace'; g.fillText(`${len.toFixed(2)} s`, 10, 26);
+  }, 60);
+}
+function openDesigner(evId) {
+  const saved = designs[evId] && designs[evId].recipe; const draft = local(`draft-${evId}`, null);
+  bench = { mode: 'design', evId, recipe: normaliseRecipe(JSON.parse(JSON.stringify(draft || saved || PRESETS[SUGGEST[evId]] || PRESETS['Card snap']))), layer: 0 };
+  stopAll(); renderBench();
+}
+function openAdjust(evId) { const opt = picks[evId].option; bench = { mode: 'adjust', evId, opt, adjust: adjustOf(evId) }; stopAll(); renderBench(); }
+async function playBench() {
+  stopAll(); const c = actx();
+  if (bench.mode === 'adjust') { playClip(c, await bufferFor(bench.opt), bench.adjust, c.currentTime + 0.02); return; }
+  playRecipe(c, c.destination, bench.recipe, c.currentTime + 0.02, await clipsFor(bench.recipe));
+}
+const RANGES = () => Object.fromEntries(Object.entries(SLIDERS).map(([k, s]) => [k, [s.min, s.max]]));
+function mutate(recipe, amt) {
+  const R = RANGES(); const j = (k, v) => { const [a, b] = R[k]; const x = SLIDERS[k].log ? v * Math.pow(b / a, (Math.random() * 2 - 1) * amt * 0.25) : v + (Math.random() * 2 - 1) * amt * (b - a) * 0.25; return Math.min(b, Math.max(a, k === 'reps' || k === 'step' ? Math.round(x) : +x.toPrecision(4))); };
+  for (const l of recipe.layers) for (const k of ['f0', 'f1', 'attack', 'hold', 'release', 'c0', 'c1', 'q', 'vibRate', 'vibDepth', 'wobRate', 'wobDepth', 'gap', 'step', 'drive', 'rate']) if (typeof l[k] === 'number' && (l[k] !== 0 || Math.random() < amt * 0.3)) l[k] = j(k, l[k]);
+  return recipe;
+}
+function afterChange(playIt) { if (bench.mode === 'design') keep(`draft-${bench.evId}`, bench.recipe); renderBench(); if (playIt && autoplay) playBench(); }
+async function saveBench() {
+  const { evId } = bench;
+  if (bench.mode === 'adjust') {
+    const a = bench.adjust; const changed = Object.keys(ADJUST0).some((k) => a[k] !== ADJUST0[k]);
+    await savePick(evId, bench.opt, changed ? a : undefined);
+  } else {
+    designs[evId] = { recipe: bench.recipe, at: new Date().toISOString() }; keep('designs', designs);
+    try { localStorage.removeItem(`draft-${evId}`); } catch { /* storage unavailable */ }
+    await savePick(evId, 'design');
+    if (db) { try { await db.doc(`designs/${evId}`).set(designs[evId]); setStatus('Saved your sound'); } catch { setStatus('Could not save your sound; it is kept in this browser'); } }
+  }
+  bench = null; renderBench(); render(); document.getElementById(`ev-${evId}`)?.scrollIntoView({ block: 'nearest' });
+}
+
+// ---------- hear a turn ----------
+// the order a turn makes its sounds, with the gaps a real game leaves between them
+const TURN = [['untap', 0.0], ['turn', 0.35], ['draw', 0.9], ['land', 0.8], ['tap', 0.55], ['tap', 0.18], ['cast', 0.5], ['resolve', 0.9], ['token', 0.7], ['attack', 1.0], ['block', 0.9], ['damage', 0.7], ['creatureDies', 0.5], ['lifeGain', 0.9], ['decide', 1.0]];
+let turnTimers = [];
+async function hearTurn() {
+  stopAll(); for (const t of turnTimers) clearTimeout(t); turnTimers = [];
+  const c = actx(); const strip = document.getElementById('turn');
+  const steps = TURN.filter(([id]) => byId[id]);
+  strip.innerHTML = steps.map(([id], i) => `<span class="step ${picks[id] && picks[id].option === 'none' ? 'silent' : ''}" data-i="${i}">${esc(byId[id].name)}</span>`).join('');
+  // unpicked moments play their first candidate
+  const choice = (id) => { const p = picks[id]; return p && p.option ? undefined : (byId[id].options[0] || {}).id; };
+  // load every clip first, so slow loads don't bunch the sounds together
+  setStatus('Loading the turn…');
+  await Promise.all(steps.map(async ([id]) => {
+    const p = picks[id]; const opt = choice(id) ?? (p && p.option);
+    try { if (isClip(opt)) await bufferFor(opt); else if (opt === 'design' && designs[id]) await clipsFor(designs[id].recipe); } catch { /* plays silent */ }
+  }));
+  setStatus('Playing a turn');
+  let at = c.currentTime + 0.1;
+  for (let i = 0; i < steps.length; i++) {
+    const [id, gap] = steps[i]; at += gap;
+    try { await playEvent(id, choice(id), at); } catch { /* skip a missing clip */ }
+    const delay = (at - c.currentTime) * 1000;
+    turnTimers.push(setTimeout(() => { strip.querySelectorAll('.step').forEach((s) => s.classList.toggle('now', +s.dataset.i === i)); }, Math.max(0, delay)));
+  }
+  turnTimers.push(setTimeout(() => { strip.querySelectorAll('.step').forEach((s) => s.classList.remove('now')); }, (at - c.currentTime) * 1000 + 900));
+}
+
+// ---------- events ----------
+document.getElementById('turnBtn').addEventListener('click', () => { hearTurn(); });
+document.addEventListener('click', (ev) => {
+  const t = ev.target;
+  const p = t.closest('[data-play]'); if (p) { preview(p.dataset.play, p.dataset.ev); return; }
+  const pd = t.closest('[data-playdesign]'); if (pd) { stopAll(); playEvent(pd.dataset.playdesign, 'design'); return; }
+  const ds = t.closest('[data-design]'); if (ds) { openDesigner(ds.dataset.design); return; }
+  const ad = t.closest('[data-adjust]'); if (ad) { openAdjust(ad.dataset.adjust); return; }
+  const u = t.closest('[data-pick]'); if (u) { choose(u.dataset.pick, u.dataset.opt); return; }
+  if (!bench) return;
+  const tab = t.closest('[data-tab]'); if (tab) { bench.layer = +tab.dataset.tab; renderBench(); return; }
+  const sg = t.closest('[data-seg]'); if (sg) { const l = bench.recipe.layers[bench.layer]; l[sg.dataset.seg] = sg.dataset.v; if (sg.dataset.seg === 'kind' && sg.dataset.v === 'clip' && !l.clipFile) { const ev0 = byId[bench.evId]; const pk = picks[bench.evId]; l.clipFile = pk && isClip(pk.option) ? pk.option : (ev0.options[0] || {}).id || ''; } afterChange(true); return; }
+  const b = t.closest('[data-bz]'); if (!b) return;
+  switch (b.dataset.bz) {
+    case 'play': playBench(); break;
+    case 'close': bench = null; renderBench(); break;
+    case 'save': saveBench(); break;
+    case 'reset': bench.adjust = { ...ADJUST0 }; afterChange(true); break;
+    case 'add': bench.recipe.layers.push(newLayer('tone')); bench.layer = bench.recipe.layers.length - 1; afterChange(false); break;
+    case 'remove': bench.recipe.layers.splice(bench.layer, 1); bench.layer = Math.max(0, bench.layer - 1); afterChange(true); break;
+    case 'toggle': bench.recipe.layers[bench.layer].on = !bench.recipe.layers[bench.layer].on; afterChange(true); break;
+    case 'random': { const names = Object.keys(PRESETS); bench.recipe = mutate(normaliseRecipe(JSON.parse(JSON.stringify(PRESETS[names[Math.floor(Math.random() * names.length)]]))), 0.6); bench.layer = 0; afterChange(true); break; }
+    case 'mutate': mutate(bench.recipe, 0.25); afterChange(true); break;
+  }
+});
+document.addEventListener('input', (ev) => {
+  const t = ev.target; if (!bench || !t.dataset || !t.dataset.k) return;
+  const k = t.dataset.k; const v = fromPos(k, +t.value);
+  if (t.dataset.scope === 'a') bench.adjust[SLIDERS[k].key] = v;
+  else (t.dataset.scope === 'r' ? bench.recipe : bench.recipe.layers[bench.layer])[k] = v;
+  t.nextElementSibling.textContent = fmt(k, v); if (bench.mode === 'design') keep(`draft-${bench.evId}`, bench.recipe); drawWave();
+});
+document.addEventListener('change', (ev) => {
+  const t = ev.target;
+  if (t.id === 'onlyOpen') { document.getElementById('main').classList.toggle('hide-done', t.checked); return; }
+  if (!bench) return;
+  if (t.id === 'autoplay') { autoplay = t.checked; keep('autoplay', autoplay); return; }
+  if (t.id === 'preset' && t.value) { bench.recipe = normaliseRecipe(JSON.parse(JSON.stringify(PRESETS[t.value]))); bench.layer = 0; afterChange(true); return; }
+  if (t.id === 'clipsrc') { bench.recipe.layers[bench.layer].clipFile = t.value; afterChange(true); return; }
+  if (t.dataset && t.dataset.k && autoplay) playBench(); // play on release
+});
+document.addEventListener('keydown', (ev) => { if (bench && ev.key === 'Escape') { bench = null; renderBench(); } });
+render();
+
+// ---------- saved picks ----------
+(async () => {
+  db = window.claude ? await window.claude.use('db') : null;
+  if (!db) { setStatus('Offline: picks stay in this browser'); return; }
+  db.collection('picks').onSnapshot((snap) => {
+    const fromServer = {}; for (const d of snap.docs) { const v = d.data(); if (v && v.option) fromServer[d.id] = v; }
+    for (const k of Object.keys(picks)) if (!fromServer[k]) db.doc(`picks/${k}`).set(picks[k]).catch(() => {}); // picked here before the store answered
+    for (const k of Object.keys(picks)) delete picks[k]; Object.assign(picks, fromServer); keep('picks', picks); render(); setStatus('Saved');
+  }, () => setStatus('Could not reach saved picks; using this browser'));
+  db.collection('designs').onSnapshot((snap) => {
+    const fromServer = {}; for (const d of snap.docs) { const v = d.data(); if (v && v.recipe) fromServer[d.id] = v; }
+    for (const k of Object.keys(designs)) if (!fromServer[k]) db.doc(`designs/${k}`).set(designs[k]).catch(() => {});
+    Object.assign(designs, fromServer); keep('designs', designs); render();
+  }, () => {});
+})();
+</script>

@@ -1,0 +1,1457 @@
+{
+ "generated": "2026-10-14",
+ "events": [
+  {
+   "group": "Turns",
+   "id": "turn",
+   "name": "Your turn",
+   "what": "Your turn starts: low drum hit, deep gong, war horn swell, heavy door",
+   "options": [
+    {
+     "id": "turn-f415200",
+     "source": "Freesound",
+     "label": "Deep Gong Tolling.mp3",
+     "credit": "\"Deep Gong Tolling.mp3\" by Yin_Yang_Jake007 (Freesound #415200, CC0)",
+     "url": "https://freesound.org/people/Yin_Yang_Jake007/sounds/415200/",
+     "dur": 3.5,
+     "file": "clips/turn/turn-f415200.mp3"
+    },
+    {
+     "id": "turn-f436486",
+     "source": "Freesound",
+     "label": "gong-013.wav",
+     "credit": "\"gong-013.wav\" by rabban625 (Freesound #436486, CC0)",
+     "url": "https://freesound.org/people/rabban625/sounds/436486/",
+     "dur": 2.97,
+     "file": "clips/turn/turn-f436486.mp3"
+    },
+    {
+     "id": "turn-o1",
+     "source": "OpenGameArt",
+     "label": "100 CC0 SFX · gong_01",
+     "credit": "\"100 CC0 SFX\" by rubberduck (OpenGameArt #100-cc0-sfx, CC0)",
+     "url": "https://opengameart.org/content/100-cc0-sfx",
+     "dur": 1.28,
+     "file": "clips/turn/turn-o1.mp3"
+    },
+    {
+     "id": "turn-o2",
+     "source": "OpenGameArt",
+     "label": "Their Coming (generic horn sound) · theircoming3_0",
+     "credit": "\"Their Coming (generic horn sound)\" by StumpyStrust (OpenGameArt #their-coming-generic-horn-sound, CC0)",
+     "url": "https://opengameart.org/content/their-coming-generic-horn-sound",
+     "dur": 3.5,
+     "file": "clips/turn/turn-o2.mp3"
+    },
+    {
+     "id": "turn-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactBell_heavy_000",
+     "credit": "\"impactBell_heavy_000\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 1.1,
+     "file": "clips/turn/turn-k1.mp3"
+    },
+    {
+     "id": "turn-k2",
+     "source": "Kenney",
+     "label": "RPG Audio · doorClose_4",
+     "credit": "\"doorClose_4\" by Kenney (Kenney.nl RPG Audio, CC0)",
+     "url": "https://kenney.nl/assets/rpg-audio",
+     "dur": 0.54,
+     "file": "clips/turn/turn-k2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Turns",
+   "id": "decide",
+   "name": "Decision needed",
+   "what": "The game needs your decision: soft but noticeable tap, quill/knock, low bell",
+   "options": [
+    {
+     "id": "decide-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactWood_light_002",
+     "credit": "\"impactWood_light_002\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.14,
+     "file": "clips/decide/decide-k1.mp3"
+    },
+    {
+     "id": "decide-k2",
+     "source": "Kenney",
+     "label": "Interface Sounds · bong_001",
+     "credit": "\"bong_001\" by Kenney (Kenney.nl Interface Sounds, CC0)",
+     "url": "https://kenney.nl/assets/interface-sounds",
+     "dur": 0.12,
+     "file": "clips/decide/decide-k2.mp3"
+    },
+    {
+     "id": "decide-f846108",
+     "source": "Freesound",
+     "label": "Bell_Low",
+     "credit": "\"Bell_Low\" by heideldrum (Freesound #846108, CC0)",
+     "url": "https://freesound.org/people/heideldrum/sounds/846108/",
+     "dur": 0.13,
+     "file": "clips/decide/decide-f846108.mp3"
+    },
+    {
+     "id": "decide-f742356",
+     "source": "Freesound",
+     "label": "SingleKnock_Wood",
+     "credit": "\"SingleKnock_Wood\" by NoisyRedFox (Freesound #742356, CC0)",
+     "url": "https://freesound.org/people/NoisyRedFox/sounds/742356/",
+     "dur": 0.2,
+     "file": "clips/decide/decide-f742356.mp3"
+    },
+    {
+     "id": "decide-f62964",
+     "source": "Freesound",
+     "label": "Deep Bell.wav",
+     "credit": "\"Deep Bell.wav\" by LadyCailin (Freesound #62964, CC0)",
+     "url": "https://freesound.org/people/LadyCailin/sounds/62964/",
+     "dur": 1.2,
+     "file": "clips/decide/decide-f62964.mp3"
+    },
+    {
+     "id": "decide-o1",
+     "source": "OpenGameArt",
+     "label": "RPG Sound Pack · wood-small",
+     "credit": "\"RPG Sound Pack\" by artisticdude (OpenGameArt #rpg-sound-pack, CC0)",
+     "url": "https://opengameart.org/content/rpg-sound-pack",
+     "dur": 0.22,
+     "file": "clips/decide/decide-o1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "cast",
+   "name": "Cast spell",
+   "what": "You cast a spell: dark magical whoosh",
+   "options": [
+    {
+     "id": "cast-f657795",
+     "source": "Freesound",
+     "label": "Dark Whoosh",
+     "credit": "\"Dark Whoosh\" by The-Sacha-Rush (Freesound #657795, CC0)",
+     "url": "https://freesound.org/people/The-Sacha-Rush/sounds/657795/",
+     "dur": 1.2,
+     "file": "clips/cast/cast-f657795.mp3"
+    },
+    {
+     "id": "cast-f715784",
+     "source": "Freesound",
+     "label": "Magic Whoosh",
+     "credit": "\"Magic Whoosh\" by DustyWind (Freesound #715784, CC0)",
+     "url": "https://freesound.org/people/DustyWind/sounds/715784/",
+     "dur": 0.87,
+     "file": "clips/cast/cast-f715784.mp3"
+    },
+    {
+     "id": "cast-f420677",
+     "source": "Freesound",
+     "label": "Spell Cast / Buff / Deep Tone",
+     "credit": "\"Spell Cast / Buff / Deep Tone\" by SypherZent (Freesound #420677, CC0)",
+     "url": "https://freesound.org/people/SypherZent/sounds/420677/",
+     "dur": 0.49,
+     "file": "clips/cast/cast-f420677.mp3"
+    },
+    {
+     "id": "cast-f455205",
+     "source": "Freesound",
+     "label": "Magic Spell 02.wav",
+     "credit": "\"Magic Spell 02.wav\" by LilMati (Freesound #455205, CC0)",
+     "url": "https://freesound.org/people/LilMati/sounds/455205/",
+     "dur": 1.2,
+     "file": "clips/cast/cast-f455205.mp3"
+    },
+    {
+     "id": "cast-o1",
+     "source": "OpenGameArt",
+     "label": "Magic Spell SFX · magical_2",
+     "credit": "\"Magic Spell SFX\" by JaggedStone (OpenGameArt #magic-spell-sfx, CC0)",
+     "url": "https://opengameart.org/content/magic-spell-sfx",
+     "dur": 1.2,
+     "file": "clips/cast/cast-o1.mp3"
+    },
+    {
+     "id": "cast-o2",
+     "source": "OpenGameArt",
+     "label": "RPG Sound Pack · magic1",
+     "credit": "\"RPG Sound Pack\" by artisticdude (OpenGameArt #rpg-sound-pack, CC0)",
+     "url": "https://opengameart.org/content/rpg-sound-pack",
+     "dur": 0.62,
+     "file": "clips/cast/cast-o2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "resolve",
+   "name": "Spell resolves",
+   "what": "A spell resolves: low magical thrum, impact with rumble",
+   "options": [
+    {
+     "id": "resolve-f873747",
+     "source": "Freesound",
+     "label": "Low_Mid_End_Void_Energy_Blast_Punch_01",
+     "credit": "\"Low_Mid_End_Void_Energy_Blast_Punch_01\" by The_Elementus (Freesound #873747, CC0)",
+     "url": "https://freesound.org/people/The_Elementus/sounds/873747/",
+     "dur": 0.73,
+     "file": "clips/resolve/resolve-f873747.mp3"
+    },
+    {
+     "id": "resolve-f527525",
+     "source": "Freesound",
+     "label": "Vibrating Thud",
+     "credit": "\"Vibrating Thud\" by Jerimee (Freesound #527525, CC0)",
+     "url": "https://freesound.org/people/Jerimee/sounds/527525/",
+     "dur": 0.53,
+     "file": "clips/resolve/resolve-f527525.mp3"
+    },
+    {
+     "id": "resolve-f788604",
+     "source": "Freesound",
+     "label": "Distant Bells Thrumming Magic",
+     "credit": "\"Distant Bells Thrumming Magic\" by el_boss (Freesound #788604, CC0)",
+     "url": "https://freesound.org/people/el_boss/sounds/788604/",
+     "dur": 1.2,
+     "file": "clips/resolve/resolve-f788604.mp3"
+    },
+    {
+     "id": "resolve-f794196",
+     "source": "Freesound",
+     "label": "kicks bass impacts subs by CVLTIV8R 99.wav",
+     "credit": "\"kicks bass impacts subs by CVLTIV8R 99.wav\" by CVLTIV8R (Freesound #794196, CC0)",
+     "url": "https://freesound.org/people/CVLTIV8R/sounds/794196/",
+     "dur": 0.99,
+     "file": "clips/resolve/resolve-f794196.mp3"
+    },
+    {
+     "id": "resolve-o1",
+     "source": "OpenGameArt",
+     "label": "Magic Spell SFX · magical_6_0",
+     "credit": "\"Magic Spell SFX\" by JaggedStone (OpenGameArt #magic-spell-sfx, CC0)",
+     "url": "https://opengameart.org/content/magic-spell-sfx",
+     "dur": 1.11,
+     "file": "clips/resolve/resolve-o1.mp3"
+    },
+    {
+     "id": "resolve-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactSoft_heavy_001",
+     "credit": "\"impactSoft_heavy_001\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.57,
+     "file": "clips/resolve/resolve-k1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "land",
+   "name": "Play land",
+   "what": "A land is played: card set down, stone set down",
+   "options": [
+    {
+     "id": "land-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-place-1",
+     "credit": "\"card-place-1\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.2,
+     "file": "clips/land/land-k1.mp3"
+    },
+    {
+     "id": "land-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · card-place-3",
+     "credit": "\"card-place-3\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.34,
+     "file": "clips/land/land-k2.mp3"
+    },
+    {
+     "id": "land-f513694",
+     "source": "Freesound",
+     "label": "impact-stone-heavy.wav",
+     "credit": "\"impact-stone-heavy.wav\" by kasparsj (Freesound #513694, CC0)",
+     "url": "https://freesound.org/people/kasparsj/sounds/513694/",
+     "dur": 0.72,
+     "file": "clips/land/land-f513694.mp3"
+    },
+    {
+     "id": "land-f843547",
+     "source": "Freesound",
+     "label": "ROCK_IMPACT_GALETS_OUTDOORS_260128 48",
+     "credit": "\"ROCK_IMPACT_GALETS_OUTDOORS_260128 48\" by kevinklang (Freesound #843547, CC0)",
+     "url": "https://freesound.org/people/kevinklang/sounds/843547/",
+     "dur": 0.2,
+     "file": "clips/land/land-f843547.mp3"
+    },
+    {
+     "id": "land-o1",
+     "source": "OpenGameArt",
+     "label": "80 CC0 RPG SFX · stones_01",
+     "credit": "\"80 CC0 RPG SFX\" by rubberduck (OpenGameArt #80-cc0-rpg-sfx, CC0)",
+     "url": "https://opengameart.org/content/80-cc0-rpg-sfx",
+     "dur": 0.46,
+     "file": "clips/land/land-o1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "draw",
+   "name": "Draw card",
+   "what": "Draw a card: slide/flick from the deck",
+   "options": [
+    {
+     "id": "draw-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-slide-2",
+     "credit": "\"card-slide-2\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.58,
+     "file": "clips/draw/draw-k1.mp3"
+    },
+    {
+     "id": "draw-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · card-slide-5",
+     "credit": "\"card-slide-5\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.24,
+     "file": "clips/draw/draw-k2.mp3"
+    },
+    {
+     "id": "draw-k3",
+     "source": "Kenney",
+     "label": "Casino Audio · card-shove-1",
+     "credit": "\"card-shove-1\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.77,
+     "file": "clips/draw/draw-k3.mp3"
+    },
+    {
+     "id": "draw-f817579",
+     "source": "Freesound",
+     "label": "slideCard04",
+     "credit": "\"slideCard04\" by SilverDubloons (Freesound #817579, CC0)",
+     "url": "https://freesound.org/people/SilverDubloons/sounds/817579/",
+     "dur": 0.35,
+     "file": "clips/draw/draw-f817579.mp3"
+    },
+    {
+     "id": "draw-f571581",
+     "source": "Freesound",
+     "label": "Playing Card Slide Right",
+     "credit": "\"Playing Card Slide Right\" by el_boss (Freesound #571581, CC0)",
+     "url": "https://freesound.org/people/el_boss/sounds/571581/",
+     "dur": 0.27,
+     "file": "clips/draw/draw-f571581.mp3"
+    },
+    {
+     "id": "draw-o1",
+     "source": "OpenGameArt",
+     "label": "Card Game sounds · draw",
+     "credit": "\"Card Game sounds\" by HaelDB (OpenGameArt #card-game-sounds, CC0)",
+     "url": "https://opengameart.org/content/card-game-sounds",
+     "dur": 0.17,
+     "file": "clips/draw/draw-o1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "shuffle",
+   "name": "Shuffle library",
+   "what": "Shuffle the library: riffle shuffle",
+   "options": [
+    {
+     "id": "shuffle-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-shuffle",
+     "credit": "\"card-shuffle\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 1.2,
+     "file": "clips/shuffle/shuffle-k1.mp3"
+    },
+    {
+     "id": "shuffle-o1",
+     "source": "OpenGameArt",
+     "label": "Playing Card Sounds · shuffle",
+     "credit": "\"Playing Card Sounds\" by BMacZero (OpenGameArt #playing-card-sounds, CC0)",
+     "url": "https://opengameart.org/content/playing-card-sounds",
+     "dur": 0.55,
+     "file": "clips/shuffle/shuffle-o1.mp3"
+    },
+    {
+     "id": "shuffle-o2",
+     "source": "OpenGameArt",
+     "label": "Card Game sounds · shuffle",
+     "credit": "\"Card Game sounds\" by HaelDB (OpenGameArt #card-game-sounds, CC0)",
+     "url": "https://opengameart.org/content/card-game-sounds",
+     "dur": 0.46,
+     "file": "clips/shuffle/shuffle-o2.mp3"
+    },
+    {
+     "id": "shuffle-f817574",
+     "source": "Freesound",
+     "label": "shuffle05",
+     "credit": "\"shuffle05\" by SilverDubloons (Freesound #817574, CC0)",
+     "url": "https://freesound.org/people/SilverDubloons/sounds/817574/",
+     "dur": 0.94,
+     "file": "clips/shuffle/shuffle-f817574.mp3"
+    },
+    {
+     "id": "shuffle-f662329",
+     "source": "Freesound",
+     "label": "Shuffling Cards, new deck.wav",
+     "credit": "\"Shuffling Cards, new deck.wav\" by ARodLRU2018 (Freesound #662329, CC0)",
+     "url": "https://freesound.org/people/ARodLRU2018/sounds/662329/",
+     "dur": 1.2,
+     "file": "clips/shuffle/shuffle-f662329.mp3"
+    },
+    {
+     "id": "shuffle-f784517",
+     "source": "Freesound",
+     "label": "paper card shuffling",
+     "credit": "\"paper card shuffling\" by hamthoiphuchung (Freesound #784517, CC0)",
+     "url": "https://freesound.org/people/hamthoiphuchung/sounds/784517/",
+     "dur": 0.47,
+     "file": "clips/shuffle/shuffle-f784517.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "tap",
+   "name": "Tap permanent",
+   "what": "Tap a permanent: short card rotate/scrape on felt",
+   "options": [
+    {
+     "id": "tap-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-shove-3",
+     "credit": "\"card-shove-3\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.69,
+     "file": "clips/tap/tap-k1.mp3"
+    },
+    {
+     "id": "tap-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · card-slide-8",
+     "credit": "\"card-slide-8\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.67,
+     "file": "clips/tap/tap-k2.mp3"
+    },
+    {
+     "id": "tap-o1",
+     "source": "OpenGameArt",
+     "label": "Card Game sounds · tap",
+     "credit": "\"Card Game sounds\" by HaelDB (OpenGameArt #card-game-sounds, CC0)",
+     "url": "https://opengameart.org/content/card-game-sounds",
+     "dur": 0.31,
+     "file": "clips/tap/tap-o1.mp3"
+    },
+    {
+     "id": "tap-o2",
+     "source": "OpenGameArt",
+     "label": "Playing Card Sounds · contact2",
+     "credit": "\"Playing Card Sounds\" by BMacZero (OpenGameArt #playing-card-sounds, CC0)",
+     "url": "https://opengameart.org/content/playing-card-sounds",
+     "dur": 0.27,
+     "file": "clips/tap/tap-o2.mp3"
+    },
+    {
+     "id": "tap-f188055",
+     "source": "Freesound",
+     "label": "Scrape 5",
+     "credit": "\"Scrape 5\" by AntumDeluge (Freesound #188055, CC0)",
+     "url": "https://freesound.org/people/AntumDeluge/sounds/188055/",
+     "dur": 1.2,
+     "file": "clips/tap/tap-f188055.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "untap",
+   "name": "Untap",
+   "what": "Untap step: quick soft flurry of cards",
+   "options": [
+    {
+     "id": "untap-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-fan-1",
+     "credit": "\"card-fan-1\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.72,
+     "file": "clips/untap/untap-k1.mp3"
+    },
+    {
+     "id": "untap-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · card-fan-2",
+     "credit": "\"card-fan-2\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 1.15,
+     "file": "clips/untap/untap-k2.mp3"
+    },
+    {
+     "id": "untap-o1",
+     "source": "OpenGameArt",
+     "label": "Card Game sounds · untap",
+     "credit": "\"Card Game sounds\" by HaelDB (OpenGameArt #card-game-sounds, CC0)",
+     "url": "https://opengameart.org/content/card-game-sounds",
+     "dur": 0.25,
+     "file": "clips/untap/untap-o1.mp3"
+    },
+    {
+     "id": "untap-f502662",
+     "source": "Freesound",
+     "label": "stack_cards.mp3",
+     "credit": "\"stack_cards.mp3\" by eggdeng (Freesound #502662, CC0)",
+     "url": "https://freesound.org/people/eggdeng/sounds/502662/",
+     "dur": 0.22,
+     "file": "clips/untap/untap-f502662.mp3"
+    },
+    {
+     "id": "untap-f808202",
+     "source": "Freesound",
+     "label": "ruffling cards",
+     "credit": "\"ruffling cards\" by Leonardmedia.nl (Freesound #808202, CC0)",
+     "url": "https://freesound.org/people/Leonardmedia.nl/sounds/808202/",
+     "dur": 1.2,
+     "file": "clips/untap/untap-f808202.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Combat",
+   "id": "attack",
+   "name": "Declare attackers",
+   "what": "Declare attackers: sword draw, metal ring",
+   "options": [
+    {
+     "id": "attack-k1",
+     "source": "Kenney",
+     "label": "RPG Audio · drawKnife2",
+     "credit": "\"drawKnife2\" by Kenney (Kenney.nl RPG Audio, CC0)",
+     "url": "https://kenney.nl/assets/rpg-audio",
+     "dur": 0.36,
+     "file": "clips/attack/attack-k1.mp3"
+    },
+    {
+     "id": "attack-o1",
+     "source": "OpenGameArt",
+     "label": "RPG Sound Pack · sword-unsheathe3",
+     "credit": "\"RPG Sound Pack\" by artisticdude (OpenGameArt #rpg-sound-pack, CC0)",
+     "url": "https://opengameart.org/content/rpg-sound-pack",
+     "dur": 0.33,
+     "file": "clips/attack/attack-o1.mp3"
+    },
+    {
+     "id": "attack-o2",
+     "source": "OpenGameArt",
+     "label": "Fantasy Sound Effects (Tinysized SFX) · seax-unsheathe-02",
+     "credit": "\"Fantasy Sound Effects (Tinysized SFX)\" by Vehicle (OpenGameArt #fantasy-sound-effects-tinysized-sfx, CC0)",
+     "url": "https://opengameart.org/content/fantasy-sound-effects-tinysized-sfx",
+     "dur": 0.29,
+     "file": "clips/attack/attack-o2.mp3"
+    },
+    {
+     "id": "attack-f417035",
+     "source": "Freesound",
+     "label": "Quick Sword Draw.mp3",
+     "credit": "\"Quick Sword Draw.mp3\" by FunWithSound (Freesound #417035, CC0)",
+     "url": "https://freesound.org/people/FunWithSound/sounds/417035/",
+     "dur": 0.67,
+     "file": "clips/attack/attack-f417035.mp3"
+    },
+    {
+     "id": "attack-f684749",
+     "source": "Freesound",
+     "label": "Drawing Sword Sound 03",
+     "credit": "\"Drawing Sword Sound 03\" by Robhog (Freesound #684749, CC0)",
+     "url": "https://freesound.org/people/Robhog/sounds/684749/",
+     "dur": 0.59,
+     "file": "clips/attack/attack-f684749.mp3"
+    },
+    {
+     "id": "attack-f577620",
+     "source": "Freesound",
+     "label": "Sword Drawing 2.wav",
+     "credit": "\"Sword Drawing 2.wav\" by paulfabb (Freesound #577620, CC0)",
+     "url": "https://freesound.org/people/paulfabb/sounds/577620/",
+     "dur": 1.03,
+     "file": "clips/attack/attack-f577620.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Combat",
+   "id": "attackBig",
+   "name": "Big attack",
+   "what": "A big attack with several creatures: heavier, more metal",
+   "options": [
+    {
+     "id": "attackBig-f326868",
+     "source": "Freesound",
+     "label": "Sword_Clash (7).wav",
+     "credit": "\"Sword_Clash (7).wav\" by JohnBuhr (Freesound #326868, CC0)",
+     "url": "https://freesound.org/people/JohnBuhr/sounds/326868/",
+     "dur": 0.3,
+     "file": "clips/attackBig/attackBig-f326868.mp3"
+    },
+    {
+     "id": "attackBig-f364531",
+     "source": "Freesound",
+     "label": "Swords Clash - High Quality #3",
+     "credit": "\"Swords Clash - High Quality #3\" by Christopherderp (Freesound #364531, CC0)",
+     "url": "https://freesound.org/people/Christopherderp/sounds/364531/",
+     "dur": 0.57,
+     "file": "clips/attackBig/attackBig-f364531.mp3"
+    },
+    {
+     "id": "attackBig-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactMetal_heavy_000",
+     "credit": "\"impactMetal_heavy_000\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.16,
+     "file": "clips/attackBig/attackBig-k1.mp3"
+    },
+    {
+     "id": "attackBig-k2",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactPlate_heavy_000",
+     "credit": "\"impactPlate_heavy_000\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.44,
+     "file": "clips/attackBig/attackBig-k2.mp3"
+    },
+    {
+     "id": "attackBig-o1",
+     "source": "OpenGameArt",
+     "label": "20 Sword Sound Effects (Attacks and Clashes) · sword_clash.6",
+     "credit": "\"20 Sword Sound Effects (Attacks and Clashes)\" by StarNinjas (OpenGameArt #20-sword-sound-effects-attacks-and-clashes, CC0)",
+     "url": "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+     "dur": 0.91,
+     "file": "clips/attackBig/attackBig-o1.mp3"
+    },
+    {
+     "id": "attackBig-o2",
+     "source": "OpenGameArt",
+     "label": "Fantasy Sound Effects (Tinysized SFX) · sword-clash-01",
+     "credit": "\"Fantasy Sound Effects (Tinysized SFX)\" by Vehicle (OpenGameArt #fantasy-sound-effects-tinysized-sfx, CC0)",
+     "url": "https://opengameart.org/content/fantasy-sound-effects-tinysized-sfx",
+     "dur": 0.43,
+     "file": "clips/attackBig/attackBig-o2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Combat",
+   "id": "block",
+   "name": "Declare blockers",
+   "what": "Declare blockers: shield thud, wooden/metal block",
+   "options": [
+    {
+     "id": "block-o1",
+     "source": "OpenGameArt",
+     "label": "10 Impact/Shield Blocks · impact.2",
+     "credit": "\"10 Impact/Shield Blocks\" by StarNinjas (OpenGameArt #10-impactshield-blocks, CC0)",
+     "url": "https://opengameart.org/content/10-impactshield-blocks",
+     "dur": 0.49,
+     "file": "clips/block/block-o1.mp3"
+    },
+    {
+     "id": "block-o2",
+     "source": "OpenGameArt",
+     "label": "10 Impact/Shield Blocks · impact.7",
+     "credit": "\"10 Impact/Shield Blocks\" by StarNinjas (OpenGameArt #10-impactshield-blocks, CC0)",
+     "url": "https://opengameart.org/content/10-impactshield-blocks",
+     "dur": 0.46,
+     "file": "clips/block/block-o2.mp3"
+    },
+    {
+     "id": "block-f370203",
+     "source": "Freesound",
+     "label": "shield guard",
+     "credit": "\"shield guard\" by nekoninja (Freesound #370203, CC0)",
+     "url": "https://freesound.org/people/nekoninja/sounds/370203/",
+     "dur": 0.78,
+     "file": "clips/block/block-f370203.mp3"
+    },
+    {
+     "id": "block-f440069",
+     "source": "Freesound",
+     "label": "Sword block combo.wav",
+     "credit": "\"Sword block combo.wav\" by ethanchase7744 (Freesound #440069, CC0)",
+     "url": "https://freesound.org/people/ethanchase7744/sounds/440069/",
+     "dur": 1.2,
+     "file": "clips/block/block-f440069.mp3"
+    },
+    {
+     "id": "block-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactWood_heavy_000",
+     "credit": "\"impactWood_heavy_000\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.31,
+     "file": "clips/block/block-k1.mp3"
+    },
+    {
+     "id": "block-k2",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactMetal_medium_002",
+     "credit": "\"impactMetal_medium_002\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.12,
+     "file": "clips/block/block-k2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Combat",
+   "id": "damage",
+   "name": "Damage",
+   "what": "Damage dealt: punch, slash, impact",
+   "options": [
+    {
+     "id": "damage-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactPunch_medium_002",
+     "credit": "\"impactPunch_medium_002\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.32,
+     "file": "clips/damage/damage-k1.mp3"
+    },
+    {
+     "id": "damage-k2",
+     "source": "Kenney",
+     "label": "RPG Audio · knifeSlice",
+     "credit": "\"knifeSlice\" by Kenney (Kenney.nl RPG Audio, CC0)",
+     "url": "https://kenney.nl/assets/rpg-audio",
+     "dur": 0.36,
+     "file": "clips/damage/damage-k2.mp3"
+    },
+    {
+     "id": "damage-k3",
+     "source": "Kenney",
+     "label": "RPG Audio · chop",
+     "credit": "\"chop\" by Kenney (Kenney.nl RPG Audio, CC0)",
+     "url": "https://kenney.nl/assets/rpg-audio",
+     "dur": 0.22,
+     "file": "clips/damage/damage-k3.mp3"
+    },
+    {
+     "id": "damage-o1",
+     "source": "OpenGameArt",
+     "label": "3 Melee sounds · melee sound",
+     "credit": "\"3 Melee sounds\" by remaxim (OpenGameArt #3-melee-sounds, CC0)",
+     "url": "https://opengameart.org/content/3-melee-sounds",
+     "dur": 0.61,
+     "file": "clips/damage/damage-o1.mp3"
+    },
+    {
+     "id": "damage-f276600",
+     "source": "Freesound",
+     "label": "body_hit.wav",
+     "credit": "\"body_hit.wav\" by insanity54 (Freesound #276600, CC0)",
+     "url": "https://freesound.org/people/insanity54/sounds/276600/",
+     "dur": 0.49,
+     "file": "clips/damage/damage-f276600.mp3"
+    },
+    {
+     "id": "damage-f842508",
+     "source": "Freesound",
+     "label": "Hit_Impact",
+     "credit": "\"Hit_Impact\" by gulfstreamav (Freesound #842508, CC0)",
+     "url": "https://freesound.org/people/gulfstreamav/sounds/842508/",
+     "dur": 0.25,
+     "file": "clips/damage/damage-f842508.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Combat",
+   "id": "damageBig",
+   "name": "Big damage",
+   "what": "5 or more damage: heavy crunch, bone, explosion-ish thud",
+   "options": [
+    {
+     "id": "damageBig-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactPunch_heavy_002",
+     "credit": "\"impactPunch_heavy_002\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.36,
+     "file": "clips/damageBig/damageBig-k1.mp3"
+    },
+    {
+     "id": "damageBig-o1",
+     "source": "OpenGameArt",
+     "label": "Deep Bone Crack/Break SFX · Deep Break 4",
+     "credit": "\"Deep Bone Crack/Break SFX\" by Zane Little Music (OpenGameArt #deep-bone-crackbreak-sfx, CC0)",
+     "url": "https://opengameart.org/content/deep-bone-crackbreak-sfx",
+     "dur": 0.77,
+     "file": "clips/damageBig/damageBig-o1.mp3"
+    },
+    {
+     "id": "damageBig-o2",
+     "source": "OpenGameArt",
+     "label": "Deep Bone Crack/Break SFX · Deep Break 7",
+     "credit": "\"Deep Bone Crack/Break SFX\" by Zane Little Music (OpenGameArt #deep-bone-crackbreak-sfx, CC0)",
+     "url": "https://opengameart.org/content/deep-bone-crackbreak-sfx",
+     "dur": 0.57,
+     "file": "clips/damageBig/damageBig-o2.mp3"
+    },
+    {
+     "id": "damageBig-f350977",
+     "source": "Freesound",
+     "label": "Boom_C_06",
+     "credit": "\"Boom_C_06\" by cabled_mess (Freesound #350977, CC0)",
+     "url": "https://freesound.org/people/cabled_mess/sounds/350977/",
+     "dur": 1.2,
+     "file": "clips/damageBig/damageBig-f350977.mp3"
+    },
+    {
+     "id": "damageBig-f523783",
+     "source": "Freesound",
+     "label": "Boom Explosion",
+     "credit": "\"Boom Explosion\" by BennettFilmTeacher (Freesound #523783, CC0)",
+     "url": "https://freesound.org/people/BennettFilmTeacher/sounds/523783/",
+     "dur": 1.2,
+     "file": "clips/damageBig/damageBig-f523783.mp3"
+    },
+    {
+     "id": "damageBig-f718005",
+     "source": "Freesound",
+     "label": "HeavyWobblyImpactHit_16",
+     "credit": "\"HeavyWobblyImpactHit_16\" by Johnny25225 (Freesound #718005, CC0)",
+     "url": "https://freesound.org/people/Johnny25225/sounds/718005/",
+     "dur": 1.2,
+     "file": "clips/damageBig/damageBig-f718005.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Life",
+   "id": "lifeGain",
+   "name": "Gain life",
+   "what": "Gain life: warm low swell, soft pad, heartbeat",
+   "options": [
+    {
+     "id": "lifeGain-f340140",
+     "source": "Freesound",
+     "label": "Warm Horn Fs2",
+     "credit": "\"Warm Horn Fs2\" by Terry93D (Freesound #340140, CC0)",
+     "url": "https://freesound.org/people/Terry93D/sounds/340140/",
+     "dur": 3.5,
+     "file": "clips/lifeGain/lifeGain-f340140.mp3"
+    },
+    {
+     "id": "lifeGain-f776760",
+     "source": "Freesound",
+     "label": "pad g8",
+     "credit": "\"pad g8\" by Ragnar59 (Freesound #776760, CC0)",
+     "url": "https://freesound.org/people/Ragnar59/sounds/776760/",
+     "dur": 3.5,
+     "file": "clips/lifeGain/lifeGain-f776760.mp3"
+    },
+    {
+     "id": "lifeGain-f430894",
+     "source": "Freesound",
+     "label": "Magic 2.Wouw+SinePad.wav",
+     "credit": "\"Magic 2.Wouw+SinePad.wav\" by gsb1039 (Freesound #430894, CC0)",
+     "url": "https://freesound.org/people/gsb1039/sounds/430894/",
+     "dur": 3.5,
+     "file": "clips/lifeGain/lifeGain-f430894.mp3"
+    },
+    {
+     "id": "lifeGain-o1",
+     "source": "OpenGameArt",
+     "label": "Heartbeat sounds · heartbeat_slow_reverb",
+     "credit": "\"Heartbeat sounds\" by bart (OpenGameArt #heartbeat-sounds, CC0)",
+     "url": "https://opengameart.org/content/heartbeat-sounds",
+     "dur": 1.8,
+     "file": "clips/lifeGain/lifeGain-o1.mp3"
+    },
+    {
+     "id": "lifeGain-f249716",
+     "source": "Freesound",
+     "label": "SLOW HEARTBEAT",
+     "credit": "\"SLOW HEARTBEAT\" by daandraait (Freesound #249716, CC0)",
+     "url": "https://freesound.org/people/daandraait/sounds/249716/",
+     "dur": 3.5,
+     "file": "clips/lifeGain/lifeGain-f249716.mp3"
+    },
+    {
+     "id": "lifeGain-o2",
+     "source": "OpenGameArt",
+     "label": "Heartbeat (single sound) · heartbeat.mp3_",
+     "credit": "\"Heartbeat (single sound)\" by Independent.nu (OpenGameArt #heartbeat-single-sound, CC0)",
+     "url": "https://opengameart.org/content/heartbeat-single-sound",
+     "dur": 2.46,
+     "file": "clips/lifeGain/lifeGain-o2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Life",
+   "id": "creatureDies",
+   "name": "Creature dies",
+   "what": "A creature dies: body fall, bone crack, dark puff",
+   "options": [
+    {
+     "id": "creatureDies-f504626",
+     "source": "Freesound",
+     "label": "BODY FALL - V HVY - DIRT",
+     "credit": "\"BODY FALL - V HVY - DIRT\" by leonelmail (Freesound #504626, CC0)",
+     "url": "https://freesound.org/people/leonelmail/sounds/504626/",
+     "dur": 1.2,
+     "file": "clips/creatureDies/creatureDies-f504626.mp3"
+    },
+    {
+     "id": "creatureDies-f417994",
+     "source": "Freesound",
+     "label": "Body fall.wav",
+     "credit": "\"Body fall.wav\" by DylanTheFish (Freesound #417994, CC0)",
+     "url": "https://freesound.org/people/DylanTheFish/sounds/417994/",
+     "dur": 1.2,
+     "file": "clips/creatureDies/creatureDies-f417994.mp3"
+    },
+    {
+     "id": "creatureDies-o1",
+     "source": "OpenGameArt",
+     "label": "Fleshy Bone Break/Snap SFX · Wet Break 3",
+     "credit": "\"Fleshy Bone Break/Snap SFX\" by Zane Little Music (OpenGameArt #fleshy-bone-breaksnap-sfx, CC0)",
+     "url": "https://opengameart.org/content/fleshy-bone-breaksnap-sfx",
+     "dur": 0.6,
+     "file": "clips/creatureDies/creatureDies-o1.mp3"
+    },
+    {
+     "id": "creatureDies-o2",
+     "source": "OpenGameArt",
+     "label": "Bones 2 · bones-2",
+     "credit": "\"Bones 2\" by AntumDeluge (OpenGameArt #bones-2, CC0)",
+     "url": "https://opengameart.org/content/bones-2",
+     "dur": 1.13,
+     "file": "clips/creatureDies/creatureDies-o2.mp3"
+    },
+    {
+     "id": "creatureDies-o3",
+     "source": "OpenGameArt",
+     "label": "80 CC0 RPG SFX · creature_die_01",
+     "credit": "\"80 CC0 RPG SFX\" by rubberduck (OpenGameArt #80-cc0-rpg-sfx, CC0)",
+     "url": "https://opengameart.org/content/80-cc0-rpg-sfx",
+     "dur": 0.74,
+     "file": "clips/creatureDies/creatureDies-o3.mp3"
+    },
+    {
+     "id": "creatureDies-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactSoft_heavy_003",
+     "credit": "\"impactSoft_heavy_003\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.54,
+     "file": "clips/creatureDies/creatureDies-k1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "token",
+   "name": "Token appears",
+   "what": "A token appears: summon puff, cloth flourish",
+   "options": [
+    {
+     "id": "token-f714257",
+     "source": "Freesound",
+     "label": "Puff of Smoke",
+     "credit": "\"Puff of Smoke\" by qubodup (Freesound #714257, CC0)",
+     "url": "https://freesound.org/people/qubodup/sounds/714257/",
+     "dur": 0.47,
+     "file": "clips/token/token-f714257.mp3"
+    },
+    {
+     "id": "token-f208111",
+     "source": "Freesound",
+     "label": "Poof of Smoke",
+     "credit": "\"Poof of Smoke\" by Planman (Freesound #208111, CC0)",
+     "url": "https://freesound.org/people/Planman/sounds/208111/",
+     "dur": 0.73,
+     "file": "clips/token/token-f208111.mp3"
+    },
+    {
+     "id": "token-k1",
+     "source": "Kenney",
+     "label": "RPG Audio · cloth2",
+     "credit": "\"cloth2\" by Kenney (Kenney.nl RPG Audio, CC0)",
+     "url": "https://kenney.nl/assets/rpg-audio",
+     "dur": 0.35,
+     "file": "clips/token/token-k1.mp3"
+    },
+    {
+     "id": "token-o1",
+     "source": "OpenGameArt",
+     "label": "RPG Sound Pack · cloth-heavy",
+     "credit": "\"RPG Sound Pack\" by artisticdude (OpenGameArt #rpg-sound-pack, CC0)",
+     "url": "https://opengameart.org/content/rpg-sound-pack",
+     "dur": 0.28,
+     "file": "clips/token/token-o1.mp3"
+    },
+    {
+     "id": "token-f391945",
+     "source": "Freesound",
+     "label": "cloth flap",
+     "credit": "\"cloth flap\" by ssierra1202 (Freesound #391945, CC0)",
+     "url": "https://freesound.org/people/ssierra1202/sounds/391945/",
+     "dur": 0.65,
+     "file": "clips/token/token-f391945.mp3"
+    },
+    {
+     "id": "token-f740776",
+     "source": "Freesound",
+     "label": "Necromancy Summoning Magic Spell",
+     "credit": "\"Necromancy Summoning Magic Spell\" by qubodup (Freesound #740776, CC0)",
+     "url": "https://freesound.org/people/qubodup/sounds/740776/",
+     "dur": 1.2,
+     "file": "clips/token/token-f740776.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "exile",
+   "name": "Exile",
+   "what": "A card is exiled: dark vanish, reverse whoosh, void",
+   "options": [
+    {
+     "id": "exile-f446010",
+     "source": "Freesound",
+     "label": "Backwards Whoosh",
+     "credit": "\"Backwards Whoosh\" by SlavicMagic (Freesound #446010, CC0)",
+     "url": "https://freesound.org/people/SlavicMagic/sounds/446010/",
+     "dur": 0.65,
+     "file": "clips/exile/exile-f446010.mp3"
+    },
+    {
+     "id": "exile-f402818",
+     "source": "Freesound",
+     "label": "White Noise Short Reverse Whoosh.wav",
+     "credit": "\"White Noise Short Reverse Whoosh.wav\" by HowardV (Freesound #402818, CC0)",
+     "url": "https://freesound.org/people/HowardV/sounds/402818/",
+     "dur": 2.19,
+     "file": "clips/exile/exile-f402818.mp3"
+    },
+    {
+     "id": "exile-f398638",
+     "source": "Freesound",
+     "label": "Low frequency whoosh",
+     "credit": "\"Low frequency whoosh\" by DianneLaChauveSouris (Freesound #398638, CC0)",
+     "url": "https://freesound.org/people/DianneLaChauveSouris/sounds/398638/",
+     "dur": 2.65,
+     "file": "clips/exile/exile-f398638.mp3"
+    },
+    {
+     "id": "exile-f444710",
+     "source": "Freesound",
+     "label": "9. Esfumar Vanish .wav",
+     "credit": "\"9. Esfumar Vanish .wav\" by cabusta9 (Freesound #444710, CC0)",
+     "url": "https://freesound.org/people/cabusta9/sounds/444710/",
+     "dur": 3.5,
+     "file": "clips/exile/exile-f444710.mp3"
+    },
+    {
+     "id": "exile-f856174",
+     "source": "Freesound",
+     "label": "Subterranean Deep Sub-Bass Rumble Drop",
+     "credit": "\"Subterranean Deep Sub-Bass Rumble Drop\" by brktkrgll (Freesound #856174, CC0)",
+     "url": "https://freesound.org/people/brktkrgll/sounds/856174/",
+     "dur": 3.5,
+     "file": "clips/exile/exile-f856174.mp3"
+    },
+    {
+     "id": "exile-o1",
+     "source": "OpenGameArt",
+     "label": "100 CC0 SFX · weird_01",
+     "credit": "\"100 CC0 SFX\" by rubberduck (OpenGameArt #100-cc0-sfx, CC0)",
+     "url": "https://opengameart.org/content/100-cc0-sfx",
+     "dur": 0.21,
+     "file": "clips/exile/exile-o1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "counter",
+   "name": "Spell countered",
+   "what": "A spell is countered: fizzle, snuff, broken glass",
+   "options": [
+    {
+     "id": "counter-f861043",
+     "source": "Freesound",
+     "label": "Hard Glass Break 2",
+     "credit": "\"Hard Glass Break 2\" by ElevatorFan2020 (Freesound #861043, CC0)",
+     "url": "https://freesound.org/people/ElevatorFan2020/sounds/861043/",
+     "dur": 0.72,
+     "file": "clips/counter/counter-f861043.mp3"
+    },
+    {
+     "id": "counter-f560768",
+     "source": "Freesound",
+     "label": "Breaking Glass 3",
+     "credit": "\"Breaking Glass 3\" by Bricklover (Freesound #560768, CC0)",
+     "url": "https://freesound.org/people/Bricklover/sounds/560768/",
+     "dur": 0.36,
+     "file": "clips/counter/counter-f560768.mp3"
+    },
+    {
+     "id": "counter-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactGlass_heavy_001",
+     "credit": "\"impactGlass_heavy_001\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.43,
+     "file": "clips/counter/counter-k1.mp3"
+    },
+    {
+     "id": "counter-f388247",
+     "source": "Freesound",
+     "label": "Fizzle",
+     "credit": "\"Fizzle\" by michorvath (Freesound #388247, CC0)",
+     "url": "https://freesound.org/people/michorvath/sounds/388247/",
+     "dur": 1.2,
+     "file": "clips/counter/counter-f388247.mp3"
+    },
+    {
+     "id": "counter-f826338",
+     "source": "Freesound",
+     "label": "Candle flame flickers, blown out",
+     "credit": "\"Candle flame flickers, blown out\" by DeqstersLab (Freesound #826338, CC0)",
+     "url": "https://freesound.org/people/DeqstersLab/sounds/826338/",
+     "dur": 1.2,
+     "file": "clips/counter/counter-f826338.mp3"
+    },
+    {
+     "id": "counter-o1",
+     "source": "OpenGameArt",
+     "label": "100 CC0 SFX · glass_03",
+     "credit": "\"100 CC0 SFX\" by rubberduck (OpenGameArt #100-cc0-sfx, CC0)",
+     "url": "https://opengameart.org/content/100-cc0-sfx",
+     "dur": 0.32,
+     "file": "clips/counter/counter-o1.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "discard",
+   "name": "Discard",
+   "what": "Discard a card: tossed or crumpled",
+   "options": [
+    {
+     "id": "discard-f334201",
+     "source": "Freesound",
+     "label": "Paper Crumple 1",
+     "credit": "\"Paper Crumple 1\" by WasabiWielder (Freesound #334201, CC0)",
+     "url": "https://freesound.org/people/WasabiWielder/sounds/334201/",
+     "dur": 0.67,
+     "file": "clips/discard/discard-f334201.mp3"
+    },
+    {
+     "id": "discard-f508598",
+     "source": "Freesound",
+     "label": "crumple-05.ogg",
+     "credit": "\"crumple-05.ogg\" by drooler (Freesound #508598, CC0)",
+     "url": "https://freesound.org/people/drooler/sounds/508598/",
+     "dur": 0.49,
+     "file": "clips/discard/discard-f508598.mp3"
+    },
+    {
+     "id": "discard-f398898",
+     "source": "Freesound",
+     "label": "paper - crumple 01.wav",
+     "credit": "\"paper - crumple 01.wav\" by Anthousai (Freesound #398898, CC0)",
+     "url": "https://freesound.org/people/Anthousai/sounds/398898/",
+     "dur": 1.2,
+     "file": "clips/discard/discard-f398898.mp3"
+    },
+    {
+     "id": "discard-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · card-shove-4",
+     "credit": "\"card-shove-4\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.81,
+     "file": "clips/discard/discard-k1.mp3"
+    },
+    {
+     "id": "discard-o1",
+     "source": "OpenGameArt",
+     "label": "100 CC0 SFX · paper_01",
+     "credit": "\"100 CC0 SFX\" by rubberduck (OpenGameArt #100-cc0-sfx, CC0)",
+     "url": "https://opengameart.org/content/100-cc0-sfx",
+     "dur": 0.42,
+     "file": "clips/discard/discard-o1.mp3"
+    },
+    {
+     "id": "discard-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · card-slide-7",
+     "credit": "\"card-slide-7\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.61,
+     "file": "clips/discard/discard-k2.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Cards",
+   "id": "mulligan",
+   "name": "Mulligan",
+   "what": "Mulligan: cards gathered and reshuffled",
+   "options": [
+    {
+     "id": "mulligan-k1",
+     "source": "Kenney",
+     "label": "Casino Audio · cards-pack-take-out-1",
+     "credit": "\"cards-pack-take-out-1\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.49,
+     "file": "clips/mulligan/mulligan-k1.mp3"
+    },
+    {
+     "id": "mulligan-k2",
+     "source": "Kenney",
+     "label": "Casino Audio · cards-pack-open-2",
+     "credit": "\"cards-pack-open-2\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.73,
+     "file": "clips/mulligan/mulligan-k2.mp3"
+    },
+    {
+     "id": "mulligan-o1",
+     "source": "OpenGameArt",
+     "label": "Playing Card Sounds · shuffleandbridge",
+     "credit": "\"Playing Card Sounds\" by BMacZero (OpenGameArt #playing-card-sounds, CC0)",
+     "url": "https://opengameart.org/content/playing-card-sounds",
+     "dur": 1.2,
+     "file": "clips/mulligan/mulligan-o1.mp3"
+    },
+    {
+     "id": "mulligan-k3",
+     "source": "Kenney",
+     "label": "Casino Audio · cards-pack-take-out-2",
+     "credit": "\"cards-pack-take-out-2\" by Kenney (Kenney.nl Casino Audio, CC0)",
+     "url": "https://kenney.nl/assets/casino-audio",
+     "dur": 0.63,
+     "file": "clips/mulligan/mulligan-k3.mp3"
+    },
+    {
+     "id": "mulligan-f466789",
+     "source": "Freesound",
+     "label": "Pounding Cards On Table",
+     "credit": "\"Pounding Cards On Table\" by HogantheLogan (Freesound #466789, CC0)",
+     "url": "https://freesound.org/people/HogantheLogan/sounds/466789/",
+     "dur": 0.91,
+     "file": "clips/mulligan/mulligan-f466789.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Turns",
+   "id": "timer",
+   "name": "Timer running low",
+   "what": "Priority timer running low: clock tick, low heartbeat",
+   "options": [
+    {
+     "id": "timer-f534094",
+     "source": "Freesound",
+     "label": "clock-tick-01.flac",
+     "credit": "\"clock-tick-01.flac\" by pbimal (Freesound #534094, CC0)",
+     "url": "https://freesound.org/people/pbimal/sounds/534094/",
+     "dur": 0.16,
+     "file": "clips/timer/timer-f534094.mp3"
+    },
+    {
+     "id": "timer-f117280",
+     "source": "Freesound",
+     "label": "front tick.wav",
+     "credit": "\"front tick.wav\" by Alexsani (Freesound #117280, CC0)",
+     "url": "https://freesound.org/people/Alexsani/sounds/117280/",
+     "dur": 0.29,
+     "file": "clips/timer/timer-f117280.mp3"
+    },
+    {
+     "id": "timer-o1",
+     "source": "OpenGameArt",
+     "label": "Clock Tick · Timetick",
+     "credit": "\"Clock Tick\" by IgnasD (OpenGameArt #clock-tick-0, CC0)",
+     "url": "https://opengameart.org/content/clock-tick-0",
+     "dur": 0.17,
+     "file": "clips/timer/timer-o1.mp3"
+    },
+    {
+     "id": "timer-o2",
+     "source": "OpenGameArt",
+     "label": "Ticking clock. · ticking clock - tick2",
+     "credit": "\"Ticking clock.\" by bart (OpenGameArt #ticking-clock, CC0)",
+     "url": "https://opengameart.org/content/ticking-clock",
+     "dur": 0.18,
+     "file": "clips/timer/timer-o2.mp3"
+    },
+    {
+     "id": "timer-o3",
+     "source": "OpenGameArt",
+     "label": "Heartbeat sounds · heartbeat_slow_0",
+     "credit": "\"Heartbeat sounds\" by bart (OpenGameArt #heartbeat-sounds, CC0)",
+     "url": "https://opengameart.org/content/heartbeat-sounds",
+     "dur": 1.2,
+     "file": "clips/timer/timer-o3.mp3"
+    },
+    {
+     "id": "timer-f547305",
+     "source": "Freesound",
+     "label": "Tick Tock",
+     "credit": "\"Tick Tock\" by StarNinjas37 (Freesound #547305, CC0)",
+     "url": "https://freesound.org/people/StarNinjas37/sounds/547305/",
+     "dur": 0.78,
+     "file": "clips/timer/timer-f547305.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Outcome",
+   "id": "victory",
+   "name": "Victory",
+   "what": "You win: short triumphant brass/drums stinger",
+   "options": [
+    {
+     "id": "victory-f803823",
+     "source": "Freesound",
+     "label": "French horn and Timpani Fanfare short",
+     "credit": "\"French horn and Timpani Fanfare short\" by marlocarlo (Freesound #803823, CC0)",
+     "url": "https://freesound.org/people/marlocarlo/sounds/803823/",
+     "dur": 3.5,
+     "file": "clips/victory/victory-f803823.mp3"
+    },
+    {
+     "id": "victory-f521639",
+     "source": "Freesound",
+     "label": "WinBrass.wav",
+     "credit": "\"WinBrass.wav\" by Fupicat (Freesound #521639, CC0)",
+     "url": "https://freesound.org/people/Fupicat/sounds/521639/",
+     "dur": 2.18,
+     "file": "clips/victory/victory-f521639.mp3"
+    },
+    {
+     "id": "victory-f706753",
+     "source": "Freesound",
+     "label": "Victory (short sting)",
+     "credit": "\"Victory (short sting)\" by xkeril (Freesound #706753, CC0)",
+     "url": "https://freesound.org/people/xkeril/sounds/706753/",
+     "dur": 3.5,
+     "file": "clips/victory/victory-f706753.mp3"
+    },
+    {
+     "id": "victory-f770801",
+     "source": "Freesound",
+     "label": "Fanfare",
+     "credit": "\"Fanfare\" by Arcorias (Freesound #770801, CC0)",
+     "url": "https://freesound.org/people/Arcorias/sounds/770801/",
+     "dur": 3.28,
+     "file": "clips/victory/victory-f770801.mp3"
+    },
+    {
+     "id": "victory-o1",
+     "source": "OpenGameArt",
+     "label": "Classic fanfare lick · fanfare_3",
+     "credit": "\"Classic fanfare lick\" by fvcalderan (OpenGameArt #classic-fanfare-lick, CC0)",
+     "url": "https://opengameart.org/content/classic-fanfare-lick",
+     "dur": 2.27,
+     "file": "clips/victory/victory-o1.mp3"
+    },
+    {
+     "id": "victory-f456966",
+     "source": "Freesound",
+     "label": "Success Fanfare Trumpets.mp3",
+     "credit": "\"Success Fanfare Trumpets.mp3\" by FunWithSound (Freesound #456966, CC0)",
+     "url": "https://freesound.org/people/FunWithSound/sounds/456966/",
+     "dur": 3.26,
+     "file": "clips/victory/victory-f456966.mp3"
+    }
+   ]
+  },
+  {
+   "group": "Outcome",
+   "id": "defeat",
+   "name": "Defeat",
+   "what": "You lose: low somber stinger, falling impact",
+   "options": [
+    {
+     "id": "defeat-f664606",
+     "source": "Freesound",
+     "label": "Game Over - low",
+     "credit": "\"Game Over - low\" by MT4000 (Freesound #664606, CC0)",
+     "url": "https://freesound.org/people/MT4000/sounds/664606/",
+     "dur": 1.25,
+     "file": "clips/defeat/defeat-f664606.mp3"
+    },
+    {
+     "id": "defeat-f467289",
+     "source": "Freesound",
+     "label": "Dissonant Piano Stinger.mp3",
+     "credit": "\"Dissonant Piano Stinger.mp3\" by XfiXy8 (Freesound #467289, CC0)",
+     "url": "https://freesound.org/people/XfiXy8/sounds/467289/",
+     "dur": 2.08,
+     "file": "clips/defeat/defeat-f467289.mp3"
+    },
+    {
+     "id": "defeat-f826217",
+     "source": "Freesound",
+     "label": "LASTING DEEP METALLIC BOOM",
+     "credit": "\"LASTING DEEP METALLIC BOOM\" by ROHHSADOTCOM (Freesound #826217, CC0)",
+     "url": "https://freesound.org/people/ROHHSADOTCOM/sounds/826217/",
+     "dur": 3.5,
+     "file": "clips/defeat/defeat-f826217.mp3"
+    },
+    {
+     "id": "defeat-o1",
+     "source": "OpenGameArt",
+     "label": "Muffled Distant Explosion · NenadSimic - Muffled Distant Explosion",
+     "credit": "\"Muffled Distant Explosion\" by NenadSimic (OpenGameArt #muffled-distant-explosion, CC0)",
+     "url": "https://opengameart.org/content/muffled-distant-explosion",
+     "dur": 1.88,
+     "file": "clips/defeat/defeat-o1.mp3"
+    },
+    {
+     "id": "defeat-k1",
+     "source": "Kenney",
+     "label": "Impact Sounds · impactBell_heavy_004",
+     "credit": "\"impactBell_heavy_004\" by Kenney (Kenney.nl Impact Sounds, CC0)",
+     "url": "https://kenney.nl/assets/impact-sounds",
+     "dur": 0.3,
+     "file": "clips/defeat/defeat-k1.mp3"
+    },
+    {
+     "id": "defeat-f840810",
+     "source": "Freesound",
+     "label": "Stingers and Stabs 004",
+     "credit": "\"Stingers and Stabs 004\" by OverlookHotelRecords (Freesound #840810, CC0)",
+     "url": "https://freesound.org/people/OverlookHotelRecords/sounds/840810/",
+     "dur": 3.5,
+     "file": "clips/defeat/defeat-f840810.mp3"
+    }
+   ]
+  }
+ ]
+}
