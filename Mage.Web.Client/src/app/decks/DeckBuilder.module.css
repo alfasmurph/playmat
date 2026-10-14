@@ -670,6 +670,21 @@
   color: var(--oxblood-ink);
 }
 
+/* the card the deck shows as its picture */
+.coverMark {
+  flex: none;
+  color: var(--brass);
+  fill: currentColor;
+}
+
+.commanderCover {
+  color: var(--brass);
+}
+
+.commanderCover svg {
+  fill: currentColor;
+}
+
 /* the command zone heads the list: the deck's leader and the colors it allows */
 .command {
   display: flex;

@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { ArrowLeftRight, BarChart3, Check, ChevronLeft, ClipboardPaste, Crown, Images, ListPlus, Minus, Mountain, Plus, Replace, TriangleAlert } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, Check, ChevronLeft, ClipboardPaste, Crown, Images, ListPlus, Minus, Mountain, Plus, Replace, Star, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { CardView } from '../../protocol/generated/views';
@@ -24,10 +24,7 @@ import { ManaCurve } from './ManaCurve';
 import { SourceLine } from './import/SourceLine';
 import { useImportPaste } from './import/useImportShortcuts';
 import { useValidation } from './useValidation';
-import {
-  addCard, changePrinting, copiesByName, copyLimit, countZone, entryKey, finalizeDeck, groupDeck, manaCurve, moveCard,
-  printingOf, removeCard, type DeckRow, type DeckZone,
-} from './deckModel';
+import { addCard, changePrinting, copiesByName, copyLimit, countZone, entryKey, finalizeDeck, groupDeck, isCover, manaCurve, moveCard, printingOf, removeCard, withCover, type DeckRow, type DeckZone } from './deckModel';
 import styles from './DeckBuilder.module.css';
 
 const DEFAULT_FORMAT = 'Constructed - Freeform';
@@ -349,6 +346,7 @@ function DeckPanel({ deck, zone, info, formats, rules, identity, saving, limitFo
                 >
                   <span className={styles.rowCount}>{row.entry.amount}</span>
                   <span className={styles.rowName}>{row.entry.cardName}</span>
+                  {isCover(deck, row.entry) && <Star size={12} className={styles.coverMark} aria-label="Deck cover" />}
                   {identity && zone === 'cards' && row.card && !withinIdentity(row.card, identity) && (
                     <TriangleAlert size={14} className={styles.offColor} aria-label="Outside your commander's colors" />
                   )}
@@ -381,6 +379,15 @@ function DeckPanel({ deck, zone, info, formats, rules, identity, saving, limitFo
                         <ArrowLeftRight size={14} />
                       </button>
                     )}
+                    <button
+                      type="button"
+                      aria-label={`Use ${row.entry.cardName} as the deck's cover`}
+                      aria-pressed={isCover(deck, row.entry)}
+                      title="Deck cover"
+                      onClick={() => onChange((current) => withCover(current, row.entry, row.card))}
+                    >
+                      <Star size={14} />
+                    </button>
                     <button type="button" aria-label={`Choose the printing of ${row.entry.cardName}`} title="Printing" onClick={() => setPrintingFor(row)}>
                       <Images size={14} />
                     </button>
@@ -530,6 +537,16 @@ function CommandZone({ deck, info, rules, identity, onChange, onPreview }: {
                     <CardFace card={card ?? { name: entry.cardName }} size="small" />
                   </div>
                   <span className={styles.commanderName}>{entry.cardName}</span>
+                  <button
+                    type="button"
+                    className={[styles.commanderBack, isCover(deck, entry) ? styles.commanderCover : ''].join(' ')}
+                    aria-label={`Use ${entry.cardName} as the deck's cover`}
+                    aria-pressed={isCover(deck, entry)}
+                    title="Deck cover"
+                    onClick={() => onChange((current) => withCover(current, entry, card))}
+                  >
+                    <Star size={14} />
+                  </button>
                   <button type="button" className={styles.commanderBack} aria-label={`Put ${entry.cardName} back in the deck`} title="Back to the deck" onClick={() => onChange((current) => moveCard(current, 'sideboard', key, entry.amount))}>
                     <ArrowLeftRight size={14} />
                   </button>

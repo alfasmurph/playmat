@@ -1,5 +1,6 @@
 import type { CardView, DeckCardLists as WireDeck } from '../../protocol/generated/views';
-import type { DeckCardInfo, DeckCardLists } from '../../core/decks/types';
+import { isCommanderFormat } from '../../core/decks/formats';
+import type { DeckCardInfo, DeckCardLists, DeckCoverCard } from '../../core/decks/types';
 
 /**
  * Pure deck editing: entries are counted by printing (set + collector number), zones are main and side.
@@ -167,7 +168,7 @@ export function deckColors(entries: DeckCardInfo[], info: ReadonlyMap<string, Ca
 export function finalizeDeck(deck: DeckCardLists, info: ReadonlyMap<string, CardView>): DeckCardLists {
   const colors = deckColors(deck.cards, info);
   const has = (letter: string) => colors.includes(letter);
-  const cover = deck.coverCard ?? pickCover(deck.cards, info);
+  const cover = deck.coverCard ?? pickCover(deck, info);
   return {
     ...deck,
     colors: { white: has('W'), blue: has('U'), black: has('B'), red: has('R'), green: has('G') },
@@ -175,20 +176,49 @@ export function finalizeDeck(deck: DeckCardLists, info: ReadonlyMap<string, Card
   };
 }
 
-function pickCover(entries: DeckCardInfo[], info: ReadonlyMap<string, CardView>) {
-  // the most expensive nonland card stands for the deck
-  let best: { entry: DeckCardInfo; value: number } | null = null;
-  for (const entry of entries) {
-    const card = info.get(entryKey(entry));
-    if (!card || groupOf(card) === 'lands' || !entry.setCode || !entry.cardNumber) continue;
-    const value = card.manaValue ?? 0;
-    if (!best || value > best.value) best = { entry, value };
+/** A deck entry as a cover: its own printing, else the one its card info resolved to (a list may not name one). */
+export function coverOf(entry: DeckCardInfo, card: CardView | undefined): DeckCoverCard | null {
+  const setCode = entry.setCode || card?.expansionSetCode;
+  const cardNumber = entry.cardNumber || card?.cardNumber;
+  return setCode && cardNumber ? { setCode, cardNumber, name: entry.cardName } : null;
+}
+
+/** Whether this entry is the deck's cover (by name: changing the printing keeps it the cover). */
+export function isCover(deck: Pick<DeckCardLists, 'coverCard'>, entry: DeckCardInfo): boolean {
+  const cover = deck.coverCard;
+  if (!cover) return false;
+  if (cover.name) return cover.name.toLowerCase() === entry.cardName.toLowerCase();
+  return cover.setCode === entry.setCode && cover.cardNumber === entry.cardNumber;
+}
+
+function pickCover(deck: DeckCardLists, info: ReadonlyMap<string, CardView>) {
+  // a commander deck is its commander
+  if (isCommanderFormat(deck.format)) {
+    for (const entry of deck.sideboard) {
+      const cover = coverOf(entry, info.get(entryKey(entry)));
+      if (cover) return cover;
+    }
   }
-  return best ? { setCode: best.entry.setCode!, cardNumber: best.entry.cardNumber!, name: best.entry.cardName } : null;
+  // otherwise the most expensive nonland card stands for the deck
+  let best: { cover: DeckCoverCard; value: number } | null = null;
+  for (const entry of deck.cards) {
+    const card = info.get(entryKey(entry));
+    const cover = card && groupOf(card) !== 'lands' ? coverOf(entry, card) : null;
+    if (!card || !cover) continue;
+    const value = card.manaValue ?? 0;
+    if (!best || value > best.value) best = { cover, value };
+  }
+  return best?.cover ?? null;
 }
 
 /** The deck as the server reads it (set and number always present, even if empty). */
 export function toWire(deck: DeckCardLists): WireDeck {
   const wire = (entry: DeckCardInfo) => ({ cardName: entry.cardName, setCode: entry.setCode ?? '', cardNumber: entry.cardNumber ?? '', amount: entry.amount });
   return { name: deck.name, cards: deck.cards.map(wire), sideboard: deck.sideboard.map(wire) };
+}
+
+/** The deck with this entry as its cover; unchanged when no printing of it is known yet. */
+export function withCover(deck: DeckCardLists, entry: DeckCardInfo, card: CardView | undefined): DeckCardLists {
+  const cover = coverOf(entry, card);
+  return cover ? { ...deck, coverCard: cover } : deck;
 }

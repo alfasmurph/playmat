@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CardView } from '../../protocol/generated/views';
 import type { DeckCardLists } from '../../core/decks/types';
-import { addCard, changePrinting, copiesByName, copyLimit, countZone, entryKey, groupDeck, manaCurve, moveCard, removeCard } from './deckModel';
+import { addCard, changePrinting, copiesByName, copyLimit, countZone, entryKey, finalizeDeck, groupDeck, isCover, manaCurve, moveCard, removeCard, withCover } from './deckModel';
 
 const empty: DeckCardLists = { name: 'Test', cards: [], sideboard: [] };
 const bolt = { cardName: 'Lightning Bolt', setCode: 'M10', cardNumber: '146' };
@@ -65,5 +65,38 @@ describe('grouping and curve', () => {
 
   it('counts nonland cards by mana value', () => {
     expect(manaCurve(deck.cards, info)).toEqual([0, 4, 0, 0, 0, 0, 0, 0]);
+  });
+});
+
+describe('deck cover', () => {
+  // an imported Commander list that names no printings: the card info knows them
+  const queen = { cardName: 'Najeela, the Blade-Blossom', setCode: '', cardNumber: '' };
+  const titan = { cardName: 'Inferno Titan', setCode: '', cardNumber: '' };
+  const info = new Map<string, CardView>([
+    [entryKey(queen), { name: queen.cardName, cardTypes: ['CREATURE'], manaValue: 3, expansionSetCode: 'BBD', cardNumber: '62' }],
+    [entryKey(titan), { name: titan.cardName, cardTypes: ['CREATURE'], manaValue: 6, expansionSetCode: 'M12', cardNumber: '146' }],
+    [entryKey(bolt), { name: 'Lightning Bolt', cardTypes: ['INSTANT'], manaValue: 1 }],
+  ]);
+  const commanderDeck: DeckCardLists = { ...empty, format: 'Variant Magic - Commander', cards: [{ ...titan, amount: 1 }, { ...bolt, amount: 1 }], sideboard: [{ ...queen, amount: 1 }] };
+
+  it('defaults to the commander, from its resolved printing', () => {
+    expect(finalizeDeck(commanderDeck, info).coverCard).toEqual({ setCode: 'BBD', cardNumber: '62', name: queen.cardName });
+  });
+
+  it('defaults to the most expensive nonland card outside Commander', () => {
+    expect(finalizeDeck({ ...commanderDeck, format: 'Constructed - Freeform' }, info).coverCard?.name).toBe(titan.cardName);
+  });
+
+  it('keeps a chosen cover, and marks it by name', () => {
+    const chosen = withCover(commanderDeck, { ...bolt, amount: 1 }, info.get(entryKey(bolt)));
+    expect(chosen.coverCard).toEqual({ setCode: 'M10', cardNumber: '146', name: 'Lightning Bolt' });
+    expect(finalizeDeck(chosen, info).coverCard?.name).toBe('Lightning Bolt');
+    expect(isCover(chosen, { ...boltAlt, amount: 1 })).toBe(true);
+    expect(isCover(chosen, { ...titan, amount: 1 })).toBe(false);
+  });
+
+  it('leaves the deck alone when no printing is known', () => {
+    const mystery = { cardName: 'Mystery', setCode: '', cardNumber: '', amount: 1 };
+    expect(withCover(commanderDeck, mystery, undefined)).toBe(commanderDeck);
   });
 });
