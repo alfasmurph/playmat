@@ -3,7 +3,7 @@
   display: contents;
 }
 
-/* two mats meet at a stitched seam across the middle of the table */
+/* the two halves of the table: a light and a shade on the mat, and each player's print */
 .mat {
   position: absolute;
   inset: 0;
@@ -13,14 +13,14 @@
   pointer-events: none;
 }
 
+/* where the halves meet: a hairline of ink, barely there (the zones already tell the halves apart) */
 .seam {
   position: absolute;
   left: 60px;
   right: 60px;
-  top: calc(var(--seam, 540px) - 1px);
-  height: 2px;
-  background-image: repeating-linear-gradient(90deg, var(--thread) 0 14px, transparent 14px 24px);
-  opacity: 0.45;
+  top: var(--seam, 540px);
+  height: 1px;
+  background: rgb(var(--ink-rgb) / 0.06);
   pointer-events: none;
 }
 

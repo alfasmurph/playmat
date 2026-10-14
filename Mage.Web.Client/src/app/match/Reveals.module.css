@@ -148,7 +148,7 @@
   }
 }
 
-/* tall: at the right end of the band between the battlefields (the stack has the left), above and below the turn */
+/* tall: at the right end of the band between the battlefields (the stack has the left), above and below the seam */
 :global([data-layout='tall']) .strip {
   left: auto;
   right: 24px;

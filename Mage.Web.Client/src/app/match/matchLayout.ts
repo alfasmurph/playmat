@@ -13,15 +13,18 @@ export interface RowsPlacement {
 
 /**
  * The match's zones in stage pixels, for the stage's layout. Wide (a desktop, a tablet on its side): seats on the
- * left, the stack and decision corner on the right, the battlefield between. Tall (a tablet held upright): both
- * players' rows span the stage; the opponent's seat and piles are a band along the top, yours a band above your hand
- * at the bottom, and the turn and stack sit between the two battlefields.
+ * left, a slim column on the right for the stack and the decision corner, the battlefield between. Tall (a tablet
+ * held upright): both players' rows span the stage; the opponent's seat and piles are a band along the top, yours a
+ * band above your hand at the bottom, and the stack sits between the two battlefields. The turn is printed around
+ * the active seat's avatar in both.
  */
 export interface MatchLayout {
   tall: boolean;
   /** the battlefield's horizontal span */
   fieldLeft: number;
   fieldWidth: number;
+  /** wide: the column right of the battlefield (the stack, and the decision corner at its foot); 0 when tall */
+  rightColumn: number;
   me: RowsPlacement;
   /** a single opponent's rows; several opponents share `fieldWidth` in columns */
   them: (index: number, count: number) => RowsPlacement;
@@ -43,11 +46,19 @@ export interface MatchLayout {
   handRaise: number;
 }
 
-/** The wide layout's columns: seats on the left, stack and decision corner on the right. */
+/**
+ * The wide layout's columns: seats on the left; on the right a slim column with the stack piled down it and the
+ * decision corner at its foot. The corner's main button reaches left past the column, under your rows and right of
+ * the hand.
+ */
 const FIELD_LEFT = 300;
-const FIELD_RIGHT_MARGIN = 470;
+const FIELD_RIGHT_MARGIN = 200;
 /** multiplayer: each opponent's seat (plate, counters) in the left column, this far apart */
 const SEAT_SPACING = 172;
+/** an opponent's seat's top edge (a seat is about 120 tall: the avatar with the ring of turn steps around it) */
+const SEAT_TOP = 24;
+/** the centre of the stack's top object, in the right column */
+const STACK_CENTER_Y = 250;
 
 /** The tall layout: margins, the bands above and below the battlefield, and the rows between them. */
 const TALL_MARGIN = 24;
@@ -101,6 +112,7 @@ function computeLayout(stage: Pick<StageContextValue, 'layout' | 'width' | 'heig
     tall: false,
     fieldLeft: FIELD_LEFT,
     fieldWidth,
+    rightColumn: FIELD_RIGHT_MARGIN,
     me: { left: FIELD_LEFT, width: fieldWidth, frontTop: 556, backTop: 778, frontIdeal: 150, backIdeal: 112 },
     them: (index, count) => {
       const width = fieldWidth / count;
@@ -117,12 +129,12 @@ function computeLayout(stage: Pick<StageContextValue, 'layout' | 'width' | 'heig
     playLine: STAGE_HEIGHT - 300,
     // the piles start level with your creatures: in Commander they stand two rows high (library, graveyard, exile,
     // commander) and must end above the seat, which sits at the bottom of the column with its extras beside it
-    myPlate: { left: 24, top: 958 },
+    myPlate: { left: 24, top: 948 },
     myPiles: { left: 24, top: 556 },
-    theirPlate: (index, count) => ({ left: 24, top: count === 1 ? 24 : 16 + index * SEAT_SPACING }),
-    theirPiles: { left: 24, top: 140 },
+    theirPlate: (index) => ({ left: 24, top: SEAT_TOP + index * SEAT_SPACING }),
+    theirPiles: { left: 24, top: 152 },
     hiddenHandX: (index, count) => FIELD_LEFT + (index + 0.5) * (fieldWidth / count),
-    stackPoint: { x: stage.width - 341, y: 470 },
+    stackPoint: { x: stage.width - FIELD_RIGHT_MARGIN / 2, y: STACK_CENTER_Y },
     handRaise: 0,
   };
 }
@@ -147,6 +159,7 @@ function tallLayout(width: number, height: number): MatchLayout {
     tall: true,
     fieldLeft,
     fieldWidth,
+    rightColumn: 0,
     me: { left: fieldLeft, width: fieldWidth, frontTop: myFront, backTop: myBack, frontIdeal, backIdeal },
     them: (index, count) => ({
       left: fieldLeft + column(index, count),
@@ -160,10 +173,24 @@ function tallLayout(width: number, height: number): MatchLayout {
     playLine: bandTop,
     myPlate: { left: TALL_MARGIN, top: bandTop + 20 },
     myPiles: { left: 290, top: bandTop + 8 },
-    theirPlate: (index, count) => ({ left: fieldLeft + column(index, count), top: count === 1 ? 24 : 16 }),
+    theirPlate: (index, count) => ({ left: fieldLeft + column(index, count), top: SEAT_TOP }),
     theirPiles: { left: 290, top: 52 },
     hiddenHandX: (index, count) => (count === 1 ? width - 330 : fieldLeft + column(index + 1, count) - 120),
-    stackPoint: { x: TALL_MARGIN + 95, y: seam - 180 },
+    stackPoint: { x: TALL_MARGIN + 95, y: seam - 168 },
     handRaise,
   };
+}
+
+/** How far each older object on the stack peeks out below the one above it, in stage pixels. */
+const PEEK = 46;
+const MIN_PEEK = 14;
+/** the pile's height before the peeks close up: down the right column to above the decision corner */
+const PILE_SPAN = 600;
+/** the stack's cards in the wide column (StackZone.module.css) */
+const STACK_CARD_HEIGHT = 152 * CARD_RATIO;
+
+/** The peek for a stack of `count`: a long stack closes up so it stays in its column. */
+export function stackPeek(count: number): number {
+  if (count < 2) return PEEK;
+  return Math.round(Math.min(PEEK, Math.max(MIN_PEEK, (PILE_SPAN - STACK_CARD_HEIGHT) / (count - 1))));
 }

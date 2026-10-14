@@ -1,0 +1,133 @@
+/*
+ * The turn printed around the active seat's avatar: a ring of ink dots outside the priority rope. Ivory ink only:
+ * the current step and the stops are state, not a decision (DESIGN.md, the Decision Rule).
+ */
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.dots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* placed by phaseSteps.dotPosition: the slot is the dot's centre */
+.slot {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* the hit area: as wide as the gap between dots; the printed dot is drawn inside it */
+.dot {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dot::before,
+.dot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.dot::before {
+  width: 10px;
+  height: 10px;
+  transition: background-color var(--dur-quick) linear, scale var(--dur-place) var(--ease-place), box-shadow var(--dur-quick) linear;
+}
+
+/* to come this turn: hollow */
+.future::before {
+  box-shadow: inset 0 0 0 1.5px var(--ink-dim);
+}
+
+/* gone this turn: filled, faint */
+.past::before {
+  background: var(--ink-faint);
+}
+
+/* being played: filled and a size up */
+.current::before {
+  background: var(--ink-strong);
+  scale: 1.2;
+  box-shadow: 0 0 8px rgb(var(--ink-rgb) / 0.55);
+}
+
+/* the game stops here for this player's turn: a printed ring around the dot */
+.stop::after {
+  width: 18px;
+  height: 18px;
+  box-shadow: inset 0 0 0 1.5px var(--ink-soft);
+}
+
+.dot:hover:not([aria-disabled])::before {
+  box-shadow: inset 0 0 0 2px var(--ink-strong);
+}
+
+.current:hover:not([aria-disabled])::before {
+  box-shadow: 0 0 8px rgb(var(--ink-rgb) / 0.55), 0 0 0 2px var(--ink-strong);
+}
+
+.dot:focus-visible {
+  outline: 2px solid var(--ink-strong);
+  outline-offset: 0;
+}
+
+.dot[aria-disabled] {
+  cursor: default;
+}
+
+/* the name is read out from the label; this copy is for scripts that look for the current step */
+.name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* the step's name opens outside the stage, at window size */
+.tip {
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 240px;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  background: var(--mat-600);
+  box-shadow: inset 0 0 0 1px var(--ink-ghost), var(--shadow-held);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+  color: var(--ink-dim);
+}
+
+.tip b {
+  font-size: var(--text-md);
+  color: var(--ink-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot::before {
+    transition: none;
+  }
+}

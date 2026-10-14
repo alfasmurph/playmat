@@ -16,7 +16,7 @@ test.describe('app: a game against the AI', () => {
     await startAiGame(page);
     await keepOpeningHand(page);
 
-    // the match stage: a hand, a phase ladder and a decision area
+    // the match stage: a hand and a decision area
     await expect(page.getByRole('list', { name: /^Your hand, \d+ cards$/ })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('region', { name: 'Your decision' })).toBeVisible();
 

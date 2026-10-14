@@ -1,13 +1,15 @@
+/* wide: centred in the right column (matchLayout), under the game menu */
 .zone {
   position: absolute;
-  right: 236px;
-  top: 300px;
-  width: 210px;
+  right: calc((var(--right-column, 200px) - 152px) / 2);
+  top: 92px;
+  width: 152px;
   z-index: var(--z-rail);
 }
 
 .label {
-  margin-bottom: 8px;
+  /* clear of the "Resolving next" tab over the top object */
+  margin-bottom: 26px;
   font-size: 22px;
   letter-spacing: var(--tracking-print-wide);
   text-transform: uppercase;
@@ -21,12 +23,12 @@
   list-style: none;
 }
 
-/* older objects peek out below the top one */
+/* older objects peek out below the top one, straight down the column (see stackPeek) */
 .item {
   position: absolute;
-  top: calc(var(--i) * 46px);
-  left: calc(var(--i) * 6px);
-  width: 190px;
+  top: calc(var(--i) * var(--peek, 46px));
+  left: 0;
+  width: 152px;
   filter: drop-shadow(0 10px 14px rgb(var(--shade-rgb) / 0.45));
   transition: top var(--dur-place) var(--ease-place);
 }
@@ -85,5 +87,6 @@
 }
 
 :global([data-layout='tall']) .item {
+  left: calc(var(--i) * 6px);
   width: 170px;
 }

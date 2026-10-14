@@ -27,7 +27,6 @@ import { CardFace } from '../ui/CardFace';
 import { Dialog } from '../ui/Dialog';
 import { MatPrint } from '../ui/MatPrint';
 import { SettingsDialog } from '../screens/SettingsDialog';
-import { Stitch } from '../ui/Stitch';
 import { ActionCluster } from './ActionCluster';
 import { AlwaysAnswerMenu, TriggerOrderOptions } from './AutoAnswer';
 import { BetweenGames } from './BetweenGames';
@@ -57,9 +56,9 @@ import { CardPicker, ChoicePanel, GameOverOverlay, MulliganOverlay, StartingPlay
 import { PermanentStack } from './PermanentStack';
 import { clothOf, clothStyle } from './playmats';
 import { PracticeTools } from './PracticeTools';
-import { PhaseLadder } from './PhaseLadder';
 import { DefenderPicker } from './DefenderPicker';
 import { MiniPiles, Piles } from './Piles';
+import type { PhaseRingProps } from './PhaseRing';
 import { PlayerPlate } from './PlayerPlate';
 import { SpectatorBar, WatcherCount } from './SpectatorBar';
 import { useWatchers } from './useWatchers';
@@ -333,6 +332,14 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
       ? { setCode: permanent.expansionSetCode, cardNumber: permanent.cardNumber, name: permanent.name }
       : null;
   }, [board.opponents]);
+  // the turn rings the active seat's avatar (none before the first turn: the turn belongs to nobody yet)
+  const activeId = view?.activePlayerId && view.step ? view.activePlayerId : null;
+  const turnRing = useMemo<PhaseRingProps | null>(() => (activeId ? {
+    step: view?.step,
+    myTurn: !spectating && !!myId && activeId === myId,
+    turn: view?.turn ?? 0,
+    activeName: spectating ? view?.activePlayerName ?? null : null,
+  } : null), [activeId, view?.step, view?.turn, view?.activePlayerName, spectating, myId]);
 
   return (
     <Stage style={matStyle}>
@@ -340,14 +347,15 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
         // the stage widens with the window and the field takes the extra width; a portrait window gets the tall layout
         const layout = matchLayout(stage);
         return (
-          <div className={styles.layout} style={{ ['--seam' as string]: `${layout.seam}px`, ['--hand-raise' as string]: `${layout.handRaise}px` }}>
+          <div
+            className={styles.layout}
+            style={{ ['--seam' as string]: `${layout.seam}px`, ['--hand-raise' as string]: `${layout.handRaise}px`, ['--right-column' as string]: `${layout.rightColumn}px` }}
+          >
             <div className={styles.mat} aria-hidden="true" />
             {/* each half carries its player's deck art, printed faintly into the mat */}
             <div className={styles.printTheirs}><MatPrint card={opponentArt} /></div>
             <div className={styles.printMine}><MatPrint card={myArt} /></div>
             <div className={styles.seam} aria-hidden="true" />
-            {/* under the hand and the controls, over the mat */}
-            <Stitch inset={10} radius={22} zIndex={2} />
 
             {board.opponents.map((opponent, index) => (
               <OpponentSide
@@ -369,6 +377,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 commanders={commanders.get(opponent.player.playerId!) ?? NO_COMMANDERS}
                 commanderDamage={damageTaken(opponent.player)}
                 outOfRange={!inRange(view, myId, opponent.player.playerId!)}
+                turn={opponent.player.playerId === activeId ? turnRing : null}
               />
             ))}
 
@@ -389,6 +398,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                     onPay={onClick}
                     commanderDamage={damageTaken(board.me.player)}
                     extrasBeside={!layout.tall}
+                    turn={board.me.player.playerId === activeId ? turnRing : null}
                   />
                 </div>
                 <div className={styles.myPiles} style={layout.myPiles}>
@@ -406,13 +416,6 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
 
             <Reveals view={view} myPlayerId={myId} opponentIds={opponentIds} />
             <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} originOf={originOf} />
-            <PhaseLadder
-              step={view?.step}
-              myTurn={!spectating && !!myId && view?.activePlayerId === myId}
-              turn={view?.turn ?? 0}
-              started={!!view?.activePlayerId && !!view?.step}
-              activeName={spectating ? view?.activePlayerName ?? null : null}
-            />
 
             {board.me && seatHand && (
               <Hand
@@ -595,7 +598,7 @@ function Row({ groups, left, width, top, ideal, min, forward, label, flip, ...re
 }
 
 /** An opponent's half: their rows mirrored above the seam, their seat, piles and hidden hand. */
-function OpponentSide({ board, index, count, sleeve, handCount, deciding, layout, commanders, commanderDamage, outOfRange, ...row }: RowProps & {
+function OpponentSide({ board, index, count, sleeve, handCount, deciding, layout, commanders, commanderDamage, outOfRange, turn, ...row }: RowProps & {
   layout: MatchLayout;
   board: PlayerBoard;
   index: number;
@@ -605,6 +608,8 @@ function OpponentSide({ board, index, count, sleeve, handCount, deciding, layout
   commanders: readonly CommanderStatus[];
   commanderDamage: readonly { name: string; amount: number }[];
   outOfRange: boolean;
+  /** their turn: the ring of steps around their avatar */
+  turn: PhaseRingProps | null;
 }) {
   const place = layout.them(index, count);
   const player = board.player;
@@ -622,6 +627,7 @@ function OpponentSide({ board, index, count, sleeve, handCount, deciding, layout
           onClick={() => row.onClick(player.playerId!)}
           commanderDamage={commanderDamage}
           outOfRange={outOfRange}
+          turn={turn}
         />
         {count > 1 && (
           <div className={styles.theirMini}>

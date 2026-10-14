@@ -13,15 +13,11 @@ export default {
   'match.lesson.quiet': 'No more tips',
   'match.lesson.sideboard': 'Sideboarding',
 
-  // the turn ladder
-  'match.turn': 'Turn {turn}',
-  'match.turn.yours': 'Yours',
-  'match.turn.theirs': 'Theirs',
-  'match.turn.starting': 'Starting',
+  // the turn, around the active seat: its number by the name, the ring's name
+  'match.turn.short': 'T{turn}',
   'match.turn.aria.yours': 'Turn {turn}, your turn',
   'match.turn.aria.theirs': "Turn {turn}, opponent's turn",
   'match.turn.aria.player': "Turn {turn}, {name}'s turn",
-  'match.turn.aria.starting': 'The game is starting',
 
   // player plates
   'match.plate.lost': 'Lost',

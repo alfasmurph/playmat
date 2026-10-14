@@ -8,6 +8,7 @@ import { useT } from '../i18n';
 import './matchMessages';
 import { ManaCost } from '../ui/ManaCost';
 import { sigilOf } from '../../core/social/identity';
+import { PhaseRing, type PhaseRingProps } from './PhaseRing';
 import { usePresence } from './presence';
 import styles from './PlayerPlate.module.css';
 
@@ -37,6 +38,8 @@ export interface PlayerPlateProps {
    * whose slot has no room to grow downward (yours, at the bottom of the wide layout)
    */
   extrasBeside?: boolean;
+  /** whose turn it is: the turn's steps ring this seat's avatar, and its number is printed by the name */
+  turn?: PhaseRingProps | null;
 }
 
 const ROPE_TICK_MS = 250;
@@ -79,7 +82,7 @@ function useRopeSeconds(player: PlayerView): number {
 }
 
 /** A player's seat: who they are, their life, counters, floating mana and clock. */
-export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false }: PlayerPlateProps) {
+export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null }: PlayerPlateProps) {
   const t = useT();
   const life = player.life ?? 0;
   // a player out of the game (lost, conceded or left: leaving loses) has no life worth showing, however low it went
@@ -195,9 +198,12 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
             <circle cx="50" cy="50" r="47" pathLength={ROPE_SECONDS} strokeDasharray={`${timeLeft} ${ROPE_SECONDS}`} />
           </svg>
         )}
+        {turn && <PhaseRing {...turn} />}
       </div>
       <div className={styles.info}>
         <div className={styles.name}>
+          {/* the turn's number, read out with the ring's name */}
+          {turn && <span className={styles.turn} aria-hidden="true">{t('match.turn.short', { turn: turn.turn })}</span>}
           {player.name}
           {out && <span className={styles.range}>{t('match.plate.lost')}</span>}
           {disconnected && (

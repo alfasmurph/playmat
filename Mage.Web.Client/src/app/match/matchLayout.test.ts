@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { matchLayout } from './matchLayout';
+import { matchLayout, stackPeek } from './matchLayout';
 import { fitStage, MAX_TALL_HEIGHT, MIN_TALL_HEIGHT, STAGE_HEIGHT, STAGE_WIDTH, TALL_STAGE_WIDTH } from './stageContext';
 
 const CARD_RATIO = 88 / 63;
@@ -29,13 +29,45 @@ describe('fitStage', () => {
 });
 
 describe('matchLayout', () => {
-  test('wide: the field sits between the seat column and the stack and decision corner', () => {
+  test('wide: the field sits between the seat column and a slim column for the stack and decision corner', () => {
     const layout = matchLayout({ layout: 'wide', width: 1920, height: 1080 });
     expect(layout.tall).toBe(false);
     expect(layout.fieldLeft).toBe(300);
-    expect(layout.fieldWidth).toBe(1920 - 300 - 470);
+    expect(layout.rightColumn).toBe(200);
+    expect(layout.fieldWidth).toBe(1920 - 300 - 200);
     expect(layout.seam).toBe(540);
-    expect(layout.them(1, 2).left).toBeCloseTo(300 + 1150 / 2);
+    expect(layout.them(1, 2).left).toBeCloseTo(300 + 1420 / 2);
+  });
+
+  test.each([1920, 2280, 2640])('wide %i: the stack and the decision corner keep to the right column, clear of rows, hand and seats', (width) => {
+    const layout = matchLayout({ layout: 'wide', width, height: 1080 });
+    const fieldRight = layout.fieldLeft + layout.fieldWidth;
+    expect(fieldRight).toBe(width - layout.rightColumn);
+    // a resolving object bursts from the top of the stack, in the column
+    expect(layout.stackPoint.x).toBeGreaterThan(fieldRight);
+    expect(layout.stackPoint.x).toBeLessThan(width);
+    for (let count = 1; count <= 3; count++) {
+      for (let index = 0; index < count; index++) expect(layout.them(index, count).left + layout.them(index, count).width).toBeLessThanOrEqual(fieldRight);
+    }
+    // the corner's main row (chevron and button, 252 wide, 72 tall, 20 in from the corner) reaches past the column
+    // only below your rows, and stays right of the widest hand (under 1168 wide, centred, fanned a little wider)
+    const mainRow = { left: width - 20 - 252, top: 1080 - 20 - 72 };
+    expect(mainRow.top).toBeGreaterThan(layout.me.backTop + layout.me.backIdeal * CARD_RATIO);
+    expect(mainRow.left).toBeGreaterThan(width / 2 + 1168 / 2 + 40);
+    // the corner's question and buttons keep to the column: its left edge is right of the rows
+    expect(width - 20 - (layout.rightColumn - 36)).toBeGreaterThan(fieldRight);
+  });
+
+  test('wide: the seats (120 tall, with room for the ring of turn steps) fit their column', () => {
+    const SEAT = 120;
+    const layout = matchLayout({ layout: 'wide', width: 1920, height: 1080 });
+    // yours under your piles (two rows of about 330), on the stage
+    expect(layout.myPlate.top).toBeGreaterThan(layout.myPiles.top + 340);
+    expect(layout.myPlate.top + SEAT).toBeLessThanOrEqual(1080 - 12);
+    // one opponent: their piles under the seat; several: each seat and its counters (about 40) above the next
+    expect(layout.theirPlate(0, 1).top + SEAT).toBeLessThan(layout.theirPiles.top);
+    for (let index = 0; index < 2; index++) expect(layout.theirPlate(index, 3).top + SEAT + 40).toBeLessThan(layout.theirPlate(index + 1, 3).top);
+    expect(layout.theirPlate(2, 3).top + SEAT + 40).toBeLessThan(layout.myPiles.top);
   });
 
   test.each([1440, 1554, 1728, 1920])('tall %i: top band, their rows, the turn, your rows, your band, the hand, in that order', (height) => {
@@ -45,7 +77,7 @@ describe('matchLayout', () => {
     expect(layout.fieldWidth).toBe(1080 - 48);
     expect(them.backTop).toBeGreaterThan(layout.theirPiles.top);
     expect(them.frontTop).toBeGreaterThanOrEqual(them.backTop + them.backIdeal * CARD_RATIO);
-    // the turn ladder (about 70 tall) fits between the creature rows, at the seam
+    // a band about 70 tall stays between the creature rows, at the seam (the stack's top card and reveals use it)
     expect(layout.seam - 35).toBeGreaterThan(them.frontTop + them.frontIdeal * CARD_RATIO);
     expect(layout.seam + 35).toBeLessThan(me.frontTop);
     expect(me.backTop).toBeGreaterThanOrEqual(me.frontTop + me.frontIdeal * CARD_RATIO);
@@ -60,5 +92,17 @@ describe('matchLayout', () => {
     expect(a).toBe(b);
     expect(a.them(0, 2)).toBe(b.them(0, 2));
     expect(a.them(0, 2)).not.toBe(a.them(1, 2));
+  });
+});
+
+describe('stackPeek', () => {
+  test('a short stack peeks fully; a long one closes up to stay in its column', () => {
+    expect(stackPeek(1)).toBe(46);
+    expect(stackPeek(2)).toBe(46);
+    expect(stackPeek(9)).toBe(46);
+    expect(stackPeek(12)).toBeLessThan(46);
+    // the pile's bottom card ends above the decision corner however long the stack gets (until the peek floor)
+    expect(11 * stackPeek(12) + 152 * CARD_RATIO).toBeLessThanOrEqual(600.5);
+    expect(stackPeek(60)).toBe(14);
   });
 });

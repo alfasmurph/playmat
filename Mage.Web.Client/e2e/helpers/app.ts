@@ -44,7 +44,7 @@ export async function keepOpeningHand(page: Page): Promise<void> {
   await expect(openingHand(page)).toBeHidden({ timeout: 30_000 });
 }
 
-/** The turn number printed on the phase ladder ("Turn 3, your turn"), 0 before the first turn. */
+/** The turn number the ring of turn steps is named by ("Turn 3, your turn"), 0 before the first turn. */
 export async function currentTurn(page: Page): Promise<number> {
   const ladder = page.getByRole('navigation', { name: /^Turn \d+/ });
   if (!(await ladder.isVisible().catch(() => false))) return 0;
