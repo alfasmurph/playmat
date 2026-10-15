@@ -55,6 +55,7 @@ public class WebClientApiContractTest {
             "chatSetIgnored", "gameWatchers", // user and game managers (social/UserRelations, watcher names)
             "replayList", "replayPage", // replay store (replay/ReplayStoreTest)
             "serverInfo", "deckSyncList", "deckSyncGet", "deckSyncPut", "deckSyncDelete", "deckSharedList", // config and deck store (decks/DeckStoreTest)
+            "savedGameList", "savedGameResume", "savedGameDelete", // saved games store (savedgame/SavedGamesTest)
             "reportPlayer", "clientReportError", "adminGetReports", "adminCloseReport", "adminClientErrors", // moderation stores
             "adminServerStats", // bridge metrics
             "gamePractice", // game controller practice tools, with readable errors

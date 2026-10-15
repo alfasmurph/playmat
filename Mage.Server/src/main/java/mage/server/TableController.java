@@ -27,6 +27,7 @@ import mage.server.game.GameFactory;
 import mage.server.game.PlayerFactory;
 import mage.server.managers.ManagerFactory;
 import mage.server.notify.DiscordNotifier;
+import mage.server.savedgame.SavedGames;
 import mage.server.record.TableRecorderImpl;
 import mage.server.tournament.TournamentFactory;
 import mage.server.util.ServerMessagesUtil;
@@ -56,6 +57,8 @@ public class TableController {
     private final ConcurrentHashMap<UUID, UUID> userPlayerMap = new ConcurrentHashMap<>(); // human players only, use table.seats for AI
 
     private Match match;
+    /** a saved game to play on instead of starting a new one (see seatSavedGame) */
+    private Game resumeGame;
     private MatchOptions options;
     private Tournament tournament;
 
@@ -721,7 +724,12 @@ public class TableController {
      */
     private boolean startGame(UUID choosingPlayerId) throws GameException {
         try {
-            match.startGame();
+            if (resumeGame != null) {
+                match.resumeGame(resumeGame);
+                resumeGame = null;
+            } else {
+                match.startGame();
+            }
             table.initGame();
             GameOptions gameOptions = new GameOptions();
             gameOptions.rollbackTurnsAllowed = match.getOptions().isRollbackTurnsAllowed();
@@ -733,6 +741,10 @@ public class TableController {
             gameOptions.setup = CareerService.get().setupFor(table.getId());
             match.getGame().setGameOptions(gameOptions);
             managerFactory.gameManager().createGameSession(match.getGame(), userPlayerMap, table.getId(), choosingPlayerId, gameOptions);
+            if (savable(gameOptions) && match.getGame() instanceof GameImpl) {
+                // a game against the AI is saved at the start of every turn (SavedGames)
+                ((GameImpl) match.getGame()).setTurnStartListener(this::saveGame);
+            }
             String creator = null;
             StringBuilder opponent = new StringBuilder();
             for (Entry<UUID, UUID> entry : userPlayerMap.entrySet()) { // do only for no AI players
@@ -883,6 +895,8 @@ public class TableController {
         managerFactory.gameManager().removeGame(game.getId());
         ServerMessagesUtil.instance.incGamesEnded();
         payCareer(game);
+        // a game that ended needs no save to come back to
+        SavedGames.get().remove(game.getId().toString());
 
         try {
             if (!match.hasEnded()) {
@@ -908,6 +922,82 @@ public class TableController {
      * regular game against the AI counts for the player's Career quests when they chose that. Practice against a
      * goldfish (an AI with only basic lands) never counts.
      */
+    /**
+     * Saved at every turn's start: a solo game against the AI that isn't part of an event or Career (whose payouts
+     * and setups belong to the table it started at).
+     */
+    private boolean savable(GameOptions gameOptions) {
+        if (table.isTournament() || table.isTournamentSubTable() || gameOptions.setup != null
+                || CareerService.get().isCareerTable(table.getId())) {
+            return false;
+        }
+        long humans = match.getPlayers().stream().filter(player -> player.getPlayer().isHuman()).count();
+        return humans == 1 && userPlayerMap.size() == 1;
+    }
+
+    /** Writes the game at the start of a turn (the game thread calls this; see SavedGames). */
+    private void saveGame(Game game) {
+        Map.Entry<UUID, UUID> human = userPlayerMap.entrySet().iterator().next();
+        Optional<User> user = managerFactory.userManager().getUser(human.getKey());
+        if (!user.isPresent()) {
+            return;
+        }
+        SavedGames.Info info = new SavedGames.Info();
+        info.gameId = game.getId().toString();
+        info.owner = user.get().getName().toLowerCase(Locale.ROOT);
+        info.title = match.getName();
+        info.gameType = match.getOptions().getGameType();
+        info.deckType = match.getOptions().getDeckType();
+        info.turn = game.getTurnNum();
+        info.savedAt = System.currentTimeMillis();
+        List<SavedGames.Seat> seats = new ArrayList<>();
+        for (Seat seat : table.getSeats()) {
+            Player player = seat.getPlayer();
+            if (player == null) {
+                continue;
+            }
+            MatchPlayer matchPlayer = match.getPlayer(player.getId());
+            SavedGames.Seat saved = new SavedGames.Seat();
+            saved.playerId = player.getId();
+            saved.type = seat.getPlayerType();
+            saved.human = player.isHuman();
+            saved.deck = matchPlayer == null ? null : matchPlayer.getDeck();
+            seats.add(saved);
+            Player inGame = game.getPlayer(player.getId());
+            if (player.getId().equals(human.getValue())) {
+                info.deckName = saved.deck == null ? null : saved.deck.getName();
+                info.life = inGame == null ? 0 : inGame.getLife();
+            } else {
+                info.opponents.add(player.getName());
+            }
+        }
+        SavedGames.get().save(info, match.getOptions(), seats, game);
+    }
+
+    /**
+     * Sits everyone of a saved game down again, as they were: its own player objects (with their cards and state),
+     * the person in theirs. The match then plays the saved game on instead of starting a new one.
+     */
+    public synchronized void seatSavedGame(UUID userId, SavedGames.Saved saved) throws GameException {
+        Optional<User> user = managerFactory.userManager().getUser(userId);
+        if (!user.isPresent()) {
+            throw new GameException("Sign in again to play on.");
+        }
+        for (SavedGames.Seat seat : saved.seats) {
+            Player player = saved.game.getPlayer(seat.playerId);
+            if (player == null) {
+                throw new GameException("The saved game is missing a player.");
+            }
+            addPlayer(seat.human ? userId : null, player, seat.type, seat.deck);
+            if (seat.human) {
+                player.setUserData(user.get().getUserData());
+                user.get().addTable(player.getId(), table);
+                user.get().ccJoinedTable(table.getRoomId(), table.getId(), table.getParentTableId(), false);
+            }
+        }
+        resumeGame = saved.game;
+    }
+
     private void payCareer(Game game) {
         CareerTally tally = CareerTally.take(game.getId());
         CareerService career = CareerService.get();

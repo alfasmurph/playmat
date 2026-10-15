@@ -98,11 +98,19 @@ public class HumanPlayer extends PlayerImpl {
     // It's save in sending player response, but processing by any GAME thread any any player priority
     private transient Boolean responseOpenedForAnswer = false; // GAME thread waiting new answer
     private transient long responseLastWaitingThreadId = 0;
-    private final transient PlayerResponse response; // data receiver from a client side (must be shared for one player between multiple clients)
+    private transient PlayerResponse response; // data receiver from a client side (must be shared for one player between multiple clients)
     // practice tools waiting for the game thread (shared between copies, like the response)
-    private final transient Queue<java.util.function.Consumer<Game>> gameThreadActions;
+    private transient Queue<java.util.function.Consumer<Game>> gameThreadActions;
     private final int RESPONSE_WAITING_TIME_SECS = 30; // waiting time before cancel current response
     private final int RESPONSE_WAITING_CHECK_MS = 100; // timeout for open status check
+
+    /** A saved game loaded to play on: the player gets a fresh line to the client (nothing of the old one is saved). */
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        responseOpenedForAnswer = false;
+        response = new PlayerResponse();
+        gameThreadActions = new java.util.concurrent.ConcurrentLinkedQueue<>();
+    }
 
     protected static FilterCreatureForCombatBlock filterCreatureForCombatBlock = new FilterCreatureForCombatBlock();
     protected static FilterCreatureForCombat filterCreatureForCombat = new FilterCreatureForCombat();

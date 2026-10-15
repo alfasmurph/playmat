@@ -1,4 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { useQuery } from '@tanstack/react-query';
 import { Menu, Undo2 } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +19,7 @@ import { pregameChoice } from '../../core/game/pregame';
 import { offBoardTargets } from '../../core/game/offBoardTargets';
 import type { CardView, ChatMessage, GameView, PlayerView } from '../../protocol/generated/views';
 import { chosenSleeve, rosterOf, SLEEVE_COLORS, useDecks } from '../stores/decks';
+import { api } from '../connection';
 import { useT } from '../i18n';
 import { useEvents } from '../stores/events';
 import { useGames } from '../stores/games';
@@ -306,6 +308,18 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
     exit(false);
     if (deckId) void usePlay.getState().playVsAi(deckId, lastOptions);
   }, [exit, deckId]);
+  // a game that didn't end but went with the server (a restart): when it was saved at a turn's start, play on from there
+  const absent = mode === 'play' && !!state.gameOver && !state.endInfo;
+  const savedGames = useQuery({ queryKey: ['savedGames', 'game', state.gameId], queryFn: () => api.savedGameList(), enabled: absent, staleTime: 0 });
+  const savedEntry = absent ? (savedGames.data ?? []).find((game) => game.gameId === state.gameId) : undefined;
+  const savedTurn = savedEntry?.turn ?? null;
+  const savedHere = useMemo(() => (savedTurn === null ? null : {
+    turn: savedTurn,
+    playOn: () => {
+      exit(false);
+      void usePlay.getState().playSaved(state.gameId).catch(() => undefined);
+    },
+  }), [savedTurn, exit, state.gameId]);
 
   // the arrow starts at the spell being cast (top of the stack) while it chooses targets
   const choosingTargets = interaction.mode === 'target' && !awaitingServer;
@@ -645,6 +659,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                   leaveLabel={eventId ? 'Back to the event' : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
                   // a rematch is only dealt against the computer; people go back to Tables
                   onPlayAgain={mode === 'play' && deckId && !eventId && vsAi ? playAgain : undefined}
+                  saved={savedHere}
                 />
               )}
               <CardZoom large={spectating && largeZoom} />

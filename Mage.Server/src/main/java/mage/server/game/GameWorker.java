@@ -33,7 +33,12 @@ public class GameWorker implements Callable<Boolean> {
         try {
             // play game
             ThreadUtils.setGameThreadStatus(game.getId(), "");
-            game.start(choosingPlayerId);
+            if (game instanceof mage.game.GameImpl && ((mage.game.GameImpl) game).isLoadedFromSave()) {
+                // a saved game: it plays on from the start of the turn it was saved at
+                ((mage.game.GameImpl) game).resumeAtTurnStart();
+            } else {
+                game.start(choosingPlayerId);
+            }
 
             // save result and start next game or close finished table
             game.fireUpdatePlayersEvent(); // TODO: no needs in update event (gameController.endGameWithResult already send game end dialog)?

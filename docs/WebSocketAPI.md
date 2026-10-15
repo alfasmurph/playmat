@@ -310,6 +310,9 @@ Generated from the server's method registry (`mage.server.websocket.api`). Do no
 | `careerLimitedDeck` | `deck: DeckCardLists` | `CareerLimitedRun` | session | Submit the run's deck: at least 40 cards from the pool, plus any basic lands. |
 | `careerLimitedPlay` | - | `CareerMatch` | session | Play the run's next game. The run ends at three wins or two losses. |
 | `careerLimitedAbandon` | - | `CareerLimitedRun` | session | Give up the run in progress. Cards already opened stay in the collection. |
+| `savedGameList` | - | `SavedGameEntry[]` | session | The signed-in player's saved games against the AI that aren't being played right now, newest first (at most 8). A game is saved at the start of every turn and forgotten when it ends. |
+| `savedGameResume` | `gameId: string` | `string` | session | Plays a saved game on from the start of the turn it was saved at: the server sets up a table with the same players and starts it; the game arrives like any other. Returns the table id. |
+| `savedGameDelete` | `gameId: string` | `boolean` | session | Throws a saved game away; false when the player has no such game. |
 <!-- END GENERATED: methods -->
 
 ## Server events

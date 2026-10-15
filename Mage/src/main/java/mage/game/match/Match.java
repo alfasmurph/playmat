@@ -47,6 +47,9 @@ public interface Match {
 
     void startGame() throws GameException;
 
+    /** Plays a saved game (loaded at the start of a turn) as this match's next game, in place of starting a new one. */
+    void resumeGame(Game game);
+
     void sideboard();
 
     void endGame();

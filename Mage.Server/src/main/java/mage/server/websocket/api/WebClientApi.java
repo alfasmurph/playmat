@@ -27,6 +27,7 @@ public final class WebClientApi {
         dispatcher.registerAll(CareerApi.methods(ctx));
         dispatcher.registerAll(CareerProgressApi.methods(ctx));
         dispatcher.registerAll(CareerModesApi.methods(ctx));
+        dispatcher.registerAll(SavedGameApi.methods(ctx));
         return dispatcher;
     }
 }

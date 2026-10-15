@@ -127,6 +127,12 @@ const es: Catalog = {
   'home.settingUp': 'Preparando',
   'home.continue': 'Continuar',
   'home.career': 'Carrera',
+  'home.unfinished': 'Partidas sin terminar',
+  'home.unfinished.vs': 'contra {names}',
+  'home.unfinished.turn': 'turno {turn}, {life} de vida',
+  'home.unfinished.playOn': 'Seguir',
+  'home.unfinished.throwAway': 'Descartar',
+  'home.unfinished.keep': 'Conservarla',
   'home.career.note': 'Tu propia colección, rivales de IA por niveles, sobres que ganar.',
 
   // the AI opponent (Play)
@@ -1102,6 +1108,9 @@ const es: Catalog = {
   'match.end.defeat': 'Derrota',
   'match.end.draw': 'Empate',
   'match.end.over': 'Fin de la partida',
+  'match.end.saved': 'Partida guardada',
+  'match.end.savedLine': 'El servidor se detuvo durante esta partida, pero se guardó al comienzo del turno {turn}.',
+  'match.end.playOn': 'Seguir jugando',
   'match.end.wonGame': 'Ganaste la partida.',
   'match.end.lostGame': 'Perdiste la partida.',
   'match.end.drawGame': 'La partida terminó en empate.',

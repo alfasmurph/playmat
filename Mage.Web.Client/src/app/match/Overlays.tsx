@@ -362,7 +362,7 @@ const END_GAME: Record<string, MessageKey> = { won: 'match.end.wonGame', lost: '
 const END_MATCH: Record<string, MessageKey> = { won: 'match.end.wonMatch', lost: 'match.end.lostMatch', draw: 'match.end.drawMatch' };
 
 /** The end of a game: who won, the match score, and where to go next. */
-export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain }: {
+export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain, saved = null }: {
   message: string;
   endInfo: GameEndView | null;
   /** the player's name, to tell from the server's message who won when there is no end-of-game info */
@@ -370,6 +370,8 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
   onLeave(): void;
   leaveLabel?: string;
   onPlayAgain?(): void;
+  /** the game didn't end: it was lost with the server and is saved at a turn's start, to play on from there */
+  saved?: { turn: number; playOn(): void } | null;
 }) {
   const t = useT();
   // a match of several games ends on the match's result; a single game on the game's
@@ -381,6 +383,20 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
     : result ? t(END_GAME[result]) : stripMarkup(endInfo?.gameInfo) || message;
   // why a match ended early ("Bob has quit the match.")
   const extra = stripMarkup(endInfo?.additionalInfo);
+  if (saved) {
+    return (
+      <div className={[styles.scrim, styles.endScrim].join(' ')} role="dialog" aria-modal="true" aria-labelledby="game-over-title">
+        <div className={styles.center}>
+          <h2 id="game-over-title" className={styles.endTitle}>{t('match.end.saved')}</h2>
+          <p className={styles.subtitle}>{t('match.end.savedLine', { turn: saved.turn })}</p>
+          <div className={styles.buttons}>
+            <Button variant="print" size="lg" onClick={onLeave}>{leaveLabel}</Button>
+            <Button variant="decision" size="xl" onClick={saved.playOn}>{t('match.end.playOn')}</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={[styles.scrim, styles.endScrim].join(' ')} role="dialog" aria-modal="true" aria-labelledby="game-over-title">
       <div className={styles.center}>

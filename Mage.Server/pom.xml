@@ -418,6 +418,7 @@
                                 <class>mage.server.websocket.api.ServerStats</class>
                                 <class>mage.server.decks.DeckSyncEntry</class>
                                 <class>mage.server.decks.SharedDeckEntry</class>
+                                <class>mage.server.savedgame.SavedGameEntry</class>
                                 <class>mage.server.decks.DeckStore$DeckPutResult</class>
                                 <class>mage.server.moderation.PlayerReport</class>
                                 <class>mage.server.moderation.ClientErrors$ClientError</class>

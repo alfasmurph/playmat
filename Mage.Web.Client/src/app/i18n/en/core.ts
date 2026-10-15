@@ -124,6 +124,12 @@ export default {
   'home.settingUp': 'Setting up',
   'home.continue': 'Continue',
   'home.career': 'Career',
+  'home.unfinished': 'Unfinished games',
+  'home.unfinished.vs': 'vs {names}',
+  'home.unfinished.turn': 'turn {turn}, {life} life',
+  'home.unfinished.playOn': 'Play on',
+  'home.unfinished.throwAway': 'Throw away',
+  'home.unfinished.keep': 'Keep it',
   'home.career.note': 'Your own collection, AI opponents in tiers, packs to earn.',
 
   // the AI opponent (Play)

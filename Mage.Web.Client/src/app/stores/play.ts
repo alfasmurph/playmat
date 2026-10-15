@@ -81,6 +81,11 @@ interface PlayState {
   aiOptions: AiOptions;
   setAiOptions(patch: Partial<AiOptions>): void;
   playVsAi(deckId: string, options?: PlayOverrides): Promise<void>;
+  /**
+   * play on a saved game against the AI (saved at every turn's start): the server seats everyone again and starts
+   * it from that turn; the game opens like any other
+   */
+  playSaved(gameId: string): Promise<void>;
   cancel(): Promise<void>;
 }
 
@@ -144,6 +149,18 @@ export const usePlay = create<PlayState>((set, get) => ({
     const aiOptions = { ...get().aiOptions, ...patch };
     writeJson(AI_OPTIONS_KEY, aiOptions);
     set({ aiOptions });
+  },
+
+  async playSaved(gameId) {
+    useEvents.setState({ currentTournamentId: null });
+    set({ phase: 'waitingForGame', error: null, returnPath: null, lastOptions: {} });
+    try {
+      const tableId = await api.savedGameResume(gameId);
+      set({ tableId: tableId ?? null });
+    } catch (error) {
+      set({ phase: 'idle', tableId: null, error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
   },
 
   async playVsAi(deckId, overrides = {}) {

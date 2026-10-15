@@ -140,6 +140,10 @@ public abstract class GameImpl implements Game {
     // game states to allow player rollback
     protected transient Map<Integer, GameState> gameStatesRollBack = new HashMap<>();
     protected transient boolean executingRollback;
+    /** called at the start of every turn, before anything of it happens (where saved games are taken) */
+    private transient java.util.function.Consumer<Game> turnStartListener;
+    /** loaded from a saved game: it plays on from its turn instead of starting (see resumeAtTurnStart) */
+    private transient boolean loadedFromSave;
     protected transient int turnToGoToForRollback;
 
     protected Date startTime;
@@ -1243,6 +1247,9 @@ public abstract class GameImpl implements Game {
             } else {
                 state.setActivePlayerId(player.getId());
                 saveRollBackGameState();
+                if (turnStartListener != null && !isSimulation()) {
+                    turnStartListener.accept(this);
+                }
             }
             if (checkStopOnTurnOption()) {
                 return false;
@@ -1265,6 +1272,18 @@ public abstract class GameImpl implements Game {
      * Plays on from the start of the turn the game's state is at: a game saved at a turn's start and loaded again
      * (the snapshot is taken where playTurn saves its rollback state, so nothing of the turn has happened yet).
      */
+    public void setTurnStartListener(java.util.function.Consumer<Game> listener) {
+        this.turnStartListener = listener;
+    }
+
+    public boolean isLoadedFromSave() {
+        return loadedFromSave;
+    }
+
+    public void setLoadedFromSave(boolean loadedFromSave) {
+        this.loadedFromSave = loadedFromSave;
+    }
+
     public void resumeAtTurnStart() {
         state.resume();
         play(state.getActivePlayerId());

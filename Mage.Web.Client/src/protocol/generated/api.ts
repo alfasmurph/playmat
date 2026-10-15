@@ -379,6 +379,12 @@ export function createApi(rpc: RpcCaller) {
       rpc.call('careerLimitedPlay'),
     careerLimitedAbandon: () =>
       rpc.call('careerLimitedAbandon'),
+    savedGameList: () =>
+      rpc.call('savedGameList'),
+    savedGameResume: (gameId: string) =>
+      rpc.call('savedGameResume', gameId),
+    savedGameDelete: (gameId: string) =>
+      rpc.call('savedGameDelete', gameId),
   };
 }
 

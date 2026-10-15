@@ -1294,6 +1294,18 @@ export interface RoundView extends Serializable {
     games?: TournamentGameView[];
 }
 
+export interface SavedGameEntry {
+    deckName?: string;
+    deckType?: string;
+    gameId?: string;
+    gameType?: string;
+    life?: number;
+    opponents?: string[];
+    savedAt?: number;
+    title?: string;
+    turn?: number;
+}
+
 export interface SeatView extends Serializable {
     constructedRating?: number;
     flagName?: string;

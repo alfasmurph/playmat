@@ -191,6 +191,14 @@ public abstract class MatchImpl implements Match {
         return options.getFreeMulligans();
     }
 
+    @Override
+    public void resumeGame(Game game) {
+        // the players, their cards and the turn come with the game; only the table it plays at is new
+        game.setTableId(this.tableId);
+        addGame();
+        games.add(game);
+    }
+
     protected void initGame(Game game) throws GameException {
         game.setTableId(this.tableId);
         addGame(); // raises only the number

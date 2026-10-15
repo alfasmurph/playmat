@@ -16,6 +16,7 @@ import { useImportDrop, useImportPaste } from '../decks/import/useImportShortcut
 import { openImport, useImportSheet } from '../stores/importSheet';
 import { describeAi } from './aiSetup';
 import { slotsFull, useGameSlots, useServerInfo } from '../queries';
+import { UnfinishedGames } from './UnfinishedGames';
 import styles from './HomeScreen.module.css';
 
 type Mode = 'ai' | 'practice' | 'friend';
@@ -416,6 +417,7 @@ export function HomeScreen() {
               {t(busy ? (play.phase === 'waitingForGame' ? 'home.shuffling' : 'home.settingUp') : mode === 'friend' ? 'home.continue' : 'home.play')}
             </Button>
           </div>
+          <UnfinishedGames disabled={busy} />
           {career && (
             <button type="button" className={styles.career} onClick={() => navigate('/career')} disabled={busy}>
               <Trophy size={18} aria-hidden="true" />
