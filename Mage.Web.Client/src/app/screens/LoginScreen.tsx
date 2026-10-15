@@ -202,7 +202,6 @@ export function LoginScreen() {
       <div className={styles.art} aria-hidden="true">
         <MatPrint key={art ? `${art.setCode}:${art.cardNumber}` : 'none'} card={art} />
       </div>
-      <SewnEdge />
 
       <header className={styles.brand}>
         <span className={styles.mark}><Mark size={112} /></span>
@@ -392,16 +391,6 @@ function SeatPlate({ name, placeholder }: { name: string; placeholder: string })
         <span className={styles.plateLife}>20</span>
       </span>
     </div>
-  );
-}
-
-/** The stitched edge, sewn around the mat when the page opens. */
-function SewnEdge() {
-  return (
-    <svg className={styles.edge} aria-hidden="true" preserveAspectRatio="none">
-      <rect className={styles.groove} x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="18" ry="18" />
-      <rect className={styles.thread} x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="18" ry="18" />
-    </svg>
   );
 }
 

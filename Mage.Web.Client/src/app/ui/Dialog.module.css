@@ -103,3 +103,23 @@
     transform: translateY(10px) scale(0.985);
   }
 }
+
+/* a short screen (a phone on its side): dialogs take the screen's height, and a workspace's body scrolls as a page */
+@media (max-height: 560px) {
+  .content {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .xl {
+    height: calc(100dvh - 16px);
+  }
+
+  .xl .body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .head {
+    padding: var(--space-3) var(--space-4) var(--space-1);
+  }
+}

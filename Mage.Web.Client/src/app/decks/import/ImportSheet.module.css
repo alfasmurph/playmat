@@ -811,7 +811,8 @@
   font-size: var(--text-sm);
 }
 
-@media (max-width: 760px) {
+/* a narrow screen, or a short one (a phone on its side): the sheet scrolls as one page instead of its panes */
+@media (max-width: 760px), (max-height: 560px) {
   .previewBody {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto;
@@ -850,6 +851,36 @@
 
   .foot {
     flex-wrap: wrap;
+  }
+}
+
+/* a short screen: the paste field keeps a usable height and the sheet scrolls past it (Dialog's xl body) */
+@media (max-height: 560px) {
+  /* every step takes its natural height; Dialog's xl body is the one thing that scrolls */
+  .body {
+    flex: none;
+  }
+
+  .previewBody {
+    grid-template-rows: none;
+    grid-auto-rows: max-content;
+    overflow: visible;
+  }
+
+  .deckSide,
+  .detailSide {
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .inputWrap {
+    flex: none;
+  }
+
+  .input {
+    flex: none;
+    width: 100%;
+    height: 150px;
   }
 }
 
