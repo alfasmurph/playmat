@@ -558,8 +558,9 @@
 
 .formatLine {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2) var(--space-3);
 }
 
 .select {
@@ -815,8 +816,15 @@
 @media (max-width: 760px), (max-height: 560px) {
   .previewBody {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-rows: none;
+    grid-auto-rows: max-content;
     overflow: auto;
+  }
+
+  /* each pane as tall as what it holds: squeezed to the sheet's height they spill over each other */
+  .deckSide,
+  .detailSide {
+    min-height: auto;
   }
 
   .problems {

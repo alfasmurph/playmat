@@ -36,6 +36,13 @@ export function DecksScreen() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<RosterDeck | null>(null);
   const selected = roster.find((deck) => deck.id === decks.selectedId) ?? null;
+  // one column (a phone): the chosen deck's card is above the shelf, so choosing one brings it into view
+  const choose = (id: string) => {
+    decks.select(id);
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      requestAnimationFrame(() => document.getElementById('deck-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  };
   const arrivedId = useImportSheet((state) => state.arrivedId);
   const career = useSettings((state) => state.settings.careerOptIn);
   const navigate = useNavigate();
@@ -105,14 +112,14 @@ export function DecksScreen() {
           {roster.map((deck) => (
             <div key={deck.id} role="listitem" className={[styles.cell, deck.id === arrivedId ? styles.arrived : ''].join(' ')}>
               <div onDoubleClick={() => navigate(`/decks/${encodeURIComponent(deck.id)}`)}>
-                <DeckBox deck={deck} sleeve={sleeveFor(decks.sleeves, deck)} selected={deck.id === decks.selectedId} onSelect={() => decks.select(deck.id)} />
+                <DeckBox deck={deck} sleeve={sleeveFor(decks.sleeves, deck)} selected={deck.id === decks.selectedId} onSelect={() => choose(deck.id)} />
               </div>
             </div>
           ))}
         </div>
       </Zone>
 
-      <Zone tone="filled" className={styles.detail}>
+      <Zone tone="filled" className={styles.detail} id="deck-detail">
         {selected ? (
           <div className={styles.detailBody}>
             <h2 className={styles.detailName}>{selected.name}</h2>

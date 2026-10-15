@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { GameView } from '../../protocol/generated/views';
-import { NO_LOOKS, askedAboutCards, cleanRevealTitle, rememberLooks, revealGroups, revealLabel, revealSeat } from './reveals';
+import { NO_LOOKS, askedAboutCards, cleanRevealTitle, rememberLooks, revealGroups, revealLabel, revealSeat, libraryTopLook, withoutLibraryTop, type RevealGroup } from './reveals';
 
 const view: GameView = {
   myPlayerId: 'me',
@@ -97,5 +97,27 @@ describe('askedAboutCards', () => {
     expect(askedAboutCards(ask('Llanowar Elves [777]'), view)).toBeNull();
     expect(askedAboutCards(ask(), view)).toBeNull();
     expect(askedAboutCards({ kind: 'target', options: { secondMessage: 'Elvish Rejuvenator [1a2]' } }, view)).toBeNull();
+  });
+});
+
+describe('the library top card looked at any time', () => {
+  const look = (source: string, ids: string[]): RevealGroup => ({
+    key: `lookedAt|${source}|${ids.join(',')}`,
+    kind: 'lookedAt',
+    title: cleanRevealTitle(source),
+    source,
+    ownerId: null,
+    cards: ids.map((id) => ({ id, expansionSetCode: 'M20', cardNumber: '1' })),
+  });
+
+  test('is the newest single-card look at the top of the library, and leaves the other looks alone', () => {
+    const groups = [look('Top card of your library', ['old']), look('Opt', ['a']), look('Mystic Forge [3fa]: Top card of your library', ['x']), look('Top card of your library', ['new'])];
+    expect(libraryTopLook(groups)?.id).toBe('new');
+    expect(withoutLibraryTop(groups).map((group) => group.source)).toEqual(['Opt', 'Mystic Forge [3fa]: Top card of your library']);
+  });
+
+  test('is nothing without such a look', () => {
+    expect(libraryTopLook([look('Opt', ['a'])])).toBeNull();
+    expect(libraryTopLook([look('Top card of your library', ['a', 'b'])])).toBeNull();
   });
 });

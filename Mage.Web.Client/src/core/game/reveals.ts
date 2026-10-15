@@ -100,6 +100,24 @@ export function rememberLooks(memory: LookMemory, view: GameView | null | undefi
   return { groups: [...carried, ...current], memory: { turn, groups: [...carried, ...fresh] } };
 }
 
+/** The server's name for the top card of the library, when an effect lets its owner look at it (Mystic Forge). */
+export const LIBRARY_TOP = 'Top card of your library';
+
+const isLibraryTop = (group: RevealGroup) => group.kind === 'lookedAt' && group.cards.length === 1 && cleanRevealTitle(group.source) === LIBRARY_TOP;
+
+/** The top card of this player's library, when an effect lets them look at it any time: the newest such look. */
+export function libraryTopLook(groups: readonly RevealGroup[]): CardView | null {
+  for (let index = groups.length - 1; index >= 0; index--) {
+    if (isLibraryTop(groups[index])) return groups[index].cards[0];
+  }
+  return null;
+}
+
+/** The groups without the library's top card, which shows on the library itself. */
+export function withoutLibraryTop(groups: readonly RevealGroup[]): RevealGroup[] {
+  return groups.filter((group) => !isLibraryTop(group));
+}
+
 /** Short label for a group: "Revealed: Duress", "Looked at: Opt". */
 export function revealLabel(group: RevealGroup): string {
   const verb = group.kind === 'revealed' ? 'Revealed' : 'Looked at';

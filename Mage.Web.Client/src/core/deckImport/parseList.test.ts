@@ -131,4 +131,31 @@ describe('parseList: site exports', () => {
     expect(names(list.main)).toEqual(['Goblin Guide', 'Mountain']);
     expect(names(list.side)).toEqual(['Smash to Smithereens']);
   });
+
+  it('a list grouped by type keeps only the commander group in the command zone', () => {
+    const list = parseList([
+      'Commander (1)',
+      '1 Bello, Bard of the Brambles',
+      'Creatures (2)',
+      '1 Birds of Paradise',
+      '1 Eidolon of Blossoms',
+      'Instant (1)',
+      '1 Beast Within',
+      'Lands (2)',
+      '2 Forest',
+    ].join('\n'));
+    expect(list.commanders.map((card) => card.cardName)).toEqual(['Bello, Bard of the Brambles']);
+    expect(list.main.map((card) => card.cardName)).toEqual(['Birds of Paradise', 'Eidolon of Blossoms', 'Beast Within', 'Forest']);
+  });
+
+  it('a commander section that runs on (an unnamed header) keeps only its first card as commander', () => {
+    const list = parseList(['Commander', '1 Bello, Bard of the Brambles', '1 Abrade', '1 Asceticism', '1 Bedlam'].join('\n'));
+    expect(list.commanders.map((card) => card.cardName)).toEqual(['Bello, Bard of the Brambles']);
+    expect(list.main.map((card) => card.cardName)).toEqual(['Abrade', 'Asceticism', 'Bedlam']);
+  });
+
+  it('partners stay two commanders', () => {
+    const list = parseList(['Commander (2)', '1 Thrasios, Triton Hero', '1 Tymna the Weaver', 'Deck', '1 Sol Ring'].join('\n'));
+    expect(list.commanders).toHaveLength(2);
+  });
 });

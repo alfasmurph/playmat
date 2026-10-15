@@ -194,6 +194,39 @@
   margin-top: var(--space-4);
 }
 
+/*
+ * a phone or a portrait tablet: one column that scrolls as a page. The chosen deck's card comes first, the shelf
+ * under it; the shelf's head wraps its buttons under its title.
+ */
+@media (max-width: 860px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: max-content;
+    height: 100%;
+    overflow: hidden auto;
+  }
+
+  .detail {
+    order: -1;
+    scroll-margin-top: var(--space-3);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 3px 3px var(--space-4);
+    overflow: visible;
+  }
+
+  .shelf > :first-child {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .shelf > :first-child > :last-child {
+    flex-wrap: wrap;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arrived,
   .dropHint {

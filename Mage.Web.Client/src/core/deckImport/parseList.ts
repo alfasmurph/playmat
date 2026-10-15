@@ -173,7 +173,13 @@ export function parseList(text: string): ParsedList {
       result.name = named[1].trim();
       continue;
     }
-    if (/^LAYOUT\s/i.test(line) || TYPE_HEADERS.test(line)) continue;
+    if (/^LAYOUT\s/i.test(line)) continue;
+    if (TYPE_HEADERS.test(line)) {
+      // a list grouped by type ("Commander (1)", then "Creatures (30)", "Lands (36)"): the groups after the
+      // commander or companion are the deck again
+      if (section === 'commander' || section === 'companion') section = 'main';
+      continue;
+    }
 
     const parsed = parseCardLine(line) ?? (/^\d/.test(line) ? null : { card: { amount: 1, cardName: normalizeCardName(line), setCode: null, cardNumber: null }, sideboard: false });
     if (!parsed) continue;
@@ -185,6 +191,16 @@ export function parseList(text: string): ParsedList {
       blocks += 1;
     }
     push(result, parsed.section ?? (parsed.sideboard ? 'side' : section), parsed.card);
+  }
+
+  // a deck has one commander, or two partners: a "commander" section much longer than that ran on past its end (a
+  // header the list doesn't name), so all but the first stay in the deck and the importer asks about the rest
+  const commanderCount = result.commanders.reduce((sum, card) => sum + card.amount, 0);
+  if (commanderCount > 2) {
+    const [first, ...rest] = result.commanders;
+    result.commanders = [{ ...first, amount: 1 }];
+    if (first.amount > 1) rest.unshift({ ...first, amount: first.amount - 1 });
+    result.main = [...rest, ...result.main];
   }
 
   // MTGO-style commander export: 99 cards, a blank line, then the commander or partners

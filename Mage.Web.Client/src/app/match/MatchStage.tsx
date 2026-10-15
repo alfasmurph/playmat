@@ -55,6 +55,8 @@ import { Vfx } from './Vfx';
 import { CardPicker, ChoicePanel, GameOverOverlay, HandList, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
 import { PermanentStack } from './PermanentStack';
 import { PickedUpCard } from './PickedUpCard';
+import { useLibraryTop } from './useLibraryTop';
+import { useLooks } from './useLooks';
 import { clothOf, clothStyle } from './playmats';
 import { PracticeTools } from './PracticeTools';
 import { DefenderPicker } from './DefenderPicker';
@@ -126,6 +128,10 @@ export interface MatchStageProps {
 
 export function MatchStage({ session, state, replayLog, onLeave }: MatchStageProps) {
   const { view, interaction, playerId, mode, awaitingServer } = state;
+  // revealed and looked-at cards this turn; the library's top card, when an effect lets you look at it, sits on the library
+  const looks = useLooks(view ?? null);
+  const libraryTop = useLibraryTop(looks);
+  const pickupExtra = useMemo(() => (libraryTop ? [libraryTop] : NO_CARDS), [libraryTop]);
   const t = useT();
   const navigate = useNavigate();
   const animations = useSettings((settings) => settings.settings.animations);
@@ -401,6 +407,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
             commanders={myId ? commanders.get(myId) : undefined}
             clickable={canAct ? clickable : undefined}
             onTap={onTap}
+            libraryTop={board.me.isMe ? libraryTop : null}
           />
         );
         return (
@@ -465,7 +472,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
               </>
             )}
 
-            <Reveals view={view} myPlayerId={myId} opponentIds={opponentIds} />
+            <Reveals looks={looks} myPlayerId={myId} opponentIds={opponentIds} />
             <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} onTap={onTap} originOf={originOf} />
 
             {board.me && seatHand && (
@@ -596,7 +603,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
               />
             )}
             <CardZoom large={spectating && largeZoom} />
-            <PickedUpCard view={view} interaction={interaction} awaitingServer={awaitingServer} extra={NO_CARDS} sleeveOf={sleeveOf} onActivate={onActivate} />
+            <PickedUpCard view={view} interaction={interaction} awaitingServer={awaitingServer} extra={pickupExtra} sleeveOf={sleeveOf} onActivate={onActivate} />
             <CardDetail view={view} extra={pickerCards ?? viewer?.cards ?? NO_CARDS} sleeveOf={sleeveOf} attacking={attacking} blocking={blocking} />
           </div>
         );

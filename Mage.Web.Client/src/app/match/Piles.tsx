@@ -20,7 +20,13 @@ export interface CommandProps {
 }
 
 /** Library, graveyard, exile and command zone of one player, as piles on the mat. */
-export function Piles({ player, sleeve, isMe, commanders = [], clickable, onTap }: { player: PlayerView; sleeve: string; isMe: boolean } & CommandProps) {
+export function Piles({ player, sleeve, isMe, commanders = [], clickable, onTap, libraryTop = null }: {
+  player: PlayerView;
+  sleeve: string;
+  isMe: boolean;
+  /** your library's top card while an effect lets you look at it (Mystic Forge): face up, and picked up with a tap */
+  libraryTop?: CardView | null;
+} & CommandProps) {
   const t = useT();
   const openViewer = useMatchUi((state) => state.openViewer);
   const libraryRef = useRef<HTMLButtonElement>(null);
@@ -29,18 +35,27 @@ export function Piles({ player, sleeve, isMe, commanders = [], clickable, onTap 
   const exile = Object.values(player.exile ?? {});
   const { waiting, others } = splitCommand(player, commanders);
   const name = isMe ? 'Your' : `${player.name}'s`;
+  // the top card: revealed to everyone (Courser of Kruphix), or one you may look at (Mystic Forge)
+  const looked = isMe && libraryTop?.id ? libraryTop : null;
+  const top = player.topCard ?? looked;
+  const topCastable = !!looked && !!clickable?.has(looked.id!);
 
   return (
     <div className={[styles.piles, isMe ? styles.mine : styles.theirs].join(' ')}>
       <button
         ref={libraryRef}
         type="button"
-        className={styles.pile}
-        aria-label={t('match.cards', { label: `${name} library`, count: player.libraryCount ?? 0 })}
-        onClick={() => player.topCard && openViewer({ title: `${name} library (top card)`, cards: [player.topCard] })}
+        className={[styles.pile, topCastable ? styles.castable : ''].join(' ')}
+        aria-label={`${t('match.cards', { label: `${name} library`, count: player.libraryCount ?? 0 })}${top?.name ? `, top card ${top.name}` : ''}${topCastable ? ', can be cast' : ''}`}
+        onClick={() => {
+          // a top card you may look at is picked up like any card (to cast it, when you can); one revealed to all is read
+          if (looked && onTap) onTap(looked.id!);
+          else if (top) openViewer({ title: `${name} library (top card)`, cards: [top] });
+        }}
+        data-object-id={looked?.id}
       >
         <div className={styles.stack} style={{ ['--depth' as string]: Math.min(6, Math.ceil((player.libraryCount ?? 0) / 10)) }}>
-          <CardFace card={player.topCard ?? {}} hidden={!player.topCard} sleeve={sleeve} size="small" />
+          <CardFace card={top ?? {}} hidden={!top} sleeve={sleeve} size="small" />
         </div>
         <span className={styles.count}>{player.libraryCount ?? 0}</span>
         <span className={styles.label}>Library</span>

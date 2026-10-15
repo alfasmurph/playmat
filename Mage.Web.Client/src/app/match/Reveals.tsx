@@ -1,24 +1,17 @@
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { NO_LOOKS, rememberLooks, revealLabel, revealSeat, type RevealGroup } from '../../core/game/reveals';
-import type { GameView } from '../../protocol/generated/views';
+import { revealLabel, revealSeat, withoutLibraryTop, type RevealGroup } from '../../core/game/reveals';
 import { CardFace } from '../ui/CardFace';
 import { useMatchUi } from './matchUi';
 import styles from './Reveals.module.css';
 
 /**
- * Revealed and looked-at cards, as a strip at the seat of the player whose cards they are, next to the seam. The
+ * Revealed and looked-at cards (see useLooks), as a strip at the seat of the player whose cards they are, next to the seam. The
  * newest reveal shows; click it to read the cards, dismiss it once seen. Fresh reveals are marked until opened.
  */
-export function Reveals({ view, myPlayerId, opponentIds }: { view: GameView | null; myPlayerId: string | null; opponentIds: string[] }) {
-  // looked-at cards come in one update only; keep them for the rest of the turn
-  const [looks, setLooks] = useState(() => ({ view, ...rememberLooks(NO_LOOKS, view) }));
-  let current = looks;
-  if (looks.view !== view) {
-    current = { view, ...rememberLooks(looks.memory, view) };
-    setLooks(current);
-  }
-  const groups = current.groups;
+export function Reveals({ looks, myPlayerId, opponentIds }: { looks: RevealGroup[]; myPlayerId: string | null; opponentIds: string[] }) {
+  // the library's top card, looked at any time (Mystic Forge), shows on the library itself
+  const groups = useMemo(() => withoutLibraryTop(looks), [looks]);
   const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(() => new Set());
   const openViewer = useMatchUi((state) => state.openViewer);
