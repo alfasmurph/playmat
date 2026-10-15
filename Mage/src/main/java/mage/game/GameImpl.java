@@ -168,7 +168,7 @@ public abstract class GameImpl implements Game {
     private transient int infiniteLoopCounter; // used to check if the game is in an infinite loop
     private transient int lastNumberOfAbilitiesOnTheStack; // used to check how long no new ability was put to stack
     private transient List<Integer> lastPlayersLifes = null; // if life is going down, it's no infinite loop
-    private transient final LinkedList<UUID> stackObjectsCheck = new LinkedList<>(); // used to check if different sources used the stack
+    private transient LinkedList<UUID> stackObjectsCheck = new LinkedList<>(); // used to check if different sources used the stack (not final: a loaded game makes its own)
 
     // temporary store for income concede commands, don't copy
     private final LinkedList<UUID> concedingPlayers = new LinkedList<>();
@@ -1259,6 +1259,15 @@ public abstract class GameImpl implements Game {
         }
 
         return true;
+    }
+
+    /**
+     * Plays on from the start of the turn the game's state is at: a game saved at a turn's start and loaded again
+     * (the snapshot is taken where playTurn saves its rollback state, so nothing of the turn has happened yet).
+     */
+    public void resumeAtTurnStart() {
+        state.resume();
+        play(state.getActivePlayerId());
     }
 
     @Override
@@ -3757,6 +3766,9 @@ public abstract class GameImpl implements Game {
         tableEventSource = new TableEventSource();
         playerQueryEventSource = new PlayerQueryEventSource();
         gameStates = new GameStates();
+        // a saved game that plays on (not only a replay) needs these too
+        gameStatesRollBack = new HashMap<>();
+        stackObjectsCheck = new LinkedList<>();
     }
 
     /**
