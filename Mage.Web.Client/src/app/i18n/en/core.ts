@@ -71,7 +71,7 @@ export default {
   'login.github.nameTaken': 'Your GitHub name is taken here, or too long. Choose the name you play under.',
   'login.title.ask': 'Ask for access',
   'login.submit.ask': 'Send the request',
-  'login.contributors': "Contributors only: this server lets in the people on its list. Sign in, open your invite link, or ask for access.",
+  'login.contributors': "Invite only: this server lets in the people on its list. Sign in, open your invite link, or ask for access.",
   'login.ask': 'Ask for access',
   'login.inviteOnly': 'New accounts need an invite link here right now. If you have one, open it; otherwise ask for access.',
   'login.askNote': "A note for the server's staff",

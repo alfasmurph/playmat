@@ -14,7 +14,7 @@ type AdminApi = ReturnType<typeof createApi>;
 const ACCESS_KEY = ['admin', 'access'];
 
 /**
- * Who may play here: open, or a contributors server with an allowlist, invite links and access requests; and the
+ * Who may play here: open, or invite-only with an allowlist, invite links and access requests; and the
  * notice everyone sees on sign-in and Home.
  */
 export function AccessPage({ api }: { api: AdminApi }) {
@@ -49,27 +49,30 @@ function Mode({ api, data }: { api: AdminApi; data: AccessOverview }) {
     <section aria-labelledby="access-mode" className={styles.block}>
       <div className={styles.sectionHead}>
         <h2 id="access-mode">Who may play</h2>
-        <span className={[styles.chip, closed ? styles.chipOn : ''].join(' ')}>{closed ? 'Contributors only' : 'Open to everyone'}</span>
+        <span className={[styles.chip, closed ? styles.chipOn : ''].join(' ')}>{closed ? 'Invite only' : 'Open to everyone'}</span>
       </div>
       <p className={styles.lede}>
         {closed
-          ? 'Only the owner, staff, and the accounts and email addresses on the allowlist get in: at registration, sign-in, on remembered devices and restored sessions.'
-          : 'Anyone who registers can play. Switch to an allowlist to make this a contributors server.'}
+          ? 'Invite only: you, staff, and the people on the list below get in. Everyone else is turned away, even on a device that was already signed in.'
+          : 'Anyone who registers can play. Switch to invite-only so only the people you add or invite get in.'}
       </p>
       {!data.accounts && !closed && (
-        <p className={styles.quiet}>An allowlist needs accounts: without them anyone can sign in with any name. Turn on XMAGE_AUTH first.</p>
+        <p className={styles.quiet}>Invite-only needs player accounts: without them anyone can sign in with any name. Turn accounts on first.</p>
       )}
-      <p className={styles.quiet}>
-        {data.github ? 'Sign in with GitHub is on.' : 'Sign in with GitHub is off (XMAGE_GITHUB_CLIENT_ID and XMAGE_GITHUB_CLIENT_SECRET).'}
-        {data.githubRepo && (data.githubProblem
-          ? <span className={styles.alarm}> The people of {data.githubRepo} couldn't be fetched: {data.githubProblem}</span>
-          : ` ${data.githubPeople ?? 0} people of ${data.githubRepo} get in when they sign in with GitHub${data.githubSyncedAt ? ` (fetched ${formatDate(data.githubSyncedAt)})` : ''}.`)}
-      </p>
+      {/* Sign in with GitHub is a hosted server's option (set where the server is deployed): said only when it's on */}
+      {(data.github || data.githubRepo) && (
+        <p className={styles.quiet}>
+          {data.github && 'Sign in with GitHub is on.'}
+          {data.githubRepo && (data.githubProblem
+            ? <span className={styles.alarm}> The people of {data.githubRepo} couldn't be fetched: {data.githubProblem}</span>
+            : ` ${data.githubPeople ?? 0} people of ${data.githubRepo} get in when they sign in with GitHub${data.githubSyncedAt ? ` (fetched ${formatDate(data.githubSyncedAt)})` : ''}.`)}
+        </p>
+      )}
       {signedOut && signedOut.length > 0 && <p className={styles.quiet} role="status">Signed out: {signedOut.join(', ')}</p>}
       {switching ? (
         <ConfirmAction
-          title={closed ? 'Open the server' : 'Make it contributors only'}
-          what={closed ? 'Anyone who registers will be able to play.' : 'Everyone not on the allowlist is refused from now on.'}
+          title={closed ? 'Open the server' : 'Make it invite-only'}
+          what={closed ? 'Anyone who registers will be able to play.' : 'Everyone not on the list is turned away from now on. Add your friends first, or send them invite links.'}
           preview={() => api.adminAccessPreview(target)}
           previewKey={['mode', target]}
           confirmLabel={closed ? 'Open it' : 'Close it'}
@@ -83,7 +86,7 @@ function Mode({ api, data }: { api: AdminApi; data: AccessOverview }) {
       ) : (
         <div>
           <Button size="sm" variant={closed ? 'quiet' : 'decision'} disabled={!closed && !data.accounts} onClick={() => setSwitching(true)}>
-            {closed ? 'Open to everyone…' : 'Switch to an allowlist…'}
+            {closed ? 'Open to everyone…' : 'Switch to invite-only…'}
           </Button>
         </div>
       )}
@@ -106,7 +109,7 @@ function Requests({ api, requests, now, mail }: { api: AdminApi; requests: Acces
         {open.length > 0 && <span className={[styles.chip, styles.chipOn].join(' ')}>{open.length} waiting</span>}
       </div>
       {decide.error && <p className={styles.error}>{String(decide.error)}</p>}
-      {open.length === 0 && <p className={styles.quiet}>Nobody is waiting. People without an invite ask from the sign-in screen while the server is contributors only.</p>}
+      {open.length === 0 && <p className={styles.quiet}>Nobody is waiting. While the server is invite-only, people without an invite can ask from the sign-in screen.</p>}
       <ul className={styles.reports}>
         {open.map((request) => (
           <li key={request.id} className={styles.report}>
@@ -116,7 +119,7 @@ function Requests({ api, requests, now, mail }: { api: AdminApi; requests: Acces
               <Button size="sm" variant="decision" icon={<Check size={14} />} busy={decide.isPending && decide.variables?.id === request.id}
                 onClick={() => decide.mutate({ id: request.id!, approve: true })}>Approve</Button>
               <Button size="sm" variant="quiet" icon={<X size={14} />} onClick={() => decide.mutate({ id: request.id!, approve: false })}>Decline</Button>
-              <span className={styles.quiet}>Approving allowlists {request.email}{mail ? ' and emails them.' : '. The server has no mail, so tell them yourself.'}</span>
+              <span className={styles.quiet}>Approving adds {request.email} to the list{mail ? ' and emails them.' : '. The server has no mail, so tell them yourself.'}</span>
             </div>
           </li>
         ))}
@@ -180,9 +183,9 @@ function Invites({ api, invites, now }: { api: AdminApi; invites: Invite[]; now:
   return (
     <section aria-labelledby="access-invites" className={styles.block}>
       <h2 id="access-invites">Invite links</h2>
-      <p className={styles.lede}>An invite registers an account and puts it on the allowlist in one step.</p>
+      <p className={styles.lede}>An invite link lets someone register and puts them on the list in one step. Send it to them however you like.</p>
       <form className={styles.inline} onSubmit={submit}>
-        <Field label="Who it's for" value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} placeholder="e.g. a GitHub handle" />
+        <Field label="Who it's for" value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} placeholder="e.g. their name" />
         <Field label="Uses" type="number" min={1} max={100} className={styles.number} value={uses} onChange={(event) => setUses(Number(event.target.value) || 1)} />
         <Field label="Days" type="number" min={1} max={90} className={styles.number} value={days} onChange={(event) => setDays(Number(event.target.value) || 1)} />
         <Button type="submit" size="sm" icon={<Link2 size={15} />} busy={create.isPending}>Make a link</Button>
@@ -250,13 +253,13 @@ function Allowlist({ api, entries, owner, now, closed }: { api: AdminApi; entrie
   return (
     <section aria-labelledby="access-allowlist" className={styles.block}>
       <div className={styles.sectionHead}>
-        <h2 id="access-allowlist">Allowlist</h2>
+        <h2 id="access-allowlist">Who's allowed</h2>
         <span className={styles.quiet}>{entries.length} {entries.length === 1 ? 'entry' : 'entries'}{owner ? ` · ${owner} is the owner and always allowed` : ''}</span>
       </div>
-      {!closed && <p className={styles.quiet}>The server is open, so the list has no effect until it is switched to an allowlist.</p>}
+      {!closed && <p className={styles.quiet}>The server is open, so this list does nothing until you switch to invite-only.</p>}
       <form className={styles.inline} onSubmit={submit}>
         <Field label="Account name or email" value={who} maxLength={254} onChange={(event) => setWho(event.target.value)} />
-        <Field label="Note" value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} placeholder="e.g. a GitHub handle" />
+        <Field label="Note" value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} placeholder="e.g. their name" />
         <Button type="submit" size="sm" icon={<UserPlus size={15} />} disabled={!who.trim()} busy={add.isPending}>Allow</Button>
       </form>
       {add.error && <p className={styles.error}>{String(add.error)}</p>}

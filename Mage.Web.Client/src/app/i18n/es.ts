@@ -74,7 +74,7 @@ const es: Catalog = {
   'login.github.nameTaken': 'Tu nombre de GitHub ya está en uso aquí, o es muy largo. Elige el nombre con el que juegas.',
   'login.title.ask': 'Pedir acceso',
   'login.submit.ask': 'Enviar la solicitud',
-  'login.contributors': 'Solo para colaboradores: este servidor deja entrar a quienes están en su lista. Inicia sesión, abre tu enlace de invitación o pide acceso.',
+  'login.contributors': 'Solo con invitación: este servidor deja entrar a quienes están en su lista. Inicia sesión, abre tu enlace de invitación o pide acceso.',
   'login.ask': 'Pedir acceso',
   'login.inviteOnly': 'Por ahora, para crear una cuenta aquí hace falta un enlace de invitación. Si tienes uno, ábrelo; si no, pide acceso.',
   'login.askNote': 'Una nota para el equipo del servidor',
