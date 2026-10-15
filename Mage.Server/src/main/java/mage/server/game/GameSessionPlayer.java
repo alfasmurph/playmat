@@ -33,6 +33,7 @@ public class GameSessionPlayer extends GameSessionWatcher {
     // the last playable highlights and the game they were worked out for (see prepareGameView)
     private String playableKey;
     private PlayableObjectsList playable;
+    private ManaAvailableView manaAvailable;
     private final UUID playerId;
 
     private final ExecutorService callExecutor;
@@ -255,12 +256,16 @@ public class GameSessionPlayer extends GameSessionWatcher {
             String key = session == null ? null : GameChangeKey.of(sourceGame) + '|' + priorityPlayer.getId();
             if (key != null && key.equals(session.playableKey)) {
                 gameView.setCanPlayObjects(session.playable);
+                gameView.setManaAvailable(session.manaAvailable);
             } else {
                 PlayableObjectsList playable = priorityPlayer.getPlayableObjects(sourceGame, Zone.ALL);
+                ManaAvailableView manaAvailable = manaAvailable(sourceGame, priorityPlayer);
                 gameView.setCanPlayObjects(playable);
+                gameView.setManaAvailable(manaAvailable);
                 if (session != null) {
                     session.playableKey = key;
                     session.playable = playable;
+                    session.manaAvailable = manaAvailable;
                 }
             }
         }
@@ -270,6 +275,16 @@ public class GameSessionPlayer extends GameSessionWatcher {
         //TODO: should player who controls another player's turn be able to look at all these cards?
 
         return gameView;
+    }
+
+    /** the mana the player could make right now, for the web client's readout; none when it can't be worked out */
+    private static ManaAvailableView manaAvailable(Game game, Player player) {
+        try {
+            return new ManaAvailableView(player.getManaAvailable(game));
+        } catch (RuntimeException e) {
+            logger.debug("Mana available not worked out for " + player.getName(), e);
+            return null;
+        }
     }
 
     private static void processControlledPlayers(Game game, Player player, GameView gameView) {

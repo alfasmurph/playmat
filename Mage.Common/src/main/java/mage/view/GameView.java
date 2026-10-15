@@ -56,6 +56,8 @@ public class GameView implements Serializable {
     private final CardsView myHand = new CardsView();
     private final CardsView myHelperEmblems = new CardsView();
     private PlayableObjectsList canPlayObjects;
+    /** the mana the player could make right now; set with canPlayObjects (the web client's mana readout) */
+    private ManaAvailableView manaAvailable;
     private final Map<String, SimpleCardsView> opponentHands = new HashMap<>();
     private final Map<String, SimpleCardsView> watchedHands = new HashMap<>();
     private final CardsView stack = new CardsView();
@@ -366,6 +368,14 @@ public class GameView implements Serializable {
 
     public void setCanPlayObjects(PlayableObjectsList canPlayObjects) {
         this.canPlayObjects = canPlayObjects;
+    }
+
+    public ManaAvailableView getManaAvailable() {
+        return manaAvailable;
+    }
+
+    public void setManaAvailable(ManaAvailableView manaAvailable) {
+        this.manaAvailable = manaAvailable;
     }
 
     public boolean isRollbackTurnsAllowed() {

@@ -17,6 +17,8 @@ export default {
   'settings.style.streamlined.detail': 'The game moves on whenever you have nothing to decide, like Arena.',
   'settings.style.full': 'Full control',
   'settings.style.full.detail': 'Every stop and every choice is yours, like classic XMage.',
+  'settings.visualCues': 'Visual cues',
+  'settings.visualCues.detail': 'A faint pulsing green edge on what you can play right now (a land while you still have a land drop, spells your mana can pay for), and how much mana you could make, beside your seat.',
   'settings.autoPass': 'Pass when I have nothing to do',
   'settings.autoPass.detail': "Resolves spells and moves through steps when you have nothing to cast, play or activate. Lands that only make mana don't count.",
   'settings.theirTurn': "Stop for my permanents' abilities on the opponent's turn",

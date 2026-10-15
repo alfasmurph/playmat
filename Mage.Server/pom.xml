@@ -376,6 +376,7 @@
                             </customTypeMappings>
                             <classes>
                                 <class>mage.view.GameView</class>
+                                <class>mage.view.ManaAvailableView</class>
                                 <class>mage.view.GameClientMessage</class>
                                 <class>mage.view.TableClientMessage</class>
                                 <class>mage.view.DraftClientMessage</class>

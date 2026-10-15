@@ -25,6 +25,11 @@ export interface PlaySettings {
   stops: UserSkipPrioritySteps;
   /** combat steps where the client doesn't pass for you once creatures attack (local only) */
   combatStops: TurnCombatStops;
+  /**
+   * visual cues: a faint pulsing green edge on what you can play right now (a land while you still have a land drop,
+   * spells your mana can pay for) and how much mana you could make, beside your seat (local only)
+   */
+  visualCues: boolean;
   /** card motion: placed, flown between zones */
   animations: boolean;
   /** opponents may ask to see your hand */
@@ -105,6 +110,7 @@ export const DEFAULT_SETTINGS: PlaySettings = {
   autoOrderTriggers: true,
   autoTargetLevel: 1,
   animations: true,
+  visualCues: true,
   allowHandRequests: true,
   autoPass: true,
   autoSkipCombat: true,

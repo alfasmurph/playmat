@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Menu } from 'lucide-react';
+import { Menu, Undo2 } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { GameSession, GameSessionState } from '../../core/game/gameSession';
@@ -12,6 +12,7 @@ import { askedAboutCards } from '../../core/game/reveals';
 import { delayLabel, isBroadcastDelay } from '../../core/game/broadcastDelay';
 import { spectatorHand } from '../../core/game/spectatorHand';
 import { matchProgress } from '../../core/game/matchProgress';
+import { manaReadout, type ManaReadout } from '../../core/game/manaReadout';
 import { pregameChoice } from '../../core/game/pregame';
 import { offBoardTargets } from '../../core/game/offBoardTargets';
 import type { CardView, ChatMessage, GameView, PlayerView } from '../../protocol/generated/views';
@@ -125,6 +126,23 @@ function useSleeves() {
     const theirs = SLEEVE_COLORS.find((color) => color !== chosen && color !== SLEEVE_COLORS[0]) ?? SLEEVE_COLORS[2];
     return { mine, theirs, chosen, cover: deck?.cover ?? null };
   }, [deckId, sleeves, saved, starters, shared, precons]);
+}
+
+/**
+ * Visual cues' mana readout: the server sends what you could make whenever you have priority; in between, the last
+ * one stays, dimmed. It goes when you leave the game view or turn the cues off.
+ */
+function useManaReadout(view: GameView | null | undefined, on: boolean): (ManaReadout & { stale: boolean }) | null {
+  const turn = view?.turn;
+  const fresh = useMemo(() => (on ? manaReadout(view?.manaAvailable) : null), [on, view?.manaAvailable]);
+  const [kept, setKept] = useState<{ readout: ManaReadout; turn: number | undefined } | null>(null);
+  // the last word stays until the next one; a new turn (or the cues off) clears it, since that mana may be spent
+  if (fresh && kept?.readout !== fresh) setKept({ readout: fresh, turn });
+  if (!fresh && kept && (kept.turn !== turn || !on)) setKept(null);
+  return useMemo(() => {
+    if (fresh) return { ...fresh, stale: false };
+    return kept && kept.turn === turn && on ? { ...kept.readout, stale: true } : null;
+  }, [fresh, kept, turn, on]);
 }
 
 export interface MatchStageProps {
@@ -364,6 +382,8 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const bigHand = !!board.me && !handHidden && mode === 'play' && hand.length > HAND_LIST_AFTER;
   const opponentIds = useMemo(() => board.opponents.map((opponent) => opponent.player.playerId!), [board.opponents]);
   const matCloth = useSettings((state) => state.settings.matCloth);
+  const visualCues = useSettings((state) => state.settings.visualCues) && mode === 'play' && !spectating;
+  const myMana = useManaReadout(view, visualCues);
   const matArt = useSettings((state) => state.settings.matArt);
   const matCard = useSettings((state) => state.settings.matCard);
   const matStyle = useMemo(() => clothStyle(clothOf(matCloth)), [matCloth]);
@@ -408,6 +428,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
               handSize={hand.length}
               onViewHand={bigHand ? () => setHandList(true) : undefined}
               turn={board.me.player.playerId === activeId ? turnRing : null}
+              mana={myMana}
             />
           );
           const myPiles = board.me && (
@@ -424,6 +445,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
           return (
             <div
               className={styles.layout}
+              data-cues={visualCues || undefined}
               style={{ ['--seam' as string]: `${layout.seam}px`, ['--hand-raise' as string]: `${layout.handRaise}px`, ['--right-column' as string]: `${layout.rightColumn}px` }}
             >
               <div className={styles.mat} aria-hidden="true" />
@@ -558,6 +580,9 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 onLeave={leave}
                 rollback={canAct && !!view?.rollbackTurnsAllowed && (view?.turn ?? 0) > 0
                   ? { ready: interaction.mode === 'priority' && !awaitingServer, request: () => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: 0 }) }
+                  : null}
+                undoTap={mode === 'play' && canAct && interaction.mode === 'payMana' && !awaitingServer
+                  ? () => onCommand({ type: 'action', action: 'UNDO' })
                   : null}
               />
 
@@ -771,7 +796,7 @@ const CONFIRM = {
   },
 } as const;
 
-function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback }: {
+function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, undoTap = null }: {
   gameId: string;
   /** a game against the computer only: the practice tools are on offer */
   practice: boolean;
@@ -779,6 +804,8 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback }
   onConcede(): void;
   onLeave(): void;
   rollback: RollbackOption | null;
+  /** while paying: take the last mana tap back (and with it the spell, once nothing is paid) */
+  undoTap?: (() => void) | null;
 }) {
   // conceding gives up this game; leaving a game in progress gives up the whole match
   const [confirming, setConfirming] = useState<keyof typeof CONFIRM | null>(null);
@@ -787,6 +814,19 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback }
   const copy = confirming ? CONFIRM[confirming] : null;
   return (
     <div className={styles.menu}>
+      {(undoTap || rollback) && (
+        // Undo, always in reach: a mana tap while paying, otherwise the turn (the engine can't take back one spell)
+        <button
+          type="button"
+          className={[styles.menuButton, styles.undoButton].join(' ')}
+          aria-label={undoTap ? 'Undo the last mana tap' : 'Undo: go back to the start of this turn'}
+          title={undoTap ? 'Undo the last mana tap (Ctrl+Z)' : rollback?.ready ? 'Go back to the start of this turn' : 'Undo works while you have priority'}
+          disabled={!undoTap && !rollback?.ready}
+          onClick={() => (undoTap ? undoTap() : setConfirming('rollback'))}
+        >
+          <Undo2 size={22} />
+        </button>
+      )}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger className={styles.menuButton} aria-label="Game menu">
           <Menu size={24} />

@@ -1006,6 +1006,7 @@ export interface GameView extends Serializable {
     exiles?: { [index: string]: CardView }[];
     gameCycle?: number;
     lookedAt?: LookedAtView[];
+    manaAvailable?: ManaAvailableView;
     myHand?: { [index: string]: CardView };
     myHelperEmblems?: { [index: string]: CardView };
     myPlayerId?: string;
@@ -1101,6 +1102,17 @@ export interface MaintenancePlan {
     message?: string;
     restartWhenIdle?: boolean;
     startsAt?: number;
+}
+
+export interface ManaAvailableView extends Serializable {
+    any?: number;
+    black?: number;
+    blue?: number;
+    colorless?: number;
+    green?: number;
+    red?: number;
+    total?: number;
+    white?: number;
 }
 
 export interface ManaPoolView extends Serializable {

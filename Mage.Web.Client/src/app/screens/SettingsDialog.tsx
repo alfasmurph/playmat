@@ -79,6 +79,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               })}
             </div>
           </div>
+          <Row label={t('settings.visualCues')} detail={t('settings.visualCues.detail')}>{toggle('visualCues')}</Row>
           <Row label={t('settings.autoPass')} detail={t('settings.autoPass.detail')}>{toggle('autoPass')}</Row>
           <Row label={t('settings.theirTurn')} detail={t('settings.theirTurn.detail')}>{toggle('abilitiesOnTheirTurn')}</Row>
           <Row label={t('settings.skipCombat')} detail={t('settings.skipCombat.detail')}>{toggle('autoSkipCombat')}</Row>

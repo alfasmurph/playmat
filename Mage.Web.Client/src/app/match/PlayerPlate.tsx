@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Layers, Swords } from 'lucide-react';
 import { COMMANDER_DAMAGE_LETHAL } from '../../core/game/commander';
+import { describeManaReadout, type ManaReadout } from '../../core/game/manaReadout';
 import { POOL_MANA, poolId } from '../../core/game/payment';
 import { ROPE_SECONDS, ropeSecondsLeft, ropeVisible } from '../../core/game/rope';
 import type { PlayerView } from '../../protocol/generated/views';
@@ -45,6 +46,8 @@ export interface PlayerPlateProps {
   /** your hand's size, and a way to see it as a list: offered when it's too big for the fan (see onViewHand) */
   handSize?: number;
   onViewHand?(): void;
+  /** visual cues: the mana you could make (yours only); stale while someone else has priority */
+  mana?: (ManaReadout & { stale: boolean }) | null;
 }
 
 const ROPE_TICK_MS = 250;
@@ -87,7 +90,7 @@ function useRopeSeconds(player: PlayerView): number {
 }
 
 /** A player's seat: who they are, their life, counters, floating mana and clock. */
-export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null, bare = false, handSize = 0, onViewHand }: PlayerPlateProps) {
+export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null, bare = false, handSize = 0, onViewHand, mana = null }: PlayerPlateProps) {
   const t = useT();
   const life = player.life ?? 0;
   // a player out of the game (lost, conceded or left: leaving loses) has no life worth showing, however low it went
@@ -114,7 +117,7 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
   // the player's sigil from their profile, or their initial
   const initial = sigilOf(player.userData?.avatarId) ?? (player.name ?? '?').slice(0, 1).toUpperCase();
 
-  const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0 || !!onViewHand;
+  const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0 || !!onViewHand || !!mana;
   const extras = hasExtras && (
     <div className={[styles.extras, extrasBeside ? styles.beside : ''].join(' ')}>
       {commanderDamage.length > 0 && (
@@ -164,6 +167,24 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
               <span key={key} className={styles.poolItem}>{content}</span>
             );
           })}
+        </div>
+      )}
+      {mana && (
+        <div className={[styles.available, mana.stale ? styles.stale : ''].join(' ')} role="status" aria-label={describeManaReadout(mana)} title={describeManaReadout(mana)}>
+          <span className={styles.availableTotal}>{mana.total}</span>
+          <span className={styles.availableLabel}>mana</span>
+          {mana.colors.map((color) => (
+            <span key={color.symbol} className={styles.poolItem}>
+              <i className={`ms ms-cost ms-${color.symbol}`} aria-hidden="true" />
+              <b>{color.count}</b>
+            </span>
+          ))}
+          {mana.any > 0 && (
+            <span className={styles.poolItem}>
+              <i className="ms ms-cost ms-multicolor" aria-hidden="true" />
+              <b>{mana.any}</b>
+            </span>
+          )}
         </div>
       )}
       {onViewHand && (

@@ -255,6 +255,8 @@ const es: Catalog = {
   'settings.autoPass.detail': 'Resuelve hechizos y avanza por los pasos cuando no tienes nada que lanzar, jugar ni activar. Las tierras que solo producen maná no cuentan.',
   'settings.theirTurn': 'Parar por las habilidades de mis permanentes en el turno del rival',
   'settings.theirTurn.detail': 'Si está desactivado, durante su turno solo te detienen los instantáneos y los hechizos con destello.',
+  'settings.visualCues': 'Ayudas visuales',
+  'settings.visualCues.detail': 'Un borde verde tenue que late en lo que puedes jugar ahora (una tierra mientras te quede bajarla, hechizos que tu maná puede pagar), y cuánto maná podrías generar, junto a tu asiento.',
   'settings.skipCombat': 'Saltar ataques y bloqueos cuando nadie puede',
   'settings.skipCombat.detail': 'Responde por ti cuando ninguna criatura puede atacar o bloquear, y deja pasar el resto del combate cuando nadie ataca.',
   'settings.passAfterCasting': 'Resolver mis hechizos de inmediato',

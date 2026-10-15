@@ -184,6 +184,10 @@
   right: 24px;
   top: 20px;
   z-index: var(--z-vfx);
+  /* the menu, and Undo under it */
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
 }
 
 .menuButton {
@@ -280,4 +284,9 @@
   color: var(--ink-dim);
   font-size: 26px;
   text-align: center;
+}
+
+.undoButton:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
