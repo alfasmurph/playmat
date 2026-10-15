@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../i18n';
 import { PRECON_PREFIX, preconToRoster, useDecks, type PreconSet } from '../stores/decks';
+import { useShelf } from '../stores/shelf';
 import { notify } from '../stores/toasts';
 import { Button } from '../ui/Button';
 import { DeckBox } from '../ui/DeckBox';
@@ -24,9 +25,16 @@ export function PreconsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     if (open && !sets) void useDecks.getState().loadPrecons().then(setSets);
   }, [open, sets]);
 
+  /** Play shows the Commander shelf with this deck picked, as it does a deck just imported. */
+  const pickOnPlay = (id: string) => {
+    useShelf.getState().setKind('commander');
+    useShelf.getState().pick('commander', id);
+  };
+
   const play = () => {
     if (!chosen) return;
     useDecks.getState().select(chosen);
+    pickOnPlay(chosen);
     onOpenChange(false);
     navigate('/');
   };
@@ -35,7 +43,7 @@ export function PreconsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     if (!chosen) return;
     setBusy(true);
     try {
-      await useDecks.getState().duplicate(chosen);
+      pickOnPlay(await useDecks.getState().duplicate(chosen));
       onOpenChange(false);
     } catch (error) {
       notify(t('decks.precons'), error instanceof Error ? error.message : String(error), 'error');
@@ -65,7 +73,8 @@ export function PreconsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           {sets.map((preconSet) => (
             <section key={preconSet.id} className={styles.set} aria-labelledby={`precon-${preconSet.id}`}>
               <h3 className={styles.setName} id={`precon-${preconSet.id}`}>
-                {preconSet.name} <span className={styles.year}>{preconSet.year}</span>
+                {preconSet.name}
+                {!preconSet.name.includes(String(preconSet.year)) && <span className={styles.year}>{preconSet.year}</span>}
               </h3>
               <div className={styles.grid} role="list">
                 {preconSet.decks.map((deck) => {

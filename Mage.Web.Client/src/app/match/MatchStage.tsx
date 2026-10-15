@@ -13,6 +13,7 @@ import { delayLabel, isBroadcastDelay } from '../../core/game/broadcastDelay';
 import { spectatorHand } from '../../core/game/spectatorHand';
 import { matchProgress } from '../../core/game/matchProgress';
 import { manaReadout, type ManaReadout } from '../../core/game/manaReadout';
+import { previousTurnsBack } from '../../core/game/rollback';
 import { pregameChoice } from '../../core/game/pregame';
 import { offBoardTargets } from '../../core/game/offBoardTargets';
 import type { CardView, ChatMessage, GameView, PlayerView } from '../../protocol/generated/views';
@@ -396,6 +397,10 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   }, [board.opponents]);
   // the turn rings the active seat's avatar (none before the first turn: the turn belongs to nobody yet)
   const activeId = view?.activePlayerId && view.step ? view.activePlayerId : null;
+  // the turns you were seen taking: Undo can go back to the start of your previous one
+  const [myTurns, setMyTurns] = useState<number[]>([]);
+  const turnNow = view?.turn ?? 0;
+  if (turnNow > 0 && myId && activeId === myId && !myTurns.includes(turnNow)) setMyTurns([...myTurns.slice(-3), turnNow]);
   const turnRing = useMemo<PhaseRingProps | null>(() => (activeId ? {
     step: view?.step,
     myTurn: !spectating && !!myId && activeId === myId,
@@ -579,7 +584,11 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 onConcede={() => onCommand({ type: 'action', action: 'CONCEDE' })}
                 onLeave={leave}
                 rollback={canAct && !!view?.rollbackTurnsAllowed && (view?.turn ?? 0) > 0
-                  ? { ready: interaction.mode === 'priority' && !awaitingServer, request: () => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: 0 }) }
+                  ? {
+                    ready: interaction.mode === 'priority' && !awaitingServer,
+                    previousTurnsBack: previousTurnsBack(view?.turn ?? 0, !!myId && activeId === myId, myTurns, board.opponents.length + 1),
+                    request: (turns) => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: turns }),
+                  }
                   : null}
                 undoTap={mode === 'play' && canAct && interaction.mode === 'payMana' && !awaitingServer
                   ? () => onCommand({ type: 'action', action: 'UNDO' })
@@ -772,11 +781,18 @@ function HiddenHand({ playerId, count, sleeve, left }: { playerId: string; count
   );
 }
 
-/** Asking to roll the game back to the start of this turn: only while holding priority (the server's rule). */
+/**
+ * Asking to roll the game back: to the start of this turn, or of your previous turn (with auto-pass on, your turn
+ * often ends with your last action, so that's the one to undo). Only while holding priority (the server's rule).
+ */
 interface RollbackOption {
   ready: boolean;
-  request(): void;
+  /** how many turns back your previous turn started, when the game can still go there */
+  previousTurnsBack: number | null;
+  /** 0: the start of this turn; n: n turns back */
+  request(turns: number): void;
 }
+
 
 const CONFIRM = {
   concede: {
@@ -790,9 +806,9 @@ const CONFIRM = {
     action: 'Leave match',
   },
   rollback: {
-    title: 'Go back to the start of this turn?',
-    description: 'Every other player must agree; a game against the computer goes back at once.',
-    action: 'Ask to go back',
+    title: 'Undo: go back how far?',
+    description: 'The game goes back to the start of a turn: this one, or your last one if it has already ended. Every other player must agree; a game against the computer goes back at once.',
+    action: 'Start of this turn',
   },
 } as const;
 
@@ -819,8 +835,8 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
         <button
           type="button"
           className={[styles.menuButton, styles.undoButton].join(' ')}
-          aria-label={undoTap ? 'Undo the last mana tap' : 'Undo: go back to the start of this turn'}
-          title={undoTap ? 'Undo the last mana tap (Ctrl+Z)' : rollback?.ready ? 'Go back to the start of this turn' : 'Undo works while you have priority'}
+          aria-label={undoTap ? 'Undo the last mana tap' : 'Undo: go back to the start of a turn'}
+          title={undoTap ? 'Undo the last mana tap (Ctrl+Z)' : rollback?.ready ? 'Go back to the start of this turn or your last one' : 'Undo works while you have priority'}
           disabled={!undoTap && !rollback?.ready}
           onClick={() => (undoTap ? undoTap() : setConfirming('rollback'))}
         >
@@ -844,7 +860,7 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
                 title={rollback.ready ? undefined : 'Available while you have priority'}
                 onSelect={() => setConfirming('rollback')}
               >
-                Request rollback to start of turn
+                Undo: go back to the start of a turn
               </DropdownMenu.Item>
             )}
             {canConcede && (
@@ -863,10 +879,22 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
         onOpenChange={(open) => !open && setConfirming(null)}
         title={copy?.title ?? ''}
         description={copy?.description}
-        width="sm"
+        // Undo offers two ways back beside Keep playing: they need the room
+        width={confirming === 'rollback' ? 'md' : 'sm'}
         footer={(
           <>
             <Button variant="quiet" onClick={() => setConfirming(null)}>Keep playing</Button>
+            {confirming === 'rollback' && rollback?.previousTurnsBack && (
+              <Button
+                variant="print"
+                onClick={() => {
+                  setConfirming(null);
+                  rollback.request(rollback.previousTurnsBack!);
+                }}
+              >
+                Start of my last turn
+              </Button>
+            )}
             <Button
               variant={confirming === 'rollback' ? 'decision' : 'danger'}
               onClick={() => {
@@ -874,7 +902,7 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
                 setConfirming(null);
                 if (choice === 'leave') onLeave();
                 else if (choice === 'concede') onConcede();
-                else if (choice === 'rollback') rollback?.request();
+                else if (choice === 'rollback') rollback?.request(0);
               }}
             >
               {copy?.action}
