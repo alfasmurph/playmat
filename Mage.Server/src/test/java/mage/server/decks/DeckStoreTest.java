@@ -83,4 +83,22 @@ public class DeckStoreTest {
         assertThatThrownBy(() -> store.put("ana", "d1", "x", 1, huge.toString()))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("too large");
     }
+
+    @Test
+    void sharedDecksAreEveryoneElsesDecksMarkedShared() throws Exception {
+        store.put("Ana", "d1", "Burn", 100, "{\"name\":\"Burn\",\"shared\":true,\"sharedBy\":\"Ana\"}");
+        store.put("ana", "d2", "Private", 300, "{\"name\":\"Private\"}");
+        store.put("bob", "d1", "Elves", 200, "{\"name\":\"Elves\",\"shared\":true}");
+        store.put("bob", "d2", "Not shared", 250, "{\"shared\":false}");
+        store.put("cat", "d1", "Broken", 260, "{not json");
+        store.put("dan", "d1", "Gone", 270, "{\"shared\":true}");
+        store.delete("dan", "d1", 280);
+
+        List<SharedDeckEntry> forCat = store.listShared("Cat");
+        assertThat(forCat).extracting(entry -> entry.name).containsExactly("Elves", "Burn");
+        assertThat(forCat.get(1).owner).isEqualTo("ana");
+        assertThat(forCat.get(1).data).contains("sharedBy");
+
+        assertThat(store.listShared("ANA")).as("not your own").extracting(entry -> entry.name).containsExactly("Elves");
+    }
 }

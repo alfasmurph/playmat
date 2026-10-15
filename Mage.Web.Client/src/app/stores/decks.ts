@@ -4,6 +4,8 @@ import { deckStorage, type DeckSummary } from '../../core/decks/DeckStorageServi
 import { DeckSerializer } from '../../core/decks/DeckSerializer';
 import { copyName } from '../../core/decks/exportFormats';
 import type { DeckCardLists, DeckImportSource } from '../../core/decks/types';
+import type { SharedDeckEntry } from '../../protocol/generated/views';
+import { api } from '../connection';
 import { readJson, writeJson } from './persist';
 
 export interface StarterDeck {
@@ -34,11 +36,20 @@ export interface RosterDeck {
   fromStarter?: boolean;
   /** the deck website it was imported from */
   source?: DeckImportSource;
+  /** your deck, shared with everyone on the server */
+  shared?: boolean;
+  /** someone else's deck they share with everyone: who; it plays and copies, but only they change it */
+  sharedBy?: string;
+  /** pinned to the top of the shelf (this browser's choice) */
+  favorite?: boolean;
 }
 
 const SELECTED_KEY = 'playmat.selectedDeck';
 const SLEEVES_KEY = 'playmat.sleeves';
+const FAVORITES_KEY = 'playmat.favoriteDecks';
 export const STARTER_PREFIX = 'starter:';
+/** a deck another player shares: "shared:<owner>:<deck id>" */
+export const SHARED_PREFIX = 'shared:';
 
 const COLOR_ORDER = ['white', 'blue', 'black', 'red', 'green'] as const;
 const COLOR_LETTER: Record<(typeof COLOR_ORDER)[number], string> = { white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' };
@@ -71,6 +82,35 @@ function summaryToRoster(deck: DeckSummary): RosterDeck {
     colors,
     starter: null,
     source: deck.source,
+    shared: deck.shared,
+  };
+}
+
+/** Another player's shared deck, as a roster entry and the deck list to play; null when its data doesn't read. */
+function sharedToRoster(entry: SharedDeckEntry): { roster: RosterDeck; list: DeckCardLists } | null {
+  let deck: DeckCardLists;
+  try {
+    deck = JSON.parse(entry.data ?? '');
+  } catch {
+    return null;
+  }
+  if (!deck || !Array.isArray(deck.cards)) return null;
+  const sideboard = Array.isArray(deck.sideboard) ? deck.sideboard : [];
+  const id = `${SHARED_PREFIX}${entry.owner}:${entry.id}`;
+  const by = (typeof deck.sharedBy === 'string' && deck.sharedBy.trim()) || entry.owner || 'someone';
+  const summary = summaryToRoster({
+    id,
+    name: deck.name || entry.name || 'Untitled deck',
+    format: deck.format,
+    updatedAt: entry.updatedAt ?? 0,
+    cardCount: deck.cards.reduce((sum, card) => sum + (card.amount ?? 0), 0),
+    sideboardCount: sideboard.reduce((sum, card) => sum + (card.amount ?? 0), 0),
+    coverCard: deck.coverCard,
+    colors: deck.colors,
+  });
+  return {
+    roster: { ...summary, note: `Shared by ${by} · ${summary.note}`, shared: true, sharedBy: by },
+    list: { ...deck, sideboard, id: undefined, shared: undefined, sharedBy: undefined },
   };
 }
 
@@ -90,10 +130,20 @@ function starterToRoster(starter: StarterDeck): RosterDeck {
 export interface DeckLibraryState {
   saved: RosterDeck[];
   starters: StarterDeck[];
+  /** decks other players share with everyone on the server, and their lists */
+  shared: RosterDeck[];
+  sharedLists: Record<string, DeckCardLists>;
+  /** the decks pinned to the top of the shelf, in this browser */
+  favorites: string[];
   selectedId: string | null;
   sleeves: Record<string, string>;
   loaded: boolean;
   refresh(): Promise<void>;
+  /** the decks other players share (servers with accounts); quietly none when the server can't say */
+  refreshShared(): Promise<void>;
+  toggleFavorite(id: string): void;
+  /** share your deck with everyone on the server, or stop; `by` is your account name as you spell it */
+  setShared(ids: readonly string[], on: boolean, by: string): Promise<void>;
   select(id: string): void;
   setSleeve(id: string, color: string): void;
   /** the deck list to send to the server; starter decks are saved to the library on first use */
@@ -129,17 +179,58 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   starters: [],
   selectedId: readJson<string | null>(SELECTED_KEY, null),
   sleeves: readJson<Record<string, string>>(SLEEVES_KEY, {}),
+  shared: [],
+  sharedLists: {},
+  favorites: readJson<string[]>(FAVORITES_KEY, []),
   loaded: false,
+
+  async refreshShared() {
+    let entries: SharedDeckEntry[] = [];
+    try {
+      entries = await api.deckSharedList();
+    } catch {
+      entries = [];
+    }
+    const shared: RosterDeck[] = [];
+    const sharedLists: Record<string, DeckCardLists> = {};
+    for (const entry of entries) {
+      const read = sharedToRoster(entry);
+      if (!read) continue;
+      shared.push(read.roster);
+      sharedLists[read.roster.id] = read.list;
+    }
+    set({ shared, sharedLists });
+  },
+
+  toggleFavorite(id) {
+    const current = get().favorites;
+    const favorites = current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id];
+    writeJson(FAVORITES_KEY, favorites);
+    set({ favorites });
+  },
+
+  async setShared(ids, on, by) {
+    for (const id of ids) {
+      if (id.startsWith(STARTER_PREFIX) || id.startsWith(SHARED_PREFIX)) continue;
+      const deck = await deckStorage.loadDeck(id);
+      if (!deck || !!deck.shared === on) continue;
+      await deckStorage.saveDeck({ ...deck, id, shared: on || undefined, sharedBy: on ? by : undefined });
+    }
+    await get().refresh();
+  },
 
   async refresh() {
     const [summaries, starters] = await Promise.all([deckStorage.listDecks(), get().starters.length ? get().starters : fetchStarters()]);
     const saved = summaries.map(summaryToRoster);
     let selectedId = get().selectedId;
-    const known = new Set([...saved.map((deck) => deck.id), ...starters.map((starter) => STARTER_PREFIX + starter.file)]);
-    if (!selectedId || !known.has(selectedId)) {
+    const known = new Set([...saved.map((deck) => deck.id), ...get().shared.map((deck) => deck.id), ...starters.map((starter) => STARTER_PREFIX + starter.file)]);
+    // a shared deck's list arrives just after: its selection waits for it
+    if (!selectedId || (!known.has(selectedId) && !selectedId.startsWith(SHARED_PREFIX))) {
       selectedId = saved[0]?.id ?? (starters[0] ? STARTER_PREFIX + starters[0].file : null);
     }
     set({ saved, starters, selectedId, loaded: true });
+    // others' shared decks come from the server, after your own are on the shelf
+    void get().refreshShared();
   },
 
   select(id) {
@@ -163,6 +254,10 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
       if (sleeve) get().setSleeve(savedId, sleeve);
       get().select(savedId);
       return { deck, id: savedId };
+    }
+    if (id.startsWith(SHARED_PREFIX)) {
+      // someone else's deck plays as they last saved it; nothing is copied
+      return { deck: await get().loadList(id), id };
     }
     const deck = await deckStorage.loadDeck(id);
     if (!deck) throw new Error('That deck is no longer saved.');
@@ -195,7 +290,7 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     const starter = id.startsWith(STARTER_PREFIX);
     const name = copyName(deck.name, taken);
     // a copy is the player's own deck: it no longer follows the site it was imported from
-    const copy: DeckCardLists = { ...deck, id: undefined, name, source: undefined, createdAt: undefined };
+    const copy: DeckCardLists = { ...deck, id: undefined, name, source: undefined, createdAt: undefined, shared: undefined, sharedBy: undefined };
     if (starter) copy.format = starterFormat(get().starters, id);
     const newId = await deckStorage.saveDeck(copy, { forceNew: true });
     await get().refresh();
@@ -214,6 +309,11 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   },
 
   async loadList(id) {
+    if (id.startsWith(SHARED_PREFIX)) {
+      const list = get().sharedLists[id];
+      if (!list) throw new Error('That deck is no longer shared.');
+      return structuredClone(list);
+    }
     if (id.startsWith(STARTER_PREFIX)) {
       const starter = get().starters.find((candidate) => STARTER_PREFIX + candidate.file === id);
       if (!starter) throw new Error('That starter deck is not available.');
@@ -229,12 +329,17 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   },
 }));
 
-export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'>): RosterDeck[] {
+export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'> & Partial<Pick<DeckLibraryState, 'shared' | 'favorites'>>): RosterDeck[] {
   const savedNames = new Set(state.saved.map((deck) => deck.name));
   const starterNames = new Set(state.starters.map((starter) => starter.name));
   // starters already saved by the player don't show twice: the copy stands in for them, and says where it came from
   const saved = state.saved.map((deck) => (starterNames.has(deck.name) ? { ...deck, fromStarter: true } : deck));
-  return [...saved, ...state.starters.filter((starter) => !savedNames.has(starter.name)).map(starterToRoster)];
+  const all = [...saved, ...(state.shared ?? []), ...state.starters.filter((starter) => !savedNames.has(starter.name)).map(starterToRoster)];
+  const favorites = new Set(state.favorites ?? []);
+  if (favorites.size === 0) return all;
+  // favorites first, each group in its own order
+  const marked = all.map((deck) => (favorites.has(deck.id) ? { ...deck, favorite: true } : deck));
+  return [...marked.filter((deck) => deck.favorite), ...marked.filter((deck) => !deck.favorite)];
 }
 
 export function sleeveFor(sleeves: Record<string, string>, deck: RosterDeck | null | undefined): string {

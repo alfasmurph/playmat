@@ -300,6 +300,23 @@
   color: var(--ink-soft);
 }
 
+/* the deck's name, and the star that pins it to the top of its shelf */
+.deckNameLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.pin {
+  flex: none;
+  color: var(--ink-dim);
+}
+
+/* on the icon itself: the icon button's own ink would win on the button */
+.pinOn svg {
+  color: var(--decision);
+}
+
 /* the deck name, printed big on the mat */
 .deckName {
   max-width: 14ch;

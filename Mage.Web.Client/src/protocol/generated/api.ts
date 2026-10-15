@@ -293,6 +293,8 @@ export function createApi(rpc: RpcCaller) {
       rpc.call('deckSyncList'),
     deckSyncGet: (deckId: string) =>
       rpc.call('deckSyncGet', deckId),
+    deckSharedList: () =>
+      rpc.call('deckSharedList'),
     deckSyncPut: (deckId: string, name: string, updatedAt: number, data: string) =>
       rpc.call('deckSyncPut', deckId, name, updatedAt, data),
     deckSyncDelete: (deckId: string, deletedAt: number) =>

@@ -96,6 +96,15 @@ final class AccountApi {
                             return decks(() -> DeckStore.get().get(owner, call.string(0)));
                         }),
 
+                RpcMethod.named("deckSharedList")
+                        .returns("SharedDeckEntry[]")
+                        .doc("Every deck other players share with everyone on this server (its data has \"shared\": true), with "
+                                + "its data, newest first, at most " + DeckStore.MAX_SHARED + ". Only on servers with accounts.")
+                        .handler(call -> {
+                            String me = account(ctx, call);
+                            return decks(() -> DeckStore.get().listShared(me));
+                        }),
+
                 RpcMethod.named("deckSyncPut")
                         .params(of("deckId", STRING), of("name", STRING), of("updatedAt", INT), of("data", STRING))
                         .returns("DeckPutResult")

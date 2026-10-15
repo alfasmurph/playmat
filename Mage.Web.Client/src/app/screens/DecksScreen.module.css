@@ -44,6 +44,42 @@
   color: var(--ink-soft);
 }
 
+.detailHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* a favorite: pinned to the top of the shelf; the star is printed solid in amber ink */
+.star {
+  flex: none;
+  color: var(--ink-dim);
+}
+
+/* on the icon itself: the icon button's own ink would win on the button */
+.starOn svg {
+  color: var(--decision);
+}
+
+.shareLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.sharedOn {
+  box-shadow: inset 0 0 0 2px var(--ink-strong) !important;
+  color: var(--ink-strong) !important;
+}
+
+.shareNote {
+  color: var(--ink-dim);
+  font-size: var(--text-sm);
+}
+
 .subLabel {
   margin-bottom: var(--space-2);
   font-size: var(--text-sm);

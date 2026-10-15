@@ -42,6 +42,10 @@ export interface DeckCardLists {
   coverCard?: DeckCoverCard;
   /** the deck website this deck was imported from, so it can be updated later */
   source?: DeckImportSource;
+  /** the owner shares it with everyone on the server (deck sync carries it; the server lists shared decks) */
+  shared?: boolean;
+  /** the owner's account name as they spell it, written when the deck is shared */
+  sharedBy?: string;
   colors?: {
     white: boolean;
     blue: boolean;

@@ -54,6 +54,16 @@ describe('Play shelves', () => {
   });
 });
 
+describe('favorites', () => {
+  test('stay pinned at the top whatever the sort, and still match a search', () => {
+    const pinned = ROSTER.map((entry) => (entry.id === 'atraxa' || entry.id === 'starter:krenko' ? { ...entry, favorite: true } : entry));
+    const commander = shelfOf(pinned, 'commander');
+    expect(arrange(commander, '', 'recent').map((entry) => entry.id).slice(0, 2)).toEqual(['atraxa', 'starter:krenko']);
+    expect(arrange(commander, '', 'name').map((entry) => entry.id).slice(0, 2)).toEqual(['atraxa', 'starter:krenko']);
+    expect(arrange(commander, 'lim', 'recent').map((entry) => entry.id)).toEqual(['limdul']);
+  });
+});
+
 describe('the shelf this browser keeps', () => {
   test('the chosen shelf, each shelf\'s pick and the sort are kept for the next visit', async () => {
     localStorage.clear();

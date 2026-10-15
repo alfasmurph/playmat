@@ -117,6 +117,8 @@ export function DeckBuilder({ initial, mode }: { initial: DeckCardLists; mode?: 
   const navigate = useNavigate();
   const [deck, setDeck] = useState(initial);
   const [zone, setZone] = useState<DeckZone>('cards');
+  // a phone: one pane at a time, the deck or the cards to add (the tabs show only on narrow screens)
+  const [pane, setPane] = useState<'deck' | 'cards'>('deck');
   const [preview, setPreview] = useState<{ card: CardView; anchor: DOMRect; side: 'auto' | 'left' } | null>(null);
   // a deck pasted here becomes its own deck; "From a list…" brings cards into this one
   useImportPaste();
@@ -186,7 +188,15 @@ export function DeckBuilder({ initial, mode }: { initial: DeckCardLists; mode?: 
   const onRowPreview = useCallback((card: CardView | null, anchor?: DOMRect) => setPreview(card && anchor ? { card, anchor, side: 'left' } : null), []);
 
   return (
-    <div className={styles.page}>
+    <div className={[styles.page, pane === 'deck' ? styles.paneDeck : styles.paneCards].join(' ')}>
+      <div className={styles.paneTabs} role="tablist" aria-label="Deck builder">
+        <button type="button" role="tab" aria-selected={pane === 'deck'} className={pane === 'deck' ? styles.paneTabOn : styles.paneTab} onClick={() => setPane('deck')}>
+          Deck {countZone(deck, 'cards') + (formatRules(deck.format ?? '').commandZone !== null ? countZone(deck, 'sideboard') : 0)}
+        </button>
+        <button type="button" role="tab" aria-selected={pane === 'cards'} className={pane === 'cards' ? styles.paneTabOn : styles.paneTab} onClick={() => setPane('cards')}>
+          Add cards
+        </button>
+      </div>
       {mode ? (
         <mode.Binder format={format} identity={identity} counts={counts} limitOf={limitOf} onAdd={add} onRemove={removeOne} onPreview={onPreview} />
       ) : (

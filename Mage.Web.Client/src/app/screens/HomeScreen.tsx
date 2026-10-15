@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, Download, PencilRuler, Search, SlidersHorizontal, Trophy } from 'lucide-react';
+import { ChevronRight, Crown, Download, PencilRuler, Search, SlidersHorizontal, Star, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { rosterOf, sleeveFor, useDecks, type DeckKind, type RosterDeck } from '../stores/decks';
@@ -6,7 +6,7 @@ import { activeKind, arrange, pickOn, shelfOf, SHELF_TOOLS_AFTER, useShelf, type
 import { useCoach } from '../stores/coach';
 import { usePlay, type AiOptions } from '../stores/play';
 import { useT, type MessageKey } from '../i18n';
-import { Button } from '../ui/Button';
+import { Button, IconButton } from '../ui/Button';
 import { DeckBox } from '../ui/DeckBox';
 import { MatPrint } from '../ui/MatPrint';
 import { storeCards } from '../ui/imageCache';
@@ -323,7 +323,18 @@ export function HomeScreen() {
               <span className={styles.commanderNames}>{commanders.join(' & ')}</span>
             </p>
           )}
-          <h1 className={styles.deckName}>{selected?.name ?? t('home.chooseDeck')}</h1>
+          <div className={styles.deckNameLine}>
+            <h1 className={styles.deckName}>{selected?.name ?? t('home.chooseDeck')}</h1>
+            {selected && (
+              <IconButton
+                className={[styles.pin, selected.favorite ? styles.pinOn : ''].join(' ')}
+                label={selected.favorite ? t('decks.unfavorite') : t('decks.favorite')}
+                pressed={!!selected.favorite}
+                icon={<Star size={20} fill={selected.favorite ? 'currentColor' : 'none'} />}
+                onClick={() => useDecks.getState().toggleFavorite(selected.id)}
+              />
+            )}
+          </div>
           <p className={styles.deckNote}>{selected?.fromStarter ? t('decks.fromStarter', { count: selected.cardCount }) : selected?.note ?? ' '}</p>
         </div>
 

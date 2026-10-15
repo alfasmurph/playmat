@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 /**
  * Web client decks per account, so a player's decks follow them to another browser. Last write wins, by the client's
  * own change time; deletions stay as tombstones for a while so every device hears about them.
@@ -92,6 +96,39 @@ public final class DeckStore {
     /**
      * @return the deck with its data, or null when the account has no such deck (or it was deleted)
      */
+    /** At most this many shared decks in one answer: a server's worth of friends' decks, not every deck on it. */
+    public static final int MAX_SHARED = 300;
+
+    /**
+     * Every deck its owner shares with everyone (its JSON says "shared": true), except the given account's own, newest
+     * first.
+     */
+    public synchronized List<SharedDeckEntry> listShared(String exceptOwner) throws SQLException {
+        String except = exceptOwner == null ? "" : key(exceptOwner);
+        List<SharedDeckEntry> shared = new ArrayList<>();
+        for (StoredDeck deck : dao.queryForEq("deleted", false)) {
+            if (deck.owner.equals(except) || deck.data == null || !isShared(deck.data)) {
+                continue;
+            }
+            shared.add(new SharedDeckEntry(deck));
+        }
+        shared.sort((a, b) -> Long.compare(b.updatedAt, a.updatedAt));
+        return shared.size() > MAX_SHARED ? new ArrayList<>(shared.subList(0, MAX_SHARED)) : shared;
+    }
+
+    static boolean isShared(String data) {
+        try {
+            JsonElement json = JsonParser.parseString(data);
+            if (!json.isJsonObject()) {
+                return false;
+            }
+            JsonObject deck = json.getAsJsonObject();
+            return deck.has("shared") && deck.get("shared").isJsonPrimitive() && deck.get("shared").getAsBoolean();
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     /** Every deck of the account, tombstones too, gone for good. */
     public synchronized int deleteAll(String owner) throws SQLException {
         DeleteBuilder<StoredDeck, String> delete = dao.deleteBuilder();

@@ -1,4 +1,4 @@
-import { ClipboardPaste, Cloud, CloudOff, Copy, Download, PencilLine, PencilRuler, RefreshCw, Trash2 } from 'lucide-react';
+import { ClipboardPaste, Cloud, CloudOff, Copy, Download, PencilLine, PencilRuler, RefreshCw, Share2, Star, Trash2 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { siteById } from '../../core/deckImport/sites';
@@ -14,9 +14,10 @@ import { t as translate, useT } from '../i18n';
 import { RichText } from '../i18n/RichText';
 import { SLEEVE_COLORS, rosterOf, sleeveFor, useDecks, type RosterDeck } from '../stores/decks';
 import { useDeckSyncStatus } from '../stores/deckSyncStatus';
+import { useSession } from '../stores/session';
 import { useSettings } from '../stores/settings';
 import { openImport, useImportSheet } from '../stores/importSheet';
-import { Button } from '../ui/Button';
+import { Button, IconButton } from '../ui/Button';
 import { DeckBox } from '../ui/DeckBox';
 import { Dialog } from '../ui/Dialog';
 import { Field } from '../ui/Field';
@@ -36,6 +37,13 @@ export function DecksScreen() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<RosterDeck | null>(null);
   const selected = roster.find((deck) => deck.id === decks.selectedId) ?? null;
+  const userName = useSession((state) => state.userName);
+  // your own saved decks (not starters, not others' shared ones) that aren't shared yet
+  const unshared = roster.filter((deck) => !deck.starter && !deck.sharedBy && !deck.shared);
+  const share = (ids: string[], on: boolean) => {
+    if (!userName) return;
+    void useDecks.getState().setShared(ids, on, userName).catch((error: unknown) => notify(t('decks.share'), error instanceof Error ? error.message : String(error), 'error'));
+  };
   // one column (a phone): the chosen deck's card is above the shelf, so choosing one brings it into view
   const choose = (id: string) => {
     decks.select(id);
@@ -94,6 +102,9 @@ export function DecksScreen() {
             <SyncNote />
             <Button size="sm" icon={<Download size={16} />} onClick={() => openImport()}>{t('decks.import')}</Button>
             <Button size="sm" icon={<PencilRuler size={16} />} onClick={() => navigate('/decks/new')}>{t('decks.build')}</Button>
+            {userName && unshared.length > 0 && (
+              <Button size="sm" icon={<Share2 size={16} />} onClick={() => share(unshared.map((deck) => deck.id), true)}>{t('decks.shareAll')}</Button>
+            )}
           </>
         }
       >
@@ -122,8 +133,33 @@ export function DecksScreen() {
       <Zone tone="filled" className={styles.detail} id="deck-detail">
         {selected ? (
           <div className={styles.detailBody}>
-            <h2 className={styles.detailName}>{selected.name}</h2>
+            <div className={styles.detailHead}>
+              <h2 className={styles.detailName}>{selected.name}</h2>
+              <IconButton
+                className={[styles.star, selected.favorite ? styles.starOn : ''].join(' ')}
+                label={selected.favorite ? t('decks.unfavorite') : t('decks.favorite')}
+                pressed={!!selected.favorite}
+                icon={<Star size={20} fill={selected.favorite ? 'currentColor' : 'none'} />}
+                onClick={() => decks.toggleFavorite(selected.id)}
+              />
+            </div>
             <p className={styles.detailNote}>{selected.note}</p>
+            {selected.sharedBy && <p className={styles.detailNote}>{t('decks.sharedBy', { name: selected.sharedBy })}</p>}
+            {!selected.starter && !selected.sharedBy && userName && (
+              <div className={styles.shareLine}>
+                <Button
+                  variant="print"
+                  size="sm"
+                  icon={<Share2 size={16} />}
+                  aria-pressed={!!selected.shared}
+                  className={selected.shared ? styles.sharedOn : undefined}
+                  onClick={() => share([selected.id], !selected.shared)}
+                >
+                  {selected.shared ? t('decks.shared') : t('decks.share')}
+                </Button>
+                {selected.shared && <span className={styles.shareNote}>{t('decks.shareNote')}</span>}
+              </div>
+            )}
             {source && sourceSite && (
               <div className={styles.source}>
                 <SourceLine source={source} />
@@ -156,17 +192,24 @@ export function DecksScreen() {
                 )}
               </div>
             </div>
-            <Button variant="print" icon={<PencilRuler size={16} />} onClick={() => navigate(`/decks/${encodeURIComponent(selected.id)}`)}>
-              {selected.starter ? t('decks.copyAndEdit') : t('decks.edit')}
-            </Button>
+            {selected.sharedBy ? (
+              // someone else's deck: yours to play, theirs to change; a copy is yours to change
+              <Button variant="print" icon={<Copy size={16} />} onClick={() => void duplicate(selected)}>{t('decks.copyToMine')}</Button>
+            ) : (
+              <Button variant="print" icon={<PencilRuler size={16} />} onClick={() => navigate(`/decks/${encodeURIComponent(selected.id)}`)}>
+                {selected.starter ? t('decks.copyAndEdit') : t('decks.edit')}
+              </Button>
+            )}
             <div className={styles.actions}>
               <ExportMenu getDeck={() => useDecks.getState().loadList(selected.id)} />
-              <Button variant="print" size="sm" icon={<Copy size={16} />} onClick={() => void duplicate(selected)}>{t('decks.duplicate')}</Button>
-              {!selected.starter && (
+              {!selected.sharedBy && (
+                <Button variant="print" size="sm" icon={<Copy size={16} />} onClick={() => void duplicate(selected)}>{t('decks.duplicate')}</Button>
+              )}
+              {!selected.starter && !selected.sharedBy && (
                 <Button variant="print" size="sm" icon={<PencilLine size={16} />} onClick={() => setRenaming(selected)}>{t('decks.rename')}</Button>
               )}
             </div>
-            {!selected.starter && (
+            {!selected.starter && !selected.sharedBy && (
               <Button variant="danger" size="sm" className={styles.remove} icon={<Trash2 size={16} />} onClick={() => setRemoving(selected)}>{t('decks.remove')}</Button>
             )}
           </div>

@@ -60,10 +60,12 @@ import { gzipSync } from 'node:zlib';
 // for the owner's sound set and its engine (clips, made sounds, new table moments), the card held up to read and use,
 // the ring of turn steps, the Commander/Standard Play page, the phone layout and the hand list; the old synthesized
 // game cues went (-0.6 kB). Measured app 477.0 kB (the entry's split adds about 4 kB of chunk overhead to it)
+// app raised 2026-10-15 from 480 kB for shared decks, favorites, the deck builder's phone tabs, the library's top card
+// (Mystic Forge) and the phone fixes to import and Decks; measured 480.3 kB
 const BUDGET_KB = {
   entry: 66,
   initial: 212,
-  app: 480,
+  app: 486,
 };
 
 const dist = new URL('../dist/', import.meta.url).pathname;

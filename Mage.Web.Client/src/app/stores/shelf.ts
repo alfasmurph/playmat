@@ -83,13 +83,16 @@ function folded(text: string): string {
 }
 
 /**
- * A shelf as listed: the decks whose name or format has the query in it, the latest saved first (starters, never
- * saved, after them in their own order) or by name.
+ * A shelf as listed: the decks whose name or format has the query in it, favorites first, then the latest saved
+ * first (starters, never saved, after them in their own order) or by name.
  */
 export function arrange(shelf: readonly RosterDeck[], query: string, sort: ShelfSort): RosterDeck[] {
   const needle = folded(query.trim());
   const found = needle ? shelf.filter((deck) => folded(`${deck.name} ${deck.note}`).includes(needle)) : [...shelf];
-  if (sort === 'name') return found.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }));
-  // a stable sort keeps the starters in their listed order
-  return found.sort((a, b) => (b.updatedAt ?? -1) - (a.updatedAt ?? -1));
+  const sorted = sort === 'name'
+    ? found.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }))
+    // a stable sort keeps the starters in their listed order
+    : found.sort((a, b) => (b.updatedAt ?? -1) - (a.updatedAt ?? -1));
+  // favorites stay pinned at the top, in the same order
+  return [...sorted.filter((deck) => deck.favorite), ...sorted.filter((deck) => !deck.favorite)];
 }

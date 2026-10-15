@@ -2,7 +2,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { deckStorage } from '../../core/decks/DeckStorageService';
 import type { DeckCardLists } from '../../core/decks/types';
-import { deckKind, rosterOf, STARTER_PREFIX, useDecks } from './decks';
+import { api } from '../connection';
+import { deckKind, rosterOf, SHARED_PREFIX, STARTER_PREFIX, useDecks } from './decks';
 
 const BURN: DeckCardLists = {
   name: 'Burn',
@@ -21,7 +22,8 @@ beforeEach(async () => {
     if (url.endsWith('red.dck')) return new Response('20 [M19:156] Shock\n40 [M19:280] Mountain\n', { status: 200 });
     return new Response(null, { status: 404 });
   }));
-  useDecks.setState({ saved: [], starters: [], selectedId: null, sleeves: {}, loaded: false });
+  useDecks.setState({ saved: [], starters: [], shared: [], sharedLists: {}, favorites: [], selectedId: null, sleeves: {}, loaded: false });
+  vi.restoreAllMocks();
 });
 
 describe('deck library', () => {
@@ -83,6 +85,55 @@ describe('deck library', () => {
     expect(starter.name).toBe('Red Starter');
     expect(starter.cards.reduce((sum, card) => sum + card.amount, 0)).toBe(60);
     expect(await deckStorage.listDecks()).toHaveLength(1);
+  });
+});
+
+describe('sharing and favorites', () => {
+  test('sharing marks your own deck with your name; deck sync carries it', async () => {
+    const id = await deckStorage.saveDeck(BURN, { forceNew: true });
+    await useDecks.getState().refresh();
+    await useDecks.getState().setShared([id, STARTER_PREFIX + STARTER.file], true, 'Ana');
+    expect(await deckStorage.loadDeck(id)).toMatchObject({ shared: true, sharedBy: 'Ana', name: 'Burn' });
+    expect(rosterOf(useDecks.getState()).find((deck) => deck.id === id)?.shared).toBe(true);
+    await useDecks.getState().setShared([id], false, 'Ana');
+    const unshared = await deckStorage.loadDeck(id);
+    expect(unshared?.shared).toBeUndefined();
+    expect(unshared?.sharedBy).toBeUndefined();
+  });
+
+  test("others' shared decks join the shelf, play as they are and copy as your own", async () => {
+    vi.spyOn(api, 'deckSharedList').mockResolvedValue([
+      { owner: 'bob', id: 'd1', name: 'Elves', updatedAt: 50, data: JSON.stringify({ ...BURN, name: 'Elves', shared: true, sharedBy: 'Bob' }) },
+      { owner: 'cat', id: 'd2', name: 'Broken', updatedAt: 40, data: '{not json' },
+    ]);
+    await useDecks.getState().refreshShared();
+    const id = `${SHARED_PREFIX}bob:d1`;
+    const shared = rosterOf(useDecks.getState()).find((deck) => deck.id === id);
+    expect(shared).toMatchObject({ name: 'Elves', sharedBy: 'Bob', kind: 'standard' });
+    expect(shared?.note).toMatch(/^Shared by Bob/);
+    expect(rosterOf(useDecks.getState())).toHaveLength(1);
+
+    const { deck, id: playedId } = await useDecks.getState().loadForPlay(id);
+    expect(playedId).toBe(id);
+    expect(deck.cards[0].cardName).toBe('Lightning Bolt');
+    expect(await deckStorage.listDecks()).toHaveLength(0);
+
+    const copyId = await useDecks.getState().duplicate(id);
+    const copy = await deckStorage.loadDeck(copyId);
+    expect(copy?.name).toBe('Elves (copy)');
+    expect(copy?.shared).toBeUndefined();
+    expect(copy?.sharedBy).toBeUndefined();
+  });
+
+  test('a favorite is pinned to the top of the roster', async () => {
+    const first = await deckStorage.saveDeck(BURN, { forceNew: true });
+    const second = await deckStorage.saveDeck({ ...BURN, name: 'Zoo' }, { forceNew: true });
+    await useDecks.getState().refresh();
+    useDecks.getState().toggleFavorite(first);
+    const roster = rosterOf(useDecks.getState());
+    expect(roster[0]).toMatchObject({ id: first, favorite: true });
+    expect(roster.find((deck) => deck.id === second)?.favorite).toBeUndefined();
+    expect(JSON.parse(localStorage.getItem('playmat.favoriteDecks') ?? '[]')).toEqual([first]);
   });
 });
 

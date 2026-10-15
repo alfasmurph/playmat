@@ -1369,6 +1369,14 @@ export interface ServerStats {
     version?: string;
 }
 
+export interface SharedDeckEntry {
+    data?: string;
+    id?: string;
+    name?: string;
+    owner?: string;
+    updatedAt?: number;
+}
+
 export interface SimpleCardView extends Serializable, SelectableObjectView {
     cardNumber?: string;
     expansionSetCode?: string;

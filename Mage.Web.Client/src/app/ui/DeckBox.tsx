@@ -1,3 +1,4 @@
+import { Star } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCardImage } from '../../core/images/useCardImage';
 import { useT } from '../i18n';
@@ -30,7 +31,10 @@ export function DeckBox({ deck, sleeve, selected, onSelect, onActivate }: DeckBo
         {typeof art !== 'string' && <span className={styles.initial}>{deck.name.slice(0, 1).toUpperCase()}</span>}
       </span>
       <span className={styles.plate}>
-        <span className={styles.name}>{deck.name}</span>
+        <span className={styles.name}>
+          {deck.favorite && <Star className={styles.favorite} size={15} fill="currentColor" aria-label="Pinned" />}
+          {deck.name}
+        </span>
         <span className={styles.note}>
           {deck.colors.length > 0 && (
             <span className={styles.pips} aria-label={t('ui.colors', { colors: deck.colors.join('') })}>
