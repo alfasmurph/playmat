@@ -55,10 +55,15 @@ import { gzipSync } from 'node:zlib';
 // feedback in the account menu (a lazy dialog), measured 454.3 kB
 // entry raised 2026-10-12 from 71 kB for M16 (performance): Home says when every game slot of the server is busy
 // (a polled serverInfo query and its message); measured entry 71.2 kB
+// 2026-10-15: the Decks shelf and the /import route became lazy (they were in the entry; a player starts on Home), so
+// the entry fell from 74.3 kB to 62.2 kB and its budget comes down to 66 kB to keep the gain. app raised from 460 kB
+// for the owner's sound set and its engine (clips, made sounds, new table moments), the card held up to read and use,
+// the ring of turn steps, the Commander/Standard Play page, the phone layout and the hand list; the old synthesized
+// game cues went (-0.6 kB). Measured app 477.0 kB (the entry's split adds about 4 kB of chunk overhead to it)
 const BUDGET_KB = {
-  entry: 72,
+  entry: 66,
   initial: 212,
-  app: 460,
+  app: 480,
 };
 
 const dist = new URL('../dist/', import.meta.url).pathname;

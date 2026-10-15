@@ -3,15 +3,15 @@ import { parseManifest, playClip, recipeClipFile, type ClipAdjust, type SoundMan
 import { playRecipe, recipeClipIds, type Recipe } from '../../core/audio/recipe';
 import { useSettings } from '../stores/settings';
 import { cueAllowed, type Cue } from './cueRules';
-import { renderSynth, type Bus } from './synthCues';
+import type { Bus } from './synthCues';
 
 export type { Cue } from './cueRules';
 export { bell, knock, noise, NOTE, thud, tone, type Bus } from './synthCues';
 
 /**
  * Game cues. What each one plays comes from the sound manifest (public/sounds/manifest.json, from the owner's picks):
- * a recorded clip, a made sound (a recipe) or silence. Without a manifest, or for a cue it leaves out, the client's
- * own synthesized sound plays (synthCues.ts), and a cue that has none stays quiet. All cues go through one bus (a
+ * a recorded clip, a made sound (a recipe) or silence. A cue the manifest leaves out, or whose clip won't load, stays
+ * quiet. All cues go through one bus (a
  * gentle compressor and a short room) so they sound like one set; the gate keeps bursts from piling up.
  */
 
@@ -66,9 +66,10 @@ const FREQUENT: readonly Cue[] = ['tap', 'land', 'draw', 'cast', 'resolve', 'att
 /** What a cue plays, ready to start: its samples decoded. */
 type Sound =
   | { kind: 'silent' }
-  | { kind: 'synth' }
   | { kind: 'clip'; buffer: AudioBuffer; adjust: ClipAdjust }
   | { kind: 'recipe'; recipe: Recipe; clips: Record<string, AudioBuffer> };
+
+const SILENT: Sound = { kind: 'silent' };
 
 let manifest: Promise<SoundManifest | null> | null = null;
 const buffers = new Map<string, Promise<AudioBuffer | null>>();
@@ -101,13 +102,13 @@ function loadBuffer(ctx: AudioContext, file: string): Promise<AudioBuffer | null
 
 async function load(b: Bus, cue: Cue): Promise<Sound> {
   const entry = (await loadManifest())?.cues[cue];
-  if (!entry) return { kind: 'synth' };
+  if (!entry) return SILENT;
   switch (entry.kind) {
     case 'silent':
       return entry;
     case 'clip': {
       const buffer = await loadBuffer(b.ctx, entry.file);
-      return buffer ? { kind: 'clip', buffer, adjust: entry.adjust } : { kind: 'synth' };
+      return buffer ? { kind: 'clip', buffer, adjust: entry.adjust } : SILENT;
     }
     case 'recipe': {
       // a clip layer whose sample isn't there stays silent
@@ -132,7 +133,7 @@ function prepare(b: Bus, cue: Cue): Promise<Sound> {
 }
 
 /** Plays a prepared sound into out at t; returns when it ends. */
-function render(b: Bus, out: AudioNode, cue: Cue, sound: Sound, t: number): number {
+function render(b: Bus, out: AudioNode, sound: Sound, t: number): number {
   switch (sound.kind) {
     case 'silent':
       return t;
@@ -140,9 +141,6 @@ function render(b: Bus, out: AudioNode, cue: Cue, sound: Sound, t: number): numb
       return playClip(b.ctx, out, sound.buffer, sound.adjust, t);
     case 'recipe':
       return playRecipe(b.ctx, out, sound.recipe, t, sound.clips);
-    case 'synth':
-      // the longest synthesized cue rings about this long
-      return renderSynth(b, out, cue, t) ? t + 2 : t;
   }
 }
 
@@ -172,7 +170,7 @@ function startCue(cue: Cue, gain: number, delay = 0): Voice | null {
     let end = t;
     // a recipe with numbers the Web Audio API refuses plays nothing rather than breaking the game
     try {
-      end = render(b, out, cue, sound, t);
+      end = render(b, out, sound, t);
     } catch {
       return finish();
     }

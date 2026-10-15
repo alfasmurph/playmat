@@ -38,14 +38,12 @@ afterEach(() => {
 });
 
 describe('game cues', () => {
-  it('plays the synthesized sound when there is no manifest, and nothing for a cue without one', async () => {
+  it('stays quiet without a manifest: the old synthesized cues are gone', async () => {
     const { playCue } = await engine();
     playCue('shuffle');
+    playCue('turn');
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(started()).toHaveLength(0);
-    playCue('turn');
-    await vi.waitFor(() => expect(sources('oscillator').length).toBeGreaterThan(0));
-    expect(sources('bufferSource')).toHaveLength(0);
   });
 
   it('plays the manifest clip through its adjustments', async () => {
@@ -60,16 +58,15 @@ describe('game cues', () => {
     expect(sources('oscillator')).toHaveLength(0);
   });
 
-  it('keeps silent cues silent and falls back when a clip is missing', async () => {
+  it('keeps silent cues silent, and a cue whose clip is missing quiet', async () => {
     served = {
       '/sounds/manifest.json': { version: 1, cues: { land: { kind: 'silent' }, turn: { kind: 'clip', file: 'turn.mp3' } } },
     };
     const { playCue } = await engine();
     playCue('land');
+    playCue('turn');
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(started()).toHaveLength(0);
-    playCue('turn');
-    await vi.waitFor(() => expect(sources('oscillator').length).toBeGreaterThan(0));
   });
 
   it('plays a recipe, skipping a clip layer whose sample is not there', async () => {
@@ -87,6 +84,10 @@ describe('game cues', () => {
   });
 
   it('follows the sound switch, though the Settings preview plays anyway', async () => {
+    served = {
+      '/sounds/manifest.json': { version: 1, cues: { turn: { kind: 'clip', file: 'turn.mp3' } } },
+      '/sounds/turn.mp3': 'mp3 bytes',
+    };
     const { playCue, previewCue } = await engine();
     const { useSettings } = await import('../stores/settings');
     useSettings.getState().update({ sound: false });
@@ -94,7 +95,7 @@ describe('game cues', () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(started()).toHaveLength(0);
     previewCue('turn', 0.5);
-    await vi.waitFor(() => expect(sources('oscillator').length).toBeGreaterThan(0));
+    await vi.waitFor(() => expect(sources('bufferSource')).toHaveLength(1));
     useSettings.getState().update({ sound: true });
   });
 });

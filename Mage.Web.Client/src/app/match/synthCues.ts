@@ -1,9 +1,6 @@
-import type { Cue } from './cueRules';
-
 /**
- * The client's own cues, synthesized with Web Audio: what plays when the sound manifest (sound.ts) has nothing for a
- * cue. Each cue is short and quiet, tuned to sit under conversation: wood, felt, paper and small bells, felt more
- * than heard, like cards on a mat. Career builds its sounds from the same pieces.
+ * Synthesized sound pieces, built with Web Audio: tones, bells, knocks, thuds and filtered noise, short and quiet, felt
+ * more than heard. Career builds its sounds and music from them; the game's cues are the owner's picks (sound.ts).
  */
 
 export interface Bus {
@@ -86,76 +83,3 @@ export function thud(b: Bus, out: AudioNode, start: number, gain: number, freq =
 }
 
 export const NOTE = { C4: 261.63, D4: 293.66, E4: 329.63, G4: 392, A4: 440, Bb4: 466.16, C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, C6: 1046.5 };
-
-/** Plays a cue's synthesized sound into out at t; false for a cue that has none. */
-export function renderSynth(b: Bus, out: AudioNode, cue: Cue, t: number): boolean {
-  switch (cue) {
-    case 'turn':
-      // your turn: two bells a fifth apart, rising
-      bell(b, out, NOTE.C5, t, 1.1, 0.16);
-      bell(b, out, NOTE.G5, t + 0.13, 1.3, 0.13);
-      return true;
-    case 'decide':
-      // a decision is yours: a light knock and a tiny bell
-      knock(b, out, 820, t, 0.12);
-      bell(b, out, NOTE.E5 * 2, t + 0.05, 0.35, 0.05);
-      return true;
-    case 'cast':
-      // a spell leaves the hand: breath rising into a shimmer
-      noise(b, out, { start: t, length: 0.34, from: 500, to: 4200, gain: 0.12 });
-      tone(b, out, { freq: NOTE.G4, start: t + 0.04, length: 0.36, gain: 0.06, slide: NOTE.G5 });
-      [NOTE.C6, NOTE.E5 * 2].forEach((freq, i) => tone(b, out, { freq, start: t + 0.18 + i * 0.05, length: 0.3, gain: 0.025 }));
-      return true;
-    case 'resolve':
-      // it happens: the shimmer settles onto the mat
-      tone(b, out, { freq: NOTE.E5, start: t, length: 0.3, gain: 0.05, slide: NOTE.C5 });
-      noise(b, out, { start: t, length: 0.22, from: 2600, to: 500, gain: 0.07 });
-      thud(b, out, t + 0.12, 0.14, 120);
-      return true;
-    case 'land':
-      // a land put down: a card on felt, low and earthy
-      noise(b, out, { start: t, length: 0.06, from: 3500, to: 1500, gain: 0.06, type: 'highpass', q: 0.7 });
-      thud(b, out, t + 0.03, 0.26, 80);
-      return true;
-    case 'attack':
-      // to battle: two drum hits
-      thud(b, out, t, 0.34, 98);
-      thud(b, out, t + 0.17, 0.3, 92);
-      noise(b, out, { start: t + 0.17, length: 0.12, from: 1200, to: 300, gain: 0.08 });
-      return true;
-    case 'block':
-      // a shield: a short, hard clank over a thud
-      [420, 1130, 1810].forEach((freq, i) => tone(b, out, { freq, start: t, length: 0.18 - i * 0.04, type: 'triangle', gain: 0.07 - i * 0.015, attack: 0.002 }));
-      thud(b, out, t, 0.2, 110);
-      return true;
-    case 'damage':
-      // an impact: a crack and a low drop
-      noise(b, out, { start: t, length: 0.12, from: 2200, to: 260, gain: 0.2, q: 0.9 });
-      tone(b, out, { freq: 140, start: t, length: 0.28, gain: 0.36, slide: 52, attack: 0.002 });
-      return true;
-    case 'lifeGain':
-      // healing: three soft notes rising
-      [NOTE.C5, NOTE.E5, NOTE.G5].forEach((freq, i) => tone(b, out, { freq, start: t + i * 0.08, length: 0.45, gain: 0.07, attack: 0.02 }));
-      return true;
-    case 'draw':
-      // a card slides off the library
-      noise(b, out, { start: t, length: 0.11, from: 1800, to: 5200, gain: 0.08, type: 'highpass', q: 0.8 });
-      return true;
-    case 'timer':
-      // your clock is running out: a clock's double tick, twice
-      [0, 0.12, 0.5, 0.62].forEach((offset, i) => knock(b, out, i % 2 === 0 ? 1650 : 1350, t + offset, 0.13));
-      return true;
-    case 'victory':
-      // a bright arpeggio landing on a held chord
-      [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6].forEach((freq, i) => bell(b, out, freq, t + i * 0.11, 1.4, 0.11));
-      [NOTE.C5, NOTE.E5, NOTE.G5].forEach((freq) => tone(b, out, { freq, start: t + 0.45, length: 1.6, type: 'triangle', gain: 0.045, attack: 0.08 }));
-      return true;
-    case 'defeat':
-      // a soft fall in minor
-      [NOTE.G4, NOTE.E4 * 0.944, NOTE.C4].forEach((freq, i) => tone(b, out, { freq, start: t + i * 0.2, length: 0.9, gain: 0.12, attack: 0.03 }));
-      tone(b, out, { freq: NOTE.C4 / 2, start: t + 0.4, length: 1.4, type: 'triangle', gain: 0.06, attack: 0.1 });
-      return true;
-    default:
-      return false;
-  }
-}
