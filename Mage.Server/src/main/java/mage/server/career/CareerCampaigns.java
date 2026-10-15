@@ -138,6 +138,23 @@ public final class CareerCampaigns {
         public String id;
         public String text;
         public CareerReward reward;
+        /** a pack of cards swapped into the chapter's deck for the rest of the chapter (Commander road forks) */
+        public Upgrade upgrade;
+    }
+
+    /**
+     * Cards that go into the chapter's deck, and the ones they replace, once this option is taken: every later duel
+     * of the chapter (and the cards its boss gives) uses the deck with all the packs taken so far.
+     */
+    public static class Upgrade {
+        /** "More tokens" */
+        public String name;
+        /** a .dck under campaigns/decks with the cards that come in (main deck lines) */
+        public String deck;
+        /** the names of the cards that go out, one copy each */
+        public List<String> out = new ArrayList<>();
+        /** the names of the cards that come in, read from the deck file at load (for the fork's view) */
+        public List<String> in = new ArrayList<>();
     }
 
     /** What finishing a node gives, the first time. */
@@ -276,6 +293,7 @@ public final class CareerCampaigns {
         for (String id : ids) {
             try (Reader reader = resource(id + ".json")) {
                 Campaign campaign = gson.fromJson(reader, Campaign.class);
+                readUpgrades(campaign);
                 campaigns.put(campaign.id, campaign);
             }
         }
@@ -309,6 +327,80 @@ public final class CareerCampaigns {
 
     public Map<String, Campaign> campaigns() {
         return Collections.unmodifiableMap(campaigns);
+    }
+
+    /** the pack cards each upgrade brings, named for the fork's view */
+    private void readUpgrades(Campaign campaign) throws IOException {
+        for (Chapter chapter : campaign.chapters) {
+            for (Node node : chapter.nodes) {
+                if (node.options == null) {
+                    continue;
+                }
+                for (CareerOption option : node.options) {
+                    if (option.upgrade == null || option.upgrade.deck == null) {
+                        continue;
+                    }
+                    option.upgrade.in = new ArrayList<>();
+                    for (DeckCardInfo card : deck(option.upgrade.deck).getCards()) {
+                        for (int i = 0; i < card.getAmount(); i++) {
+                            option.upgrade.in.add(card.getCardName());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String campaignIdOf(Chapter chapter) {
+        for (Campaign campaign : campaigns.values()) {
+            if (campaign.chapters.contains(chapter)) {
+                return campaign.id;
+            }
+        }
+        return "";
+    }
+
+    /**
+     * The chapter's deck with every upgrade pack taken at its forks so far, in the chapter's order: each pack's cards
+     * out (one copy per name) and its cards in. A card that isn't there to take out is skipped, so a pack never
+     * leaves the deck short of its cards in.
+     */
+    DeckCardLists upgraded(DeckCardLists base, Chapter chapter, Map<String, String> done) throws IOException {
+        if (chapter == null || done == null || done.isEmpty()) {
+            return base;
+        }
+        for (Node fork : chapter.nodes) {
+            if (fork.options == null || !done.containsKey(fork.id)) {
+                continue;
+            }
+            String taken = done.get(fork.id);
+            for (CareerOption option : fork.options) {
+                if (!option.id.equals(taken) || option.upgrade == null || option.upgrade.deck == null) {
+                    continue;
+                }
+                for (String name : option.upgrade.out) {
+                    takeOut(base.getCards(), name);
+                }
+                for (DeckCardInfo card : deck(option.upgrade.deck).getCards()) {
+                    base.getCards().add(card.copy());
+                }
+            }
+        }
+        return base;
+    }
+
+    private static void takeOut(List<DeckCardInfo> cards, String name) {
+        for (int i = 0; i < cards.size(); i++) {
+            DeckCardInfo card = cards.get(i);
+            if (card.getCardName().equalsIgnoreCase(name)) {
+                if (card.getAmount() > 1) {
+                    cards.set(i, new DeckCardInfo(card.getCardName(), card.getCardNumber(), card.getSetCode(), card.getAmount() - 1));
+                } else {
+                    cards.remove(i);
+                }
+                return;
+            }
+        }
     }
 
     public DeckCardLists deck(String file) throws IOException {
@@ -573,7 +665,7 @@ public final class CareerCampaigns {
             plan.opponentName = node.opponent.name;
             plan.skill = node.opponent.skill;
             plan.aiType = node.opponent.aiType;
-            plan.playerDeck = deck(deckOf(chapter, node));
+            plan.playerDeck = upgraded(deck(deckOf(chapter, node)), chapter, done);
             plan.opponentDeck = deck(node.opponent.deck);
             plan.setup = CareerSetup.ofTwists(node.opponent.twists);
             plan.deckType = or(node.deckType, campaign.deckType, plan.deckType);
@@ -600,8 +692,8 @@ public final class CareerCampaigns {
         return seat;
     }
 
-    /** the deck the player plays at a duel, for reading before it */
-    public DeckCardLists playerDeck(String campaignId, String nodeId) throws CareerService.CareerException, IOException {
+    /** the deck the player plays at a duel, for reading before it (with the chapter's upgrade packs taken so far) */
+    public DeckCardLists playerDeck(String user, String campaignId, String nodeId) throws CareerService.CareerException, IOException, SQLException {
         Campaign campaign = campaign(campaignId);
         Chapter chapter = chapterOf(campaign, nodeId);
         Node node = chapter == null ? null : node(chapter, nodeId);
@@ -609,7 +701,7 @@ public final class CareerCampaigns {
         if (file == null || !"duel".equals(node.type)) {
             throw new CareerService.CareerException("There is no duel " + nodeId + " in " + campaign.name + ".");
         }
-        return deck(file);
+        return upgraded(deck(file), chapter, CareerStore.get().campaignNodes(user, campaignId));
     }
 
     /** takes an option at a choice node, once, and pays it */
@@ -727,7 +819,7 @@ public final class CareerCampaigns {
         }
         if (reward.deckCards && chapter != null) {
             try {
-                DeckCardLists deck = deck(chapter.deck);
+                DeckCardLists deck = upgraded(deck(chapter.deck), chapter, store.campaignNodes(user, campaignIdOf(chapter)));
                 List<CareerCard> cards = new ArrayList<>();
                 for (DeckCardInfo info : CareerContent.allCards(deck)) {
                     for (int i = 0; i < info.getAmount(); i++) {

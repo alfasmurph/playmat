@@ -927,8 +927,13 @@ public class TableController {
      * and setups belong to the table it started at).
      */
     private boolean savable(GameOptions gameOptions) {
-        if (table.isTournament() || table.isTournamentSubTable() || gameOptions.setup != null
-                || CareerService.get().isCareerTable(table.getId())) {
+        if (table.isTournament() || table.isTournamentSubTable()) {
+            return false;
+        }
+        String careerKind = CareerService.get().kindOf(table.getId());
+        // Career: campaign stops and roster duels are saved (their setup is in the game by now); puzzles, trials and
+        // runs are short or start from a set position
+        if (careerKind != null ? !("campaign".equals(careerKind) || "duel".equals(careerKind)) : gameOptions.setup != null) {
             return false;
         }
         long humans = match.getPlayers().stream().filter(player -> player.getPlayer().isHuman()).count();
@@ -950,6 +955,14 @@ public class TableController {
         info.deckType = match.getOptions().getDeckType();
         info.turn = game.getTurnNum();
         info.savedAt = System.currentTimeMillis();
+        CareerService.CareerTable career = CareerService.get().tableOf(table.getId());
+        if (career != null) {
+            info.careerOpponentId = career.opponentId;
+            info.careerTier = career.tier;
+            info.careerKind = career.kind;
+            info.careerRef = career.ref;
+            info.careerSetup = career.setup;
+        }
         List<SavedGames.Seat> seats = new ArrayList<>();
         for (Seat seat : table.getSeats()) {
             Player player = seat.getPlayer();

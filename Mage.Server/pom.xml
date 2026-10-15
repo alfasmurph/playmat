@@ -466,6 +466,7 @@
                                 <class>mage.server.career.CareerCampaigns$CareerNode</class>
                                 <class>mage.server.career.CareerCampaigns$CareerReward</class>
                                 <class>mage.server.career.CareerCampaigns$CareerOption</class>
+                                <class>mage.server.career.CareerCampaigns$Upgrade</class>
                                 <class>mage.server.career.CareerSetup$CareerTwists</class>
                                 <class>mage.server.career.CareerSetup$CareerPuzzleSide</class>
                                 <class>mage.server.career.CareerPuzzles$CareerPuzzle</class>

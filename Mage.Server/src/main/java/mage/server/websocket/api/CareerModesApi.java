@@ -71,10 +71,10 @@ final class CareerModesApi {
                         .returns("DeckCardLists")
                         .doc("The list of the deck you play at a campaign duel, to read before it.")
                         .handler(call -> {
-                            CareerApi.career(ctx, call);
+                            String user = CareerApi.career(ctx, call);
                             String campaignId = call.string(0);
                             String nodeId = call.string(1);
-                            return plan(() -> CareerCampaigns.get().playerDeck(campaignId, nodeId));
+                            return plan(() -> CareerCampaigns.get().playerDeck(user, campaignId, nodeId));
                         }),
                 RpcMethod.named("careerCampaignChoose")
                         .params(of("campaignId", STRING), of("nodeId", STRING), of("optionId", STRING))

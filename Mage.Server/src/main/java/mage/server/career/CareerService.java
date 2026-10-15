@@ -298,6 +298,16 @@ public final class CareerService {
         return table == null ? null : table.kind;
     }
 
+    /** the Career table's registration, or null (saved with a game, to register its table again on resume) */
+    public CareerTable tableOf(UUID tableId) {
+        return tableId == null ? null : tables.get(tableId);
+    }
+
+    /** a saved Career game plays on at a new table: it pays and ends as the old one would have */
+    public void registerAgain(UUID tableId, String user, String opponentId, int tier, String kind, String ref, CareerSetup setup) {
+        tables.put(tableId, new CareerTable(user, opponentId, tier, kind, ref, setup));
+    }
+
     public boolean isCareerTable(UUID tableId) {
         return tableId != null && tables.containsKey(tableId);
     }

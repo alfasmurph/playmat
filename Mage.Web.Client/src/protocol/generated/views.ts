@@ -520,6 +520,7 @@ export interface CareerOption {
     id?: string;
     reward?: CareerReward;
     text?: string;
+    upgrade?: Upgrade;
 }
 
 export interface CareerPackResult {
@@ -1535,6 +1536,13 @@ export interface TournamentView extends Serializable {
     tournamentState?: string;
     tournamentType?: string;
     watchingAllowed?: boolean;
+}
+
+export interface Upgrade {
+    deck?: string;
+    in?: string[];
+    name?: string;
+    out?: string[];
 }
 
 export interface UserData extends Serializable {

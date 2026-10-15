@@ -64,6 +64,12 @@ public final class SavedGames {
         public int turn;
         public int life;
         public long savedAt;
+        /** a Career game (a campaign stop or a roster duel): what pays it when it ends, registered again on resume */
+        public String careerOpponentId;
+        public int careerTier;
+        public String careerKind;
+        public String careerRef;
+        public mage.game.GameSetup careerSetup;
     }
 
     /** A seat to fill again: whose it is, what kind of player, and the deck they brought. */

@@ -3,6 +3,7 @@ package mage.server.websocket.api;
 import mage.game.GameException;
 import mage.server.Session;
 import mage.server.TableController;
+import mage.server.career.CareerService;
 import mage.server.savedgame.SavedGameEntry;
 import mage.server.savedgame.SavedGames;
 import mage.server.util.PluginUtil;
@@ -83,6 +84,11 @@ final class SavedGameApi {
         try {
             TableView table = ctx.server.roomCreateTable(sessionId, roomId, saved.options);
             tableId = table.getTableId();
+            if (saved.info.careerKind != null) {
+                // a Career game pays and ends at its new table as it would have at the old one
+                CareerService.get().registerAgain(tableId, user, saved.info.careerOpponentId, saved.info.careerTier,
+                        saved.info.careerKind, saved.info.careerRef, (mage.server.career.CareerSetup) saved.info.careerSetup);
+            }
             Optional<TableController> controller = ctx.managers.tableManager().getController(tableId);
             if (!controller.isPresent()) {
                 throw new RpcException(RpcException.SERVER_ERROR, "The table couldn't be set up.");
@@ -121,6 +127,7 @@ final class SavedGameApi {
         if (tableId == null) {
             return;
         }
+        CareerService.get().forget(tableId);
         try {
             ctx.server.tableRemove(sessionId, roomId, tableId);
         } catch (Exception e) {
