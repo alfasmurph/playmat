@@ -18,6 +18,7 @@ export default {
 
   'career.starter.title': 'Choose your starter',
   'career.starter.lead': 'Its cards become your collection, and you get {coins} coins for a first pack.',
+  'career.starter.campaigns': "Here for a campaign? Any starter will do: The Commander's Road and the Academy hand you their own decks. Then open Campaign.",
   'career.starter.cards': { one: '{count} card', other: '{count} cards' },
   'career.starter.pick': 'Start with this deck',
   'career.starter.none': 'This server has no starter decks for Career.',

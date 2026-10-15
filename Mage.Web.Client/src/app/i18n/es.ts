@@ -542,6 +542,7 @@ const es: Catalog = {
   'career.intro.notNow': 'Ahora no',
 
   'career.starter.title': 'Elige tu mazo inicial',
+  'career.starter.campaigns': '¿Vienes por una campaña? Cualquier mazo inicial sirve: The Commander\'s Road y la Academia te dan sus propios mazos. Luego abre Campaña.',
   'career.starter.lead': 'Sus cartas forman tu colección y recibes {coins} monedas para un primer sobre.',
   'career.starter.cards': { one: '{count} carta', other: '{count} cartas' },
   'career.starter.pick': 'Empezar con este mazo',

@@ -120,6 +120,7 @@ function StarterPicker() {
         <div>
           <h1 className={styles.pageTitle}>{t('career.starter.title')}</h1>
           <p className={styles.lead}>{t('career.starter.lead', { coins: 100 })}</p>
+          <p className={styles.lead}>{t('career.starter.campaigns')}</p>
         </div>
         <ImportButton />
       </header>
