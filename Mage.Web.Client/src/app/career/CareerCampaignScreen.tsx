@@ -1,6 +1,6 @@
 import { BookOpen, Check, Crown, GraduationCap, Lightbulb, ListChecks, Lock, Puzzle, Signpost, Swords, Users } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import type { CareerCampaign, CareerChapter, CareerLesson, CareerNode, CareerOption } from '../../protocol/generated/views';
 import { api } from '../connection';
 import { registerMessages, useT } from '../i18n';
@@ -32,6 +32,15 @@ export function CareerCampaignScreen() {
   const state = useCareerState();
   const profile = state.data?.profile;
   const campaigns = useCampaigns(!!profile);
+  const stories = storiesOf(campaigns.data);
+  // one story at a time, each its own tab (?story=commander-road links to one); the last one opened comes back
+  const [params, setParams] = useSearchParams();
+  const wanted = params.get('story') ?? readStory();
+  const story = stories.find((campaign) => campaign.id === wanted) ?? stories[0];
+  const pick = (id: string) => {
+    writeStory(id);
+    setParams({ story: id }, { replace: true });
+  };
 
   if (state.isPending) return <p className={styles.note}>{t('career.loading')}</p>;
   if (!profile) return <Navigate to="/career" replace />;
@@ -42,11 +51,48 @@ export function CareerCampaignScreen() {
         {campaigns.isPending && <p className={styles.note}>{t('career.loading')}</p>}
         {campaigns.isError && <p className={styles.error} role="alert">{t('career.failed')}</p>}
         {campaigns.data?.length === 0 && <p className={styles.note}>{t('career.campaign.none')}</p>}
-        {storiesOf(campaigns.data).map((campaign) => <Campaign key={campaign.id} campaign={campaign} back={MODE_PATHS.campaign} />)}
+        {stories.length > 1 && (
+          <div className={styles.storyTabs} role="tablist" aria-label={t('career.campaign.stories')}>
+            {stories.map((campaign) => (
+              <button
+                key={campaign.id}
+                type="button"
+                role="tab"
+                aria-selected={campaign.id === story?.id}
+                className={[styles.chapterTab, campaign.id === story?.id ? styles.chapterTabOn : ''].join(' ')}
+                onClick={() => pick(campaign.id!)}
+              >
+                <span className={styles.chapterTabText}>
+                  <b>{campaign.name}</b>
+                  <small>{t('career.campaign.progress', { done: campaign.done ?? 0, total: campaign.total ?? 0 })}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {story && <Campaign key={story.id} campaign={story} back={MODE_PATHS.campaign} />}
         {schoolsOf(campaigns.data).length > 0 && <AcademyDoor schools={schoolsOf(campaigns.data)} />}
       </div>
     </div>
   );
+}
+
+const STORY_KEY = 'playmat.career.story';
+
+function readStory(): string | null {
+  try {
+    return localStorage.getItem(STORY_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeStory(id: string): void {
+  try {
+    localStorage.setItem(STORY_KEY, id);
+  } catch {
+    // the choice just isn't remembered
+  }
 }
 
 /** The way from the story to the format schools. */

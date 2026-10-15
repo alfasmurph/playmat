@@ -325,6 +325,14 @@
   font-size: var(--text-sm);
 }
 
+/* the story campaigns, one tab each (The Five Paths, The Commander's Road) */
+.storyTabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: var(--space-3);
+}
+
 .chapterTabs {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));

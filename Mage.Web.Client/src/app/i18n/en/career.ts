@@ -344,6 +344,7 @@ export default {
   'career.choice.taken': 'Taken',
   'career.choice.took': 'You took: {option}',
   'career.choice.in': 'In: {cards}',
+  'career.campaign.stories': 'Story campaigns',
   'career.choice.out': 'Out: {cards}',
   'career.choice.failed': "That couldn't be taken",
 
