@@ -40,6 +40,8 @@ export interface PlayerPlateProps {
   extrasBeside?: boolean;
   /** whose turn it is: the turn's steps ring this seat's avatar, and its number is printed by the name */
   turn?: PhaseRingProps | null;
+  /** a slim strip across the stage (yours, above the hand in the tall layout): name, life and extras in one line */
+  strip?: boolean;
 }
 
 const ROPE_TICK_MS = 250;
@@ -82,7 +84,7 @@ function useRopeSeconds(player: PlayerView): number {
 }
 
 /** A player's seat: who they are, their life, counters, floating mana and clock. */
-export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null }: PlayerPlateProps) {
+export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null, strip = false }: PlayerPlateProps) {
   const t = useT();
   const life = player.life ?? 0;
   // a player out of the game (lost, conceded or left: leaving loses) has no life worth showing, however low it went
@@ -168,6 +170,7 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
     <div
       className={[
         styles.plate,
+        strip ? styles.strip : '',
         isMe ? styles.mine : styles.theirs,
         targetable ? styles.targetable : '',
         selected ? styles.selected : '',

@@ -33,8 +33,7 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--space-6);
-  padding: 0 calc(var(--stitch-inset) + var(--space-5));
-  padding-top: var(--stitch-inset);
+  padding: 0 var(--space-5);
 }
 
 .brand {
@@ -179,7 +178,7 @@
   position: relative;
   z-index: 2;
   min-height: 0;
-  padding: var(--space-4) calc(var(--stitch-inset) + var(--space-5)) calc(var(--stitch-inset) + var(--space-5));
+  padding: var(--space-4) var(--space-5) var(--space-5);
   overflow: hidden;
 }
 
@@ -235,5 +234,55 @@
 
   .user > span:last-child {
     display: none;
+  }
+}
+
+/*
+ * a phone: every tab fits beside the tools. The mark gives way (Play is home), the labels set tighter, and Settings
+ * stays in the account menu only.
+ */
+@media (max-width: 520px) {
+  .rail {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    padding: 0 var(--space-4);
+  }
+
+  .brand,
+  .settings {
+    display: none;
+  }
+
+  .navItem {
+    padding: 8px 5px;
+    font-size: 15px;
+    letter-spacing: 0.03em;
+  }
+
+  .navItem::after {
+    left: 5px;
+    right: 5px;
+  }
+
+  .tools {
+    gap: 6px;
+  }
+
+  .main {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+}
+
+/* a narrow phone (360 wide): the labels set smaller still, so all five fit */
+@media (max-width: 379px) {
+  .navItem {
+    padding-inline: 4px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .navItem::after {
+    left: 4px;
+    right: 4px;
   }
 }

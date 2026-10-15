@@ -94,6 +94,11 @@
   position: absolute;
 }
 
+/* tall: your seat is a strip across the stage, above the hand */
+.myPlateStrip {
+  right: 24px;
+}
+
 /* the piles stand two by two in the seat column */
 .myPiles > *,
 .theirPiles > * {
@@ -102,7 +107,7 @@
   row-gap: 10px;
 }
 
-/* tall: they stand in a row in the band beside the seat */
+/* tall: they stand in a row: yours above your seat's strip, theirs beside their seat */
 :global([data-layout='tall']) .myPiles > *,
 :global([data-layout='tall']) .theirPiles > * {
   flex-wrap: nowrap;

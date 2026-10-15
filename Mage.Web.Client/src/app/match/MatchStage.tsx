@@ -406,7 +406,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
             {board.me && (
               <>
                 <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onTap={onTap} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
-                <div className={[styles.myPlate, layout.tall ? '' : styles.myPlateWide].join(' ')} style={layout.myPlate}>
+                <div className={[styles.myPlate, layout.tall ? styles.myPlateStrip : styles.myPlateWide].join(' ')} style={layout.myPlate}>
                   <PlayerPlate
                     player={board.me.player}
                     isMe={board.me.isMe}
@@ -420,6 +420,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                     onPay={onClick}
                     commanderDamage={damageTaken(board.me.player)}
                     extrasBeside={!layout.tall}
+                    strip={layout.tall}
                     turn={board.me.player.playerId === activeId ? turnRing : null}
                   />
                 </div>

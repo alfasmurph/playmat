@@ -6,13 +6,14 @@ export const STAGE_HEIGHT = 1080;
 /** Wider windows widen the stage (the battlefield grows) up to this; beyond it the mat fills the sides. */
 export const MAX_STAGE_WIDTH = 2640;
 /**
- * Portrait windows (a tablet held upright) get the tall layout: a narrower stage, 1080 wide, that grows downward
+ * Portrait windows (a tablet held upright, a phone) get the tall layout: a narrower stage, 1080 wide, that grows downward
  * with the window, between these heights. Both players' rows span its width; the seats and controls move to bands
  * above and below them.
  */
 export const TALL_STAGE_WIDTH = 1080;
 export const MIN_TALL_HEIGHT = 1440;
-export const MAX_TALL_HEIGHT = 1920;
+/** as tall as a 20:9 phone, so the stage fills a phone's screen */
+export const MAX_TALL_HEIGHT = 2400;
 
 export type StageLayout = 'wide' | 'tall';
 

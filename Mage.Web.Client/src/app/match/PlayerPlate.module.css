@@ -342,3 +342,38 @@
   text-transform: uppercase;
   color: var(--ink-faint);
 }
+
+/* a strip across the stage (your seat in the tall layout): avatar, name, life and extras in one line, as slim as the ring */
+.strip {
+  left: 0;
+  right: 0;
+  min-width: 0;
+  padding: 8px 22px 8px 36px;
+  gap: 20px;
+}
+
+.strip .info {
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: 22px;
+}
+
+.strip .name {
+  flex: none;
+  max-width: 330px;
+  font-size: 22px;
+}
+
+.strip .life {
+  font-size: 58px;
+}
+
+.strip .extras {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 14px;
+  margin-left: auto;
+}

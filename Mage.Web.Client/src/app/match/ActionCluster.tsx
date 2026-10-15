@@ -10,6 +10,7 @@ import { CardFace } from '../ui/CardFace';
 import { PromptText } from '../ui/PromptText';
 import './matchMessages';
 import { useMatchUi } from './matchUi';
+import { useStage } from './stageContext';
 import styles from './ActionCluster.module.css';
 
 export interface ActionClusterProps {
@@ -47,12 +48,16 @@ const PASS_AHEAD: { label: string; action: PlayerAction; key: string }[] = [
 
 const UNDO: PromptButton = { label: 'Undo tap', command: { type: 'action', action: 'UNDO' }, tone: 'secondary', shortcut: 'Ctrl+Z' };
 
+/** a question this short is printed on the main button in the tall layout; a longer one keeps its own line above */
+const CAPTION_MAX = 56;
+
 /** The decision corner: what the game is asking, and the one big button that answers it. */
 export function ActionCluster({
   interaction, awaiting, status, canAct, special, holdingPriority, autoPassing = false, fullControl = false, onFullControl, extra,
   stalled = false, onResend, onResync, conceding = null, cards = null, onCommand,
 }: ActionClusterProps) {
   const t = useT();
+  const tall = useStage().layout === 'tall';
   const openViewer = useMatchUi((state) => state.openViewer);
   const main = interaction.mainButton;
   const secondary = [...interaction.secondaryButtons];
@@ -123,10 +128,17 @@ export function ActionCluster({
   // every decision is asked here, next to its buttons, so the question never covers the cards it is about
   const headline = deciding ? interaction.headline : status ?? interaction.headline;
   const passAhead = canAct && (interaction.mode === 'priority' || interaction.mode === 'waiting');
+  // tall (a phone, a tablet held upright): a short question rides on the button that answers it, as a second line;
+  // its own line stays for screen readers
+  const caption = tall && headline && headline.length <= CAPTION_MAX && !autoPassing && (main || !deciding) ? headline : null;
 
   return (
     <section className={styles.cluster} aria-label="Your decision" aria-live="polite">
-      {headline && <p className={[styles.headline, deciding ? styles.deciding : ''].join(' ')}><PromptText text={headline} /></p>}
+      {headline && (
+        <p className={caption ? 'visually-hidden' : [styles.headline, deciding ? styles.deciding : ''].join(' ')}>
+          <PromptText text={headline} />
+        </p>
+      )}
       {fullControl && canAct && (
         <button type="button" className={styles.fullControl} onClick={() => onFullControl?.(false)} title="Turn full control off (Ctrl+Shift)">
           Full control
@@ -158,75 +170,82 @@ export function ActionCluster({
           </div>
         </div>
       )}
-      {(secondary.length > 0 || extra) && deciding && (
-        <div className={styles.secondary}>
-          {extra}
-          {secondary.map((button) => (
-            <Button
-              key={button.label}
-              variant={button.tone === 'danger' ? 'danger' : button.tone === 'attack' ? 'print' : 'print'}
-              size="md"
-              title={button.shortcut && button.shortcut !== 'Space' ? `${button.label} (${button.shortcut})` : undefined}
-              onClick={() => onCommand(button.command)}
-              className={button.tone === 'attack' ? styles.attack : undefined}
-            >
-              {button.label}
-            </Button>
-          ))}
-        </div>
-      )}
-      <div className={styles.mainRow}>
-        {passAhead && (
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger className={styles.ahead} aria-label="Pass ahead">
-              <ChevronUp size={20} />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className={styles.menu} side="top" align="end" sideOffset={8}>
-                {PASS_AHEAD.map((item) => (
-                  <DropdownMenu.Item key={item.action} className={styles.menuItem} onSelect={() => onCommand({ type: 'action', action: item.action })}>
-                    {item.label}<kbd>{item.key}</kbd>
-                  </DropdownMenu.Item>
-                ))}
-                <DropdownMenu.Separator className={styles.menuRule} />
-                <DropdownMenu.CheckboxItem
-                  className={styles.menuItem}
-                  checked={holdingPriority}
-                  onCheckedChange={(on) => onCommand({ type: 'action', action: on ? 'HOLD_PRIORITY' : 'UNHOLD_PRIORITY' })}
-                >
-                  Hold priority after casting
-                  <kbd>{holdingPriority ? 'On' : 'Off'}</kbd>
-                </DropdownMenu.CheckboxItem>
-                {onFullControl && (
+      {/* wide: the buttons stack over the main row; tall: they line up beside it, in the band at the seam */}
+      <div className={styles.actions}>
+        {(secondary.length > 0 || extra) && deciding && (
+          <div className={styles.secondary}>
+            {extra}
+            {secondary.map((button) => (
+              <Button
+                key={button.label}
+                variant={button.tone === 'danger' ? 'danger' : button.tone === 'attack' ? 'print' : 'print'}
+                size="md"
+                title={button.shortcut && button.shortcut !== 'Space' ? `${button.label} (${button.shortcut})` : undefined}
+                onClick={() => onCommand(button.command)}
+                className={button.tone === 'attack' ? styles.attack : undefined}
+              >
+                {button.label}
+              </Button>
+            ))}
+          </div>
+        )}
+        <div className={styles.mainRow}>
+          {passAhead && (
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger className={styles.ahead} aria-label="Pass ahead">
+                <ChevronUp size={20} />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content className={styles.menu} side="top" align="end" sideOffset={8}>
+                  {PASS_AHEAD.map((item) => (
+                    <DropdownMenu.Item key={item.action} className={styles.menuItem} onSelect={() => onCommand({ type: 'action', action: item.action })}>
+                      {item.label}<kbd>{item.key}</kbd>
+                    </DropdownMenu.Item>
+                  ))}
+                  <DropdownMenu.Separator className={styles.menuRule} />
                   <DropdownMenu.CheckboxItem
                     className={styles.menuItem}
-                    checked={fullControl}
-                    onCheckedChange={(on) => onFullControl(on)}
+                    checked={holdingPriority}
+                    onCheckedChange={(on) => onCommand({ type: 'action', action: on ? 'HOLD_PRIORITY' : 'UNHOLD_PRIORITY' })}
                   >
-                    Full control: stop at every step
-                    <kbd>Ctrl+Shift</kbd>
+                    Hold priority after casting
+                    <kbd>{holdingPriority ? 'On' : 'Off'}</kbd>
                   </DropdownMenu.CheckboxItem>
-                )}
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        )}
-        {autoPassing ? (
-          <div className={[styles.waiting, styles.passing].join(' ')} role="status">Passing</div>
-        ) : main && deciding ? (
-          <Button
-            variant="decision"
-            size="xl"
-            className={[styles.main, awaiting ? styles.sending : ''].join(' ')}
-            // while the last answer is on its way a click can't be taken (one answer per question): show it
-            aria-disabled={awaiting || undefined}
-            onClick={() => onCommand(main.command)}
-          >
-            {main.label}
-          </Button>
-        ) : deciding ? null : (
-          <div className={styles.waiting}>{awaiting ? 'Sending…' : 'Waiting'}</div>
-        )}
+                  {onFullControl && (
+                    <DropdownMenu.CheckboxItem
+                      className={styles.menuItem}
+                      checked={fullControl}
+                      onCheckedChange={(on) => onFullControl(on)}
+                    >
+                      Full control: stop at every step
+                      <kbd>Ctrl+Shift</kbd>
+                    </DropdownMenu.CheckboxItem>
+                  )}
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          )}
+          {autoPassing ? (
+            <div className={[styles.waiting, styles.passing].join(' ')} role="status">Passing</div>
+          ) : main && deciding ? (
+            <Button
+              variant="decision"
+              size="xl"
+              className={[styles.main, awaiting ? styles.sending : ''].join(' ')}
+              // while the last answer is on its way a click can't be taken (one answer per question): show it
+              aria-disabled={awaiting || undefined}
+              onClick={() => onCommand(main.command)}
+            >
+              {main.label}
+              {caption && <span className={styles.caption} aria-hidden="true"><PromptText text={caption} /></span>}
+            </Button>
+          ) : deciding ? null : (
+            <div className={styles.waiting}>
+              {awaiting ? 'Sending…' : 'Waiting'}
+              {caption && <span className={styles.caption} aria-hidden="true"><PromptText text={caption} /></span>}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

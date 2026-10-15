@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3) var(--space-5);
-  padding: calc(var(--stitch-inset) + var(--space-3)) calc(var(--stitch-inset) + var(--space-5)) var(--space-3);
+  padding: var(--space-3) var(--space-5) var(--space-3);
 }
 
 .hudLeft,
@@ -299,7 +299,7 @@
   position: relative;
   z-index: 2;
   min-height: 0;
-  padding: var(--space-2) calc(var(--stitch-inset) + var(--space-5)) calc(var(--stitch-inset) + var(--space-4));
+  padding: var(--space-2) var(--space-5) var(--space-4);
   overflow: hidden;
 }
 
@@ -319,11 +319,11 @@
 
 @media (max-width: 900px) {
   .hud {
-    padding-inline: calc(var(--stitch-inset) + var(--space-3));
+    padding-inline: var(--space-3);
   }
 
   .main {
-    padding-inline: calc(var(--stitch-inset) + var(--space-3));
+    padding-inline: var(--space-3);
     overflow: auto;
   }
 

@@ -17,7 +17,6 @@ import { useShellUi } from './stores/shellUi';
 import { Toaster } from './ui/Toaster';
 import { IconButton } from './ui/Button';
 import { Mark } from './ui/Mark';
-import { Stitch } from './ui/Stitch';
 import styles from './AppShell.module.css';
 
 const NAV: { to: string; label: MessageKey; end?: boolean }[] = [
@@ -103,7 +102,6 @@ export function AppShell() {
 
   return (
     <div className={[styles.mat, immersive ? styles.immersive : ''].join(' ')}>
-      <Stitch />
       {!immersive && (
         <header className={styles.rail}>
           <NavLink to="/" className={styles.brand} aria-label={t('shell.home', { app: APP_NAME })}>
@@ -131,7 +129,7 @@ export function AppShell() {
             )}
             <MaintenanceChip />
             <LobbyButton />
-            <IconButton label={t('shell.settings')} icon={<Settings size={18} />} onClick={() => setSettingsOpen(true)} />
+            <IconButton className={styles.settings} label={t('shell.settings')} icon={<Settings size={18} />} onClick={() => setSettingsOpen(true)} />
             <DropdownMenu.Root>
               <DropdownMenu.Trigger className={styles.user} aria-label={t('shell.account', { name: userName })}>
                 <Avatar name={userName} avatarId={avatarId} size="sm" />

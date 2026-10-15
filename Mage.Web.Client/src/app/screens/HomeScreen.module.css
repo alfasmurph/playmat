@@ -512,9 +512,12 @@
   }
 
   /* the shelf keeps to part of the screen and scrolls on its own, so the mat and PLAY are close under it */
+  /* the chosen deck stays in place here (DeckBox): the list needs no room beside it, only for its outline */
   .rosterList {
     flex: none;
     max-height: min(42vh, 380px);
+    margin-right: 0;
+    padding: 3px 3px 12px;
   }
 
   .mat {
@@ -527,10 +530,37 @@
   }
 }
 
-/* a phone: the mat and its play zone give their margins to the controls, and the table label sits above its choices */
+/*
+ * a phone: the mat and its play zone give their margins to the controls, and the table label sits above its choices.
+ * The deck's name is a short banner (the shelf above already shows its commander and size), so PLAY is near the top.
+ */
 @media (max-width: 520px) {
+  .rosterList {
+    max-height: min(32vh, 290px);
+  }
+
   .mat {
+    gap: var(--space-3);
     padding: var(--space-4);
+  }
+
+  .commander,
+  .deckNote {
+    display: none;
+  }
+
+  .deckTitle {
+    padding-bottom: 0;
+  }
+
+  .deckName {
+    max-width: none;
+    font-size: 1.75rem;
+  }
+
+  /* the zone's heading is a small label here: the PLAY button under it says the same */
+  .zoneLabel {
+    font-size: var(--text-lg);
   }
 
   .playZone {

@@ -21,10 +21,14 @@ describe('fitStage', () => {
     expect(ipad.scale).toBeCloseTo(768 / 1080);
     expect(fitStage(820, 1180)).toMatchObject({ layout: 'tall', height: 1554 });
     expect(fitStage(800, 1280)).toMatchObject({ layout: 'tall', height: 1728 });
-    // a phone's shape is clamped: the stage stays whole on screen
+    // a phone's stage is as tall as its screen, so nothing is left blank above or below it
     const phone = fitStage(390, 844);
-    expect(phone.height).toBe(MAX_TALL_HEIGHT);
-    expect(phone.scale * MAX_TALL_HEIGHT).toBeLessThanOrEqual(844);
+    expect(phone).toMatchObject({ layout: 'tall', height: 2337 });
+    expect(phone.scale * phone.height).toBeCloseTo(844, 0);
+    // a phone taller still is clamped: the stage stays whole on screen
+    const narrow = fitStage(360, 900);
+    expect(narrow.height).toBe(MAX_TALL_HEIGHT);
+    expect(narrow.scale * MAX_TALL_HEIGHT).toBeLessThanOrEqual(900);
   });
 });
 
@@ -70,7 +74,7 @@ describe('matchLayout', () => {
     expect(layout.theirPlate(2, 3).top + SEAT + 40).toBeLessThan(layout.myPiles.top);
   });
 
-  test.each([1440, 1554, 1728, 1920])('tall %i: top band, their rows, the turn, your rows, your band, the hand, in that order', (height) => {
+  test.each([1440, 1554, 1728, 1920, 2337, 2400])('tall %i: top band, their rows, the turn, your rows, your piles, your seat, the hand, in that order', (height) => {
     const layout = matchLayout({ layout: 'tall', width: 1080, height });
     const them = layout.them(0, 1);
     const me = layout.me;
@@ -81,7 +85,16 @@ describe('matchLayout', () => {
     expect(layout.seam - 35).toBeGreaterThan(them.frontTop + them.frontIdeal * CARD_RATIO);
     expect(layout.seam + 35).toBeLessThan(me.frontTop);
     expect(me.backTop).toBeGreaterThanOrEqual(me.frontTop + me.frontIdeal * CARD_RATIO);
-    expect(layout.myPlate.top).toBeGreaterThan(me.backTop + me.backIdeal * CARD_RATIO);
+    // the opponent's piles (about 191 tall, the commander's label included) end above their rows
+    expect(layout.theirPiles.top + 191).toBeLessThanOrEqual(them.backTop);
+    // the decision corner's main row (about 96 tall) stands at the seam, between the creature rows
+    expect(layout.seam - 48).toBeGreaterThan(them.frontTop + them.frontIdeal * CARD_RATIO);
+    expect(layout.seam + 48).toBeLessThan(me.frontTop);
+    // your piles in their own row under your rows; your seat, a strip about 112 tall, between them and the hand
+    expect(layout.myPiles.top).toBeGreaterThan(me.backTop + me.backIdeal * CARD_RATIO);
+    expect(layout.myPiles.left).toBe(layout.myPlate.left);
+    expect(layout.myPlate.top).toBeGreaterThanOrEqual(layout.myPiles.top + 191);
+    expect(layout.myPlate.top + 112).toBeLessThanOrEqual(height - 130 - layout.handRaise);
     expect(layout.playLine).toBeLessThan(height - 118 - layout.handRaise);
     expect(layout.handRaise).toBeGreaterThanOrEqual(0);
   });

@@ -1,7 +1,7 @@
 .stack {
   position: fixed;
-  right: calc(var(--stitch-inset) + var(--space-5));
-  bottom: calc(var(--stitch-inset) + var(--space-5));
+  right: var(--space-5);
+  bottom: var(--space-5);
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column;

@@ -14,8 +14,9 @@ export interface RowsPlacement {
 /**
  * The match's zones in stage pixels, for the stage's layout. Wide (a desktop, a tablet on its side): seats on the
  * left, a slim column on the right for the stack and the decision corner, the battlefield between. Tall (a tablet
- * held upright): both players' rows span the stage; the opponent's seat and piles are a band along the top, yours a
- * band above your hand at the bottom, and the stack sits between the two battlefields. The turn is printed around
+ * held upright, a phone): both players' rows span the stage; the opponent's seat and piles are a band along the top;
+ * your piles are a row under your rows, and your seat a slim strip under them, just above your hand. The stack and the
+ * decision corner share the band at the seam. The turn is printed around
  * the active seat's avatar in both.
  */
 export interface MatchLayout {
@@ -60,21 +61,30 @@ const SEAT_TOP = 24;
 /** the centre of the stack's top object, in the right column */
 const STACK_CENTER_Y = 250;
 
-/** The tall layout: margins, the bands above and below the battlefield, and the rows between them. */
+/**
+ * The tall layout, from the top: the opponent's seat and piles; their rows; a band at the seam for the stack and the
+ * decision corner; your rows; your piles in a row of their own; your seat, a slim strip; the hand.
+ */
 const TALL_MARGIN = 24;
-const TALL_TOP_BAND = 215;
-/** your seat, piles and decision corner, above the hand */
-const TALL_BOTTOM_BAND = 180;
+const TALL_TOP_BAND = 225;
+/** your piles (library, graveyard, exile, commander with its label) and your seat's strip, above the hand */
+const TALL_PILES = 192;
+const TALL_STRIP = 112;
+const TALL_BAND_GAP = 4;
 /** the hand's visible edge at the bottom of the stage */
 const TALL_HAND = 130;
 const TALL_ROW_GAP = 10;
-const TALL_FRONT_IDEAL = 140;
-const TALL_BACK_IDEAL = 104;
+const TALL_FRONT_IDEAL = 124;
+const TALL_BACK_IDEAL = 96;
 /** a taller window (a 16:10 tablet) shares its extra height between bigger rows and a higher hand */
 const TALL_EXTRA_FRONT = 0.12;
 const TALL_EXTRA_BACK = 0.09;
 const TALL_EXTRA_HAND = 0.4;
 const TALL_MAX_HAND_RAISE = 110;
+/** a phone, taller still: past this much extra, the rows grow by these shares and the seam's band takes the rest */
+const TALL_TABLET_EXTRA = 480;
+const TALL_PHONE_FRONT = 0.15;
+const TALL_PHONE_BACK = 0.11;
 const CARD_RATIO = 88 / 63;
 
 const cache = new Map<string, MatchLayout>();
@@ -143,13 +153,16 @@ function tallLayout(width: number, height: number): MatchLayout {
   const fieldLeft = TALL_MARGIN;
   const fieldWidth = width - 2 * TALL_MARGIN;
   const extra = Math.max(0, height - MIN_TALL_HEIGHT);
-  const frontIdeal = Math.round(TALL_FRONT_IDEAL + extra * TALL_EXTRA_FRONT);
-  const backIdeal = Math.round(TALL_BACK_IDEAL + extra * TALL_EXTRA_BACK);
+  const tablet = Math.min(extra, TALL_TABLET_EXTRA);
+  const phone = extra - tablet;
+  const frontIdeal = Math.round(TALL_FRONT_IDEAL + tablet * TALL_EXTRA_FRONT + phone * TALL_PHONE_FRONT);
+  const backIdeal = Math.round(TALL_BACK_IDEAL + tablet * TALL_EXTRA_BACK + phone * TALL_PHONE_BACK);
   const handRaise = Math.round(Math.min(TALL_MAX_HAND_RAISE, extra * TALL_EXTRA_HAND));
   const frontHeight = frontIdeal * CARD_RATIO;
   const backHeight = backIdeal * CARD_RATIO;
-  const bandTop = height - TALL_HAND - handRaise - TALL_BOTTOM_BAND;
-  const myBack = bandTop - TALL_ROW_GAP - backHeight;
+  const stripTop = height - TALL_HAND - handRaise - TALL_BAND_GAP - TALL_STRIP;
+  const pilesTop = stripTop - TALL_BAND_GAP - TALL_PILES;
+  const myBack = pilesTop - TALL_ROW_GAP - backHeight;
   const myFront = myBack - TALL_ROW_GAP - frontHeight;
   const theirBack = TALL_TOP_BAND;
   const theirFront = theirBack + backHeight + TALL_ROW_GAP;
@@ -170,11 +183,12 @@ function tallLayout(width: number, height: number): MatchLayout {
       backIdeal,
     }),
     seam,
-    playLine: bandTop,
-    myPlate: { left: TALL_MARGIN, top: bandTop + 20 },
-    myPiles: { left: 290, top: bandTop + 8 },
+    playLine: pilesTop,
+    // your seat is a strip across the stage just above the hand; your piles have the row above it to themselves
+    myPlate: { left: TALL_MARGIN, top: stripTop },
+    myPiles: { left: TALL_MARGIN, top: pilesTop },
     theirPlate: (index, count) => ({ left: fieldLeft + column(index, count), top: SEAT_TOP }),
-    theirPiles: { left: 290, top: 52 },
+    theirPiles: { left: 290, top: SEAT_TOP },
     hiddenHandX: (index, count) => (count === 1 ? width - 330 : fieldLeft + column(index + 1, count) - 120),
     stackPoint: { x: TALL_MARGIN + 95, y: seam - 168 },
     handRaise,
