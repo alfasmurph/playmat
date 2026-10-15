@@ -1,0 +1,6 @@
+# name: Creatures worth copying
+1 Mulldrifter
+1 Coiling Oracle
+1 Wood Elves
+1 Eternal Witness
+1 Avenger of Zendikar

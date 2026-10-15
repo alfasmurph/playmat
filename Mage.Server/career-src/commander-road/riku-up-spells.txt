@@ -1,0 +1,6 @@
+# name: Spells worth copying
+1 Counterspell
+1 Rite of Replication
+1 Mystic Confluence
+1 Growth Spiral
+1 Chaos Warp

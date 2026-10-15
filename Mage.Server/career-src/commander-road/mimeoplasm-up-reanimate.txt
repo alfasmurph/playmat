@@ -1,0 +1,6 @@
+# name: Raise the dead
+1 Animate Dead
+1 Reanimate
+1 Necromancy
+1 Victimize
+1 Dread Return

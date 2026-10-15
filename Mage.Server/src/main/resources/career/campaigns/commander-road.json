@@ -1,0 +1,1397 @@
+{
+  "id": "commander-road",
+  "name": "The Commander's Road",
+  "format": "Commander",
+  "colors": "WUBRG",
+  "summary": "Five classic Commander decks, five roads from a duel to a four-player table, and upgrades you pick on the way.",
+  "text": "Take a classic Commander deck on the road: two duels to learn it, two three-player pods to test it, and a four-player boss table to finish. At each fork you pick an upgrade pack that swaps five cards into your deck for the rest of the chapter. Beat the boss and the upgraded deck is yours. Start with any chapter.",
+  "deckType": "Variant Magic - Commander",
+  "gameType": "Commander Two Player Duel",
+  "chapters": [
+    {
+      "id": "ghave",
+      "name": "Counterpunch",
+      "color": "WBG",
+      "text": "Ghave, Guru of Spores: white, black and green. Make tokens, put counters on them, and sacrifice them when it counts.",
+      "deck": "commander-road/counterpunch.dck",
+      "deckName": "Counterpunch",
+      "unlockSet": "RAV",
+      "nodes": [
+        {
+          "id": "ghave-1",
+          "type": "duel",
+          "name": "Captain Ysolde Varr",
+          "text": "A drill captain whose soldiers march in lockstep and never break formation.",
+          "opponent": {
+            "name": "Captain Ysolde Varr",
+            "deck": "commander-road/forged-in-stone.dck",
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          },
+          "before": "Shields together. Let's see your mushrooms take a charge.",
+          "after": "My line held. Yours just kept growing back."
+        },
+        {
+          "id": "ghave-2",
+          "type": "duel",
+          "name": "Elder Fennick Rootsong",
+          "text": "An old elf-singer. Every song he sings brings another cousin out of the trees.",
+          "opponent": {
+            "name": "Elder Fennick Rootsong",
+            "deck": "commander-road/guided-by-nature.dck",
+            "skill": 4
+          },
+          "requires": [
+            "ghave-1"
+          ],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          },
+          "before": "The forest has more elves than you have spores, child.",
+          "after": "You fed my forest to your fungus. Rude, but it worked."
+        },
+        {
+          "id": "ghave-fork-1",
+          "type": "choice",
+          "name": "A fork in the road",
+          "text": "A trader at the crossroads offers three upgrade packs. The one you take stays in your deck for the rest of the chapter.",
+          "requires": [
+            "ghave-2"
+          ],
+          "options": [
+            {
+              "id": "tokens",
+              "text": "More tokens",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "More tokens",
+                "deck": "commander-road/ghave-up-tokens.dck",
+                "out": [
+                  "Spawnwrithe",
+                  "Sigil Captain",
+                  "Squallmonger",
+                  "Fists of Ironwood",
+                  "Monk Realist"
+                ]
+              }
+            },
+            {
+              "id": "removal",
+              "text": "Clean answers",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Clean answers",
+                "deck": "commander-road/ghave-up-removal.dck",
+                "out": [
+                  "Hex",
+                  "Nemesis Trap",
+                  "Soul Snare",
+                  "Death Mutation",
+                  "Vow of Malice"
+                ]
+              }
+            },
+            {
+              "id": "ramp",
+              "text": "Faster mana",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Faster mana",
+                "deck": "commander-road/ghave-up-ramp.dck",
+                "out": [
+                  "Darksteel Ingot",
+                  "Acorn Catapult",
+                  "Vow of Wildness",
+                  "Footbottom Feast",
+                  "Vow of Duty"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ghave-pod-1",
+          "type": "duel",
+          "name": "The Crossroads Inn",
+          "text": "Three seats by the fire: Brannoch's beasts and Sister Elowen's spirits.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Brannoch Thistlewood",
+            "deck": "commander-road/nature-of-the-beast.dck",
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Sister Elowen Grey",
+              "deck": "commander-road/call-the-spirits.dck",
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "ghave-fork-1"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          },
+          "before": "Pull up a chair. Everyone at this table gets eaten eventually.",
+          "after": "You made the table busy, then made it yours."
+        },
+        {
+          "id": "ghave-pod-2",
+          "type": "duel",
+          "name": "The Bone Market",
+          "text": "Tamsin raises the dead and Hollis brings the giants. Watch both.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Gravewarden Tamsin Hollow",
+            "deck": "commander-road/plunder-the-graves.dck",
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Warden Hollis Crane",
+              "deck": "commander-road/wade-into-battle.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "ghave-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          },
+          "before": "Bury whatever you like. I'll dig it up again.",
+          "after": "You kept your graveyard full and mine empty. Clever."
+        },
+        {
+          "id": "ghave-fork-2",
+          "type": "choice",
+          "name": "A second fork",
+          "text": "A second trader, further down the road. Three more packs; any of them works with the one you took before.",
+          "requires": [
+            "ghave-pod-2"
+          ],
+          "options": [
+            {
+              "id": "sacrifice",
+              "text": "Sacrifice engine",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Sacrifice engine",
+                "deck": "commander-road/ghave-up-sacrifice.dck",
+                "out": [
+                  "Celestial Force",
+                  "Teneb, the Harvester",
+                  "Aquastrand Spider",
+                  "Dark Hatchling",
+                  "Golgari Guildmage"
+                ]
+              }
+            },
+            {
+              "id": "cards",
+              "text": "More cards",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "More cards",
+                "deck": "commander-road/ghave-up-cards.dck",
+                "out": [
+                  "Celestial Force",
+                  "Teneb, the Harvester",
+                  "Aquastrand Spider",
+                  "Dark Hatchling",
+                  "Syphon Flesh"
+                ]
+              }
+            },
+            {
+              "id": "protection",
+              "text": "Hold the board",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Hold the board",
+                "deck": "commander-road/ghave-up-protection.dck",
+                "out": [
+                  "Celestial Force",
+                  "Teneb, the Harvester",
+                  "Golgari Guildmage",
+                  "Selesnya Guildmage",
+                  "Spike Feeder"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ghave-boss",
+          "type": "duel",
+          "name": "The Matriarch's Table",
+          "boss": true,
+          "text": "Four seats. Matriarch Seraphine starts at 50 life with an extra card; Professor Ignatz and the Twin Mayors play too.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Matriarch Seraphine Vole",
+            "deck": "commander-road/breed-lethality.dck",
+            "skill": 6,
+            "twists": {
+              "startingLife": 50,
+              "extraCards": 1
+            }
+          },
+          "opponents": [
+            {
+              "name": "Professor Ignatz Fell",
+              "deck": "commander-road/seize-control.dck",
+              "skill": 5
+            },
+            {
+              "name": "The Twin Mayors of Saltmere",
+              "deck": "commander-road/stalwart-unity.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "ghave-fork-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "deckCards": true,
+            "packs": 2,
+            "unlockSet": "RAV"
+          },
+          "before": "Counters, poison and patience. Sit, dear; this will take a while.",
+          "after": "So many little spores. I never counted them until it was too late."
+        }
+      ]
+    },
+    {
+      "id": "mimeoplasm",
+      "name": "Devour for Power",
+      "color": "UBG",
+      "text": "The Mimeoplasm: blue, black and green. Fill the graveyards, then become the best creature in them.",
+      "deck": "commander-road/devour-for-power.dck",
+      "deckName": "Devour for Power",
+      "unlockSet": "ISD",
+      "nodes": [
+        {
+          "id": "mimeoplasm-1",
+          "type": "duel",
+          "name": "Chronist Aldo Mere",
+          "text": "A timekeeper who answers every spell before it lands.",
+          "opponent": {
+            "name": "Chronist Aldo Mere",
+            "deck": "commander-road/peer-through-time.dck",
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          },
+          "before": "I've seen this game already. You lose on turn nine.",
+          "after": "Turn nine came and went. I must have misread the clock."
+        },
+        {
+          "id": "mimeoplasm-2",
+          "type": "duel",
+          "name": "Lady Morvenna Black",
+          "text": "A lady of the old houses who drains a little life from every guest.",
+          "opponent": {
+            "name": "Lady Morvenna Black",
+            "deck": "commander-road/sworn-to-darkness.dck",
+            "skill": 4
+          },
+          "requires": [
+            "mimeoplasm-1"
+          ],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          },
+          "before": "Every friend who falls feeds me. Do bring friends.",
+          "after": "You ate my dead before I could. How very rude."
+        },
+        {
+          "id": "mimeoplasm-fork-1",
+          "type": "choice",
+          "name": "A fork in the road",
+          "text": "A trader at the crossroads offers three upgrade packs. The one you take stays in your deck for the rest of the chapter.",
+          "requires": [
+            "mimeoplasm-2"
+          ],
+          "options": [
+            {
+              "id": "mill",
+              "text": "Fill the graveyard",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Fill the graveyard",
+                "deck": "commander-road/mimeoplasm-up-mill.dck",
+                "out": [
+                  "Memory Erosion",
+                  "Shared Trauma",
+                  "Riddlekeeper",
+                  "Dreamborn Muse",
+                  "Vow of Flight"
+                ]
+              }
+            },
+            {
+              "id": "reanimate",
+              "text": "Raise the dead",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Raise the dead",
+                "deck": "commander-road/mimeoplasm-up-reanimate.dck",
+                "out": [
+                  "Stitch Together",
+                  "Patron of the Nezumi",
+                  "Sewer Nemesis",
+                  "Vow of Malice",
+                  "Unnerve"
+                ]
+              }
+            },
+            {
+              "id": "removal",
+              "text": "Clean answers",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Clean answers",
+                "deck": "commander-road/mimeoplasm-up-removal.dck",
+                "out": [
+                  "Spell Crumple",
+                  "Unnerve",
+                  "Vow of Wildness",
+                  "Syphon Flesh",
+                  "Shared Trauma"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mimeoplasm-pod-1",
+          "type": "duel",
+          "name": "The Tinker's Barn",
+          "text": "Kesh grows giant beasts; Maglo builds machines and breaks them for parts.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Brood-Tender Kesh",
+            "deck": "commander-road/swell-the-host.dck",
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Tinker Maglo Rust",
+              "deck": "commander-road/built-from-scratch.dck",
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "mimeoplasm-fork-1"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          },
+          "before": "My babies get bigger every turn. Yours just get deader.",
+          "after": "You copied my biggest baby. I'm almost flattered."
+        },
+        {
+          "id": "mimeoplasm-pod-2",
+          "type": "duel",
+          "name": "The Thieves' Gallery",
+          "text": "Sable Quill steals your best cards. Dagny just attacks.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Sable Quill",
+            "deck": "commander-road/mind-seize.dck",
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Warlord Dagny Strand",
+              "deck": "commander-road/open-hostility.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "mimeoplasm-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          },
+          "before": "Lovely graveyard. I'll take that, and that.",
+          "after": "I stole your cards and you stole from the dead. Fair enough."
+        },
+        {
+          "id": "mimeoplasm-fork-2",
+          "type": "choice",
+          "name": "A second fork",
+          "text": "A second trader, further down the road. Three more packs; any of them works with the one you took before.",
+          "requires": [
+            "mimeoplasm-pod-2"
+          ],
+          "options": [
+            {
+              "id": "bodies",
+              "text": "Bodies worth becoming",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Bodies worth becoming",
+                "deck": "commander-road/mimeoplasm-up-bodies.dck",
+                "out": [
+                  "Desecrator Hag",
+                  "Slipstream Eel",
+                  "Scythe Specter",
+                  "Szadek, Lord of Secrets",
+                  "Wrexial, the Risen Deep"
+                ]
+              }
+            },
+            {
+              "id": "cards",
+              "text": "More cards",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "More cards",
+                "deck": "commander-road/mimeoplasm-up-cards.dck",
+                "out": [
+                  "Desecrator Hag",
+                  "Slipstream Eel",
+                  "Extractor Demon",
+                  "Nezumi Graverobber",
+                  "Dark Hatchling"
+                ]
+              }
+            },
+            {
+              "id": "ramp",
+              "text": "Faster mana",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Faster mana",
+                "deck": "commander-road/mimeoplasm-up-ramp.dck",
+                "out": [
+                  "Scythe Specter",
+                  "Szadek, Lord of Secrets",
+                  "Vorosh, the Hunter",
+                  "Wrexial, the Risen Deep",
+                  "Vulturous Zombie"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "mimeoplasm-boss",
+          "type": "duel",
+          "name": "The Unraveller's Table",
+          "boss": true,
+          "text": "Orrin starts at 50 life with an extra card, and every big spell brings another free. Teodric's birds and Elowen's spirits share the table.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Orrin Vey the Unraveller",
+            "deck": "commander-road/entropic-uprising.dck",
+            "skill": 6,
+            "twists": {
+              "startingLife": 50,
+              "extraCards": 1
+            }
+          },
+          "opponents": [
+            {
+              "name": "Wingmaster Teodric",
+              "deck": "commander-road/evasive-maneuvers.dck",
+              "skill": 5
+            },
+            {
+              "name": "Sister Elowen Grey",
+              "deck": "commander-road/call-the-spirits.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "mimeoplasm-fork-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "deckCards": true,
+            "packs": 2,
+            "unlockSet": "ISD"
+          },
+          "before": "Every spell I cast brings another for free. Can your dead keep up?",
+          "after": "I unravelled the table, and you rebuilt yourself from the scraps."
+        }
+      ]
+    },
+    {
+      "id": "kaalia",
+      "name": "Heavenly Inferno",
+      "color": "WBR",
+      "text": "Kaalia of the Vast: white, black and red. Get Kaalia attacking and angels, demons and dragons arrive with her, already swinging.",
+      "deck": "commander-road/heavenly-inferno.dck",
+      "deckName": "Heavenly Inferno",
+      "unlockSet": "AVR",
+      "nodes": [
+        {
+          "id": "kaalia-1",
+          "type": "duel",
+          "name": "Tinker Maglo Rust",
+          "text": "A goblin scrapper who turns broken artifacts into iron dragons.",
+          "opponent": {
+            "name": "Tinker Maglo Rust",
+            "deck": "commander-road/built-from-scratch.dck",
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          },
+          "before": "Scrap in, metal out. Your angels look like good scrap.",
+          "after": "Fine, fine. I'll go build something with more wings."
+        },
+        {
+          "id": "kaalia-2",
+          "type": "duel",
+          "name": "Wingmaster Teodric",
+          "text": "A falconer whose birds own the sky and tap your blockers out of the way.",
+          "opponent": {
+            "name": "Wingmaster Teodric",
+            "deck": "commander-road/evasive-maneuvers.dck",
+            "skill": 4
+          },
+          "requires": [
+            "kaalia-1"
+          ],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          },
+          "before": "My birds fly higher than your angels. Look up.",
+          "after": "The sky's crowded now, and your angels own it."
+        },
+        {
+          "id": "kaalia-fork-1",
+          "type": "choice",
+          "name": "A fork in the road",
+          "text": "A trader at the crossroads offers three upgrade packs. The one you take stays in your deck for the rest of the chapter.",
+          "requires": [
+            "kaalia-2"
+          ],
+          "options": [
+            {
+              "id": "angels",
+              "text": "Angels",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Angels",
+                "deck": "commander-road/kaalia-up-angels.dck",
+                "out": [
+                  "Shattered Angel",
+                  "Lightkeeper of Emeria",
+                  "Voice of All",
+                  "Archangel of Strife",
+                  "Righteous Cause"
+                ]
+              }
+            },
+            {
+              "id": "demons",
+              "text": "Demons",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Demons",
+                "deck": "commander-road/kaalia-up-demons.dck",
+                "out": [
+                  "Razorjaw Oni",
+                  "Oni of Wild Places",
+                  "Dread Cacodemon",
+                  "Oros, the Avenger",
+                  "Righteous Cause"
+                ]
+              }
+            },
+            {
+              "id": "dragons",
+              "text": "Dragons",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Dragons",
+                "deck": "commander-road/kaalia-up-dragons.dck",
+                "out": [
+                  "Dragon Whelp",
+                  "Furnace Whelp",
+                  "Mana-Charged Dragon",
+                  "Oros, the Avenger",
+                  "Archangel of Strife"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "kaalia-pod-1",
+          "type": "duel",
+          "name": "The Burned Chapel",
+          "text": "Morvenna drains the table; Fennick floods it with elves.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Lady Morvenna Black",
+            "deck": "commander-road/sworn-to-darkness.dck",
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Elder Fennick Rootsong",
+              "deck": "commander-road/guided-by-nature.dck",
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "kaalia-fork-1"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          },
+          "before": "A chapel, a demon, an angel. How fitting.",
+          "after": "Your demons were hungrier than mine."
+        },
+        {
+          "id": "kaalia-pod-2",
+          "type": "duel",
+          "name": "The Old Keep",
+          "text": "Hollis brings giants; Aldo brings counterspells. Bait one out before Kaalia attacks.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Warden Hollis Crane",
+            "deck": "commander-road/wade-into-battle.dck",
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Chronist Aldo Mere",
+              "deck": "commander-road/peer-through-time.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "kaalia-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          },
+          "before": "The gates are shut. Nobody gets in on my watch.",
+          "after": "Nobody got in. They came down from the sky instead."
+        },
+        {
+          "id": "kaalia-fork-2",
+          "type": "choice",
+          "name": "A second fork",
+          "text": "A second trader, further down the road. Three more packs; any of them works with the one you took before.",
+          "requires": [
+            "kaalia-pod-2"
+          ],
+          "options": [
+            {
+              "id": "removal",
+              "text": "Clean answers",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Clean answers",
+                "deck": "commander-road/kaalia-up-removal.dck",
+                "out": [
+                  "Orim's Thunder",
+                  "Cleansing Beam",
+                  "Stranglehold",
+                  "Soul Snare",
+                  "Vow of Malice"
+                ]
+              }
+            },
+            {
+              "id": "ramp",
+              "text": "Faster mana",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Faster mana",
+                "deck": "commander-road/kaalia-up-ramp.dck",
+                "out": [
+                  "Darksteel Ingot",
+                  "Vow of Lightning",
+                  "Vow of Duty",
+                  "Congregate",
+                  "Anger"
+                ]
+              }
+            },
+            {
+              "id": "protection",
+              "text": "Keep Kaalia alive",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Keep Kaalia alive",
+                "deck": "commander-road/kaalia-up-protection.dck",
+                "out": [
+                  "Orim's Thunder",
+                  "Syphon Flesh",
+                  "Syphon Mind",
+                  "Bathe in Light",
+                  "Anger"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "kaalia-boss",
+          "type": "duel",
+          "name": "The Kindler's Table",
+          "boss": true,
+          "text": "Grisk starts at 50 life with an extra card and an army of insects to burn. Tamsin and Kesh play too.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Grisk the Kindler",
+            "deck": "commander-road/power-hungry.dck",
+            "skill": 6,
+            "twists": {
+              "startingLife": 50,
+              "extraCards": 1
+            }
+          },
+          "opponents": [
+            {
+              "name": "Gravewarden Tamsin Hollow",
+              "deck": "commander-road/plunder-the-graves.dck",
+              "skill": 5
+            },
+            {
+              "name": "Brood-Tender Kesh",
+              "deck": "commander-road/swell-the-host.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "kaalia-fork-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "deckCards": true,
+            "packs": 2,
+            "unlockSet": "AVR"
+          },
+          "before": "Everything burns. Insects first, then you.",
+          "after": "Your angels put out the fire. I'll find another."
+        }
+      ]
+    },
+    {
+      "id": "riku",
+      "name": "Mirror Mastery",
+      "color": "URG",
+      "text": "Riku of Two Reflections: blue, red and green. Every good spell and creature you cast can come twice.",
+      "deck": "commander-road/mirror-mastery.dck",
+      "deckName": "Mirror Mastery",
+      "unlockSet": "RTR",
+      "nodes": [
+        {
+          "id": "riku-1",
+          "type": "duel",
+          "name": "Sister Elowen Grey",
+          "text": "A quiet nun whose spirits gather with every enchantment she lays.",
+          "opponent": {
+            "name": "Sister Elowen Grey",
+            "deck": "commander-road/call-the-spirits.dck",
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          },
+          "before": "Every spirit I call is a friend. Have you any?",
+          "after": "Two of everything. I should have called more spirits."
+        },
+        {
+          "id": "riku-2",
+          "type": "duel",
+          "name": "Professor Ignatz Fell",
+          "text": "A spell-slinger whose spells get cheaper the more he casts.",
+          "opponent": {
+            "name": "Professor Ignatz Fell",
+            "deck": "commander-road/seize-control.dck",
+            "skill": 4
+          },
+          "requires": [
+            "riku-1"
+          ],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          },
+          "before": "Lesson one: the instant is mightier than the creature.",
+          "after": "Lesson two, apparently: two instants beat one."
+        },
+        {
+          "id": "riku-fork-1",
+          "type": "choice",
+          "name": "A fork in the road",
+          "text": "A trader at the crossroads offers three upgrade packs. The one you take stays in your deck for the rest of the chapter.",
+          "requires": [
+            "riku-2"
+          ],
+          "options": [
+            {
+              "id": "creatures",
+              "text": "Creatures worth copying",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Creatures worth copying",
+                "deck": "commander-road/riku-up-creatures.dck",
+                "out": [
+                  "Elvish Aberration",
+                  "Deadwood Treefolk",
+                  "Valley Rannet",
+                  "Chartooth Cougar",
+                  "Trench Gorger"
+                ]
+              }
+            },
+            {
+              "id": "spells",
+              "text": "Spells worth copying",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Spells worth copying",
+                "deck": "commander-road/riku-up-spells.dck",
+                "out": [
+                  "Colossal Might",
+                  "Invigorate",
+                  "Hunting Pack",
+                  "Vow of Flight",
+                  "Spell Crumple"
+                ]
+              }
+            },
+            {
+              "id": "ramp",
+              "text": "Faster mana",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Faster mana",
+                "deck": "commander-road/riku-up-ramp.dck",
+                "out": [
+                  "Elvish Aberration",
+                  "Vow of Wildness",
+                  "Prophetic Prism",
+                  "Chartooth Cougar",
+                  "Valley Rannet"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "riku-pod-1",
+          "type": "duel",
+          "name": "The Smithy",
+          "text": "Ysolde's soldiers carry swords; Sable Quill takes your cards. Choose which to fear.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Captain Ysolde Varr",
+            "deck": "commander-road/forged-in-stone.dck",
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Sable Quill",
+              "deck": "commander-road/mind-seize.dck",
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "riku-fork-1"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          },
+          "before": "Formation! The mirror-mage goes first.",
+          "after": "You copied my best soldier. My armourer is furious."
+        },
+        {
+          "id": "riku-pod-2",
+          "type": "duel",
+          "name": "The Mayors' Hall",
+          "text": "The Mayors give everyone cards and land; Morvenna takes life. Use the gifts.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "The Twin Mayors of Saltmere",
+            "deck": "commander-road/stalwart-unity.dck",
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Lady Morvenna Black",
+              "deck": "commander-road/sworn-to-darkness.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "riku-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          },
+          "before": "Welcome! Draw a card, play a land, and please, no fighting.",
+          "after": "You took our gifts twice over. We admire efficiency."
+        },
+        {
+          "id": "riku-fork-2",
+          "type": "choice",
+          "name": "A second fork",
+          "text": "A second trader, further down the road. Three more packs; any of them works with the one you took before.",
+          "requires": [
+            "riku-pod-2"
+          ],
+          "options": [
+            {
+              "id": "finishers",
+              "text": "Big finishers",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Big finishers",
+                "deck": "commander-road/riku-up-finishers.dck",
+                "out": [
+                  "Rapacious One",
+                  "Nucklavee",
+                  "Avatar of Fury",
+                  "Faultgrinder",
+                  "Hull Breach"
+                ]
+              }
+            },
+            {
+              "id": "cards",
+              "text": "More cards",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "More cards",
+                "deck": "commander-road/riku-up-cards.dck",
+                "out": [
+                  "Ray of Command",
+                  "Rapacious One",
+                  "Aethersnipe",
+                  "Magus of the Vineyard",
+                  "Death by Dragons"
+                ]
+              }
+            },
+            {
+              "id": "removal",
+              "text": "Clean answers",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Clean answers",
+                "deck": "commander-road/riku-up-removal.dck",
+                "out": [
+                  "Death by Dragons",
+                  "Hull Breach",
+                  "Vow of Lightning",
+                  "Nucklavee",
+                  "Faultgrinder"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "riku-boss",
+          "type": "duel",
+          "name": "The Abbess's Table",
+          "boss": true,
+          "text": "Corvina starts at 50 life with an extra card and gains more every turn. Dagny attacks; Brannoch builds an army.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Abbess Corvina Hale",
+            "deck": "commander-road/eternal-bargain.dck",
+            "skill": 6,
+            "twists": {
+              "startingLife": 50,
+              "extraCards": 1
+            }
+          },
+          "opponents": [
+            {
+              "name": "Warlord Dagny Strand",
+              "deck": "commander-road/open-hostility.dck",
+              "skill": 5
+            },
+            {
+              "name": "Brannoch Thistlewood",
+              "deck": "commander-road/nature-of-the-beast.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "riku-fork-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "deckCards": true,
+            "packs": 2,
+            "unlockSet": "RTR"
+          },
+          "before": "I gain, you drain. Let's see who tires first.",
+          "after": "You doubled everything, even my losses. Well played."
+        }
+      ]
+    },
+    {
+      "id": "zedruu",
+      "name": "Political Puppets",
+      "color": "WUR",
+      "text": "Zedruu the Greathearted: blue, red and white. Give away what you don't want, draw for it, and let the table fight among itself.",
+      "deck": "commander-road/political-puppets.dck",
+      "deckName": "Political Puppets",
+      "unlockSet": "CNS",
+      "nodes": [
+        {
+          "id": "zedruu-1",
+          "type": "duel",
+          "name": "Elder Fennick Rootsong",
+          "text": "Fennick's elves fill the board fast. Slow them down.",
+          "opponent": {
+            "name": "Elder Fennick Rootsong",
+            "deck": "commander-road/guided-by-nature.dck",
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          },
+          "before": "Gifts? Elves don't need gifts. Elves need more elves.",
+          "after": "You gave me your worst cards and I thanked you. Clever."
+        },
+        {
+          "id": "zedruu-2",
+          "type": "duel",
+          "name": "Warden Hollis Crane",
+          "text": "A giant-tamer whose army never stops to rest.",
+          "opponent": {
+            "name": "Warden Hollis Crane",
+            "deck": "commander-road/wade-into-battle.dck",
+            "skill": 4
+          },
+          "requires": [
+            "zedruu-1"
+          ],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          },
+          "before": "My giants don't stop for walls.",
+          "after": "They stopped for yours. I'll need taller giants."
+        },
+        {
+          "id": "zedruu-fork-1",
+          "type": "choice",
+          "name": "A fork in the road",
+          "text": "A trader at the crossroads offers three upgrade packs. The one you take stays in your deck for the rest of the chapter.",
+          "requires": [
+            "zedruu-2"
+          ],
+          "options": [
+            {
+              "id": "gifts",
+              "text": "Poisoned gifts",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Poisoned gifts",
+                "deck": "commander-road/zedruu-up-gifts.dck",
+                "out": [
+                  "Scattering Stroke",
+                  "Skyscribing",
+                  "Breath of Darigaaz",
+                  "Whirlpool Whelm",
+                  "Pollen Lullaby"
+                ]
+              }
+            },
+            {
+              "id": "control",
+              "text": "Control the table",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "Control the table",
+                "deck": "commander-road/zedruu-up-control.dck",
+                "out": [
+                  "Scattering Stroke",
+                  "Punishing Fire",
+                  "Lash Out",
+                  "Wild Ricochet",
+                  "Spell Crumple"
+                ]
+              }
+            },
+            {
+              "id": "cards",
+              "text": "More cards",
+              "reward": {
+                "wildcard": "uncommon"
+              },
+              "upgrade": {
+                "name": "More cards",
+                "deck": "commander-road/zedruu-up-cards.dck",
+                "out": [
+                  "Skyscribing",
+                  "Murmurs from Beyond",
+                  "Perilous Research",
+                  "Pollen Lullaby",
+                  "Whirlpool Whelm"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "zedruu-pod-1",
+          "type": "duel",
+          "name": "The Insect Feast",
+          "text": "Grisk swarms the table; Ysolde arms her soldiers. Keep them busy with each other.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Grisk the Kindler",
+            "deck": "commander-road/power-hungry.dck",
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Captain Ysolde Varr",
+              "deck": "commander-road/forged-in-stone.dck",
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "zedruu-fork-1"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          },
+          "before": "A feast! Who's bringing the insects? Oh, me.",
+          "after": "You fed the soldiers to me and me to the soldiers."
+        },
+        {
+          "id": "zedruu-pod-2",
+          "type": "duel",
+          "name": "The Abbey Garden",
+          "text": "Corvina gains life; Brannoch grows beasts. Be the least scary seat.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Abbess Corvina Hale",
+            "deck": "commander-road/eternal-bargain.dck",
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Brannoch Thistlewood",
+              "deck": "commander-road/nature-of-the-beast.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "zedruu-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          },
+          "before": "Peace and quiet, please. Nobody needs to attack anybody.",
+          "after": "You barely attacked, and you still won. I respect that."
+        },
+        {
+          "id": "zedruu-fork-2",
+          "type": "choice",
+          "name": "A second fork",
+          "text": "A second trader, further down the road. Three more packs; any of them works with the one you took before.",
+          "requires": [
+            "zedruu-pod-2"
+          ],
+          "options": [
+            {
+              "id": "fort",
+              "text": "Pillow fort",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Pillow fort",
+                "deck": "commander-road/zedruu-up-fort.dck",
+                "out": [
+                  "Gomazoa",
+                  "Guard Gomazoa",
+                  "Fog Bank",
+                  "Plumeveil",
+                  "Chromeshell Crab"
+                ]
+              }
+            },
+            {
+              "id": "ramp",
+              "text": "Faster mana",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Faster mana",
+                "deck": "commander-road/zedruu-up-ramp.dck",
+                "out": [
+                  "Darksteel Ingot",
+                  "Goblin Cadets",
+                  "Jotun Grunt",
+                  "Ruhan of the Fomori",
+                  "Spurnmage Advocate"
+                ]
+              }
+            },
+            {
+              "id": "finishers",
+              "text": "Big finishers",
+              "reward": {
+                "wildcard": "rare"
+              },
+              "upgrade": {
+                "name": "Big finishers",
+                "deck": "commander-road/zedruu-up-finishers.dck",
+                "out": [
+                  "Arbiter of Knollridge",
+                  "False Prophet",
+                  "Crescendo of War",
+                  "Oblation",
+                  "Champion's Helm"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "zedruu-boss",
+          "type": "duel",
+          "name": "The Artificer's Table",
+          "boss": true,
+          "text": "Calla starts at 50 life with an extra card and a workshop of artifacts. Seraphine and Orrin take the other seats.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Artificer Calla Brightwire",
+            "deck": "commander-road/invent-superiority.dck",
+            "skill": 6,
+            "twists": {
+              "startingLife": 50,
+              "extraCards": 1
+            }
+          },
+          "opponents": [
+            {
+              "name": "Matriarch Seraphine Vole",
+              "deck": "commander-road/breed-lethality.dck",
+              "skill": 5
+            },
+            {
+              "name": "Orrin Vey the Unraveller",
+              "deck": "commander-road/entropic-uprising.dck",
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "zedruu-fork-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "deckCards": true,
+            "packs": 2,
+            "unlockSet": "CNS"
+          },
+          "before": "Thopters, cannons, a little nudge here and there. Shall we begin?",
+          "after": "You gave my machines away one by one. Generous to the last."
+        }
+      ]
+    }
+  ]
+}

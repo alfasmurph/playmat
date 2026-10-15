@@ -1,0 +1,6 @@
+# name: Control the table
+1 Counterspell
+1 Swords to Plowshares
+1 Supreme Verdict
+1 Cyclonic Rift
+1 Arcane Denial

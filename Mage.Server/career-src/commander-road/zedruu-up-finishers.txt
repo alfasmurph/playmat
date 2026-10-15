@@ -1,0 +1,6 @@
+# name: Big finishers
+1 Sun Titan
+1 Consecrated Sphinx
+1 Inferno Titan
+1 Hellkite Tyrant
+1 Elspeth, Sun's Champion

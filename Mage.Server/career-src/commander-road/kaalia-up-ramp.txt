@@ -1,0 +1,6 @@
+# name: Faster mana
+1 Arcane Signet
+1 Talisman of Conviction
+1 Talisman of Hierarchy
+1 Talisman of Indulgence
+1 Mind Stone

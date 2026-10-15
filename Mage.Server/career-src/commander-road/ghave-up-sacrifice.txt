@@ -1,0 +1,6 @@
+# name: Sacrifice engine
+1 Blood Artist
+1 Zulaport Cutthroat
+1 Ashnod's Altar
+1 Viscera Seer
+1 Bastion of Remembrance
