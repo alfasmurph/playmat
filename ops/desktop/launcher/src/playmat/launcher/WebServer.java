@@ -67,6 +67,12 @@ final class WebServer {
             + "<p class=\"s\">The first start prepares the card database and takes a few minutes. "
             + "This page opens the game by itself when it's ready.</p></div></body></html>";
 
+    private static final String CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            + "img-src 'self' data: blob: https://*.scryfall.io https://api.scryfall.com https://upload.wikimedia.org; "
+            + "font-src 'self' data:; media-src 'self' blob: data:; "
+            + "connect-src 'self' ws: wss: https://api.scryfall.com https://*.scryfall.io; "
+            + "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:; manifest-src 'self'";
+
     private final Path root;
     private final BooleanSupplier gameServerReady;
     private HttpServer server;
@@ -163,6 +169,12 @@ final class WebServer {
         headers.set("Cache-Control", cache);
         headers.set("X-Content-Type-Options", "nosniff");
         headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+        // the client may be published to the internet (Tailscale Funnel): no other site can frame it, and the page
+        // loads code only from here and talks only to here (the game connection, ws: on a LAN, wss: through a
+        // tunnel) and to Scryfall, as the hosted deployment's Caddyfile does
+        headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+        headers.set("X-Frame-Options", "DENY");
+        headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
         boolean head = "HEAD".equals(exchange.getRequestMethod());
         exchange.sendResponseHeaders(status, head ? -1 : body.length);
         if (!head) {
