@@ -67,6 +67,18 @@ public class WebSocketCallbackHandler implements AsynchInvokerCallbackHandler {
     /** diffs, writes and sends the game messages of clients with patches (see {@link SerialSender}) */
     private final Executor sender;
 
+    /** The close code for a connection whose user signed in on another connection (the client stops reconnecting). */
+    public static final int CLOSE_SIGNED_IN_ELSEWHERE = 4001;
+
+    /** A newer login of this user took over: close, saying why when it was another device or tab. */
+    public void closeReplaced(boolean signedInElsewhere) {
+        if (signedInElsewhere) {
+            conn.close(CLOSE_SIGNED_IN_ELSEWHERE, "Signed in elsewhere");
+        } else {
+            conn.close(1000, "Reconnected");
+        }
+    }
+
     public WebSocketCallbackHandler(WebSocket conn) {
         this(conn, new GameStates());
     }

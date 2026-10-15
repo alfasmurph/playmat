@@ -73,11 +73,20 @@ export interface PlaySettings {
    * drawn SVG and CSS art (local only) */
   paintedArt: boolean;
   /** the back of hidden cards: one of Playmat's designs, or the original Magic back loaded from Scryfall like card
-   * pictures (a Career sleeve's back still wins; local only) */
+   * pictures, for decks without sleeves (a sleeved deck shows its sleeve; local only) */
   cardBack: CardBackId;
+  /** the player picked the back themselves: kept when the default changes (local only) */
+  cardBackPicked?: boolean;
 }
 
 const SETTINGS_KEY = 'playmat.settings';
+
+/** Saved settings, with a back nobody picked following the current default (it was a painted design, now classic). */
+function loadSettings(): PlaySettings {
+  const saved = readJson<Partial<PlaySettings>>(SETTINGS_KEY, {});
+  if (!saved.cardBackPicked) delete saved.cardBack;
+  return { ...DEFAULT_SETTINGS, ...saved };
+}
 
 /** Arena-like: the game moves on by itself whenever the player has no real decision. */
 export const STREAMLINED: Partial<PlaySettings> = {
@@ -170,7 +179,7 @@ export function toUserData(settings: PlaySettings, fullControl = false): UserDat
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({
-  settings: { ...DEFAULT_SETTINGS, ...readJson<Partial<PlaySettings>>(SETTINGS_KEY, {}) },
+  settings: loadSettings(),
   fullControl: false,
 
   setFullControl(on) {
@@ -180,7 +189,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   },
 
   update(patch) {
-    const settings = { ...get().settings, ...patch };
+    const settings = { ...get().settings, ...patch, ...('cardBack' in patch && !('cardBackPicked' in patch) ? { cardBackPicked: true } : {}) };
     writeJson(SETTINGS_KEY, settings);
     set({ settings });
     void get().syncToServer();

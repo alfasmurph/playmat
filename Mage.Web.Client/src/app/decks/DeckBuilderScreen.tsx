@@ -85,7 +85,7 @@ function DeckLoader({ deckId, newFormat }: { deckId: string; newFormat: string }
       }
       if (deckId.startsWith(STARTER_PREFIX)) {
         if (!useDecks.getState().loaded) await useDecks.getState().refresh();
-        const { id } = await useDecks.getState().loadForPlay(deckId);
+        const { id } = await useDecks.getState().loadForPlay(deckId, { editing: true });
         if (!cancelled) navigate(`/decks/${id}`, { replace: true });
         return;
       }

@@ -123,6 +123,19 @@ describe('session store', () => {
     expect(fake.api.serverGetMainRoomId).toHaveBeenCalledTimes(1);
   });
 
+  test('signed in elsewhere: waits signed in, without reconnecting, until the player plays here again', async () => {
+    const { useSession, fake } = await load();
+    await useSession.getState().signIn(SERVER, 'alice', 'secret');
+    fake.rpc.signInElsewhere();
+    expect(useSession.getState()).toMatchObject({ phase: 'signedIn', elsewhere: true, connection: 'closed', error: null });
+    expect(fake.api.connectUser).toHaveBeenCalledTimes(1);
+
+    await useSession.getState().useHere();
+    await vi.waitFor(() => expect(useSession.getState().loginCount).toBe(2));
+    expect(fake.api.connectUser).toHaveBeenCalledTimes(2);
+    expect(useSession.getState()).toMatchObject({ phase: 'signedIn', elsewhere: false, connection: 'open' });
+  });
+
   test('a call the server turns away for want of a session signs out', async () => {
     const { useSession, fake } = await load();
     await useSession.getState().signIn(SERVER, 'alice', '');

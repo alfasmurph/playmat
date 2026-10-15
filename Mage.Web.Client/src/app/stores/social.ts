@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { api } from '../connection';
 import { readJson, writeJson } from './persist';
 import { useSession } from './session';
+import { notify } from './toasts';
 
 /**
  * Friends and ignored players, kept in this browser per server (names are only unique per server). The server learns
@@ -72,7 +73,20 @@ export const useSocial = create<SocialState>((set, get) => {
       change({ friends: [...get().friends, trimmed], ignored: isIgnored(get(), trimmed) ? without(get().ignored, trimmed) : undefined });
     },
     removeFriend(name) {
-      if (isFriend(get(), name)) change({ friends: without(get().friends, name) });
+      if (!isFriend(get(), name)) return;
+      const at = get().friends.findIndex((friend) => same(friend, name));
+      const removed = get().friends[at];
+      change({ friends: without(get().friends, name) });
+      // one tap removes, so the toast offers it back, in the same place on the list
+      notify('Removed from friends', `${removed} is off your friends list. Only you keep this list; they can still play.`, 'info', {
+        label: 'Undo',
+        run: () => {
+          if (isFriend(get(), removed)) return;
+          const friends = [...get().friends];
+          friends.splice(Math.min(at, friends.length), 0, removed);
+          change({ friends, ignored: isIgnored(get(), removed) ? without(get().ignored, removed) : undefined });
+        },
+      });
     },
     ignore(name) {
       const trimmed = name.trim();

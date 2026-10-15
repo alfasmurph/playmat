@@ -12,12 +12,13 @@ import { deckStorage } from '../../core/decks/DeckStorageService';
 import { applyUpdate } from '../../core/deckImport/diff';
 import { t as translate, useT } from '../i18n';
 import { RichText } from '../i18n/RichText';
-import { SLEEVE_COLORS, rosterOf, sleeveFor, useDecks, type RosterDeck } from '../stores/decks';
+import { SLEEVE_COLORS, chosenSleeve, rosterOf, sleeveFor, useDecks, type RosterDeck } from '../stores/decks';
 import { useDeckSyncStatus } from '../stores/deckSyncStatus';
 import { useSession } from '../stores/session';
 import { useSettings } from '../stores/settings';
 import { openImport, useImportSheet } from '../stores/importSheet';
 import { Button, IconButton } from '../ui/Button';
+import { cardBackImage } from '../ui/cardBack';
 import { DeckBox } from '../ui/DeckBox';
 import { Dialog } from '../ui/Dialog';
 import { Field } from '../ui/Field';
@@ -53,6 +54,7 @@ export function DecksScreen() {
   };
   const arrivedId = useImportSheet((state) => state.arrivedId);
   const career = useSettings((state) => state.settings.careerOptIn);
+  const cardBack = useSettings((state) => state.settings.cardBack);
   const navigate = useNavigate();
   const degraded = useDegradedSites();
   const { dragging, dropProps } = useImportDrop();
@@ -173,12 +175,22 @@ export function DecksScreen() {
             <div>
               <h3 className={styles.subLabel}>{t('decks.sleeves')}</h3>
               <div className={styles.sleeves} role="radiogroup" aria-label={t('decks.sleeveColor')}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!chosenSleeve(decks.sleeves, selected.id)}
+                  aria-label={t('decks.noSleeve')}
+                  title={t('decks.noSleeve')}
+                  className={[styles.swatch, styles.unsleeved].join(' ')}
+                  style={{ backgroundImage: `url(${cardBackImage(cardBack)})` }}
+                  onClick={() => decks.setSleeve(selected.id, null)}
+                />
                 {SLEEVE_COLORS.map((color) => (
                   <button
                     key={color}
                     type="button"
                     role="radio"
-                    aria-checked={sleeveFor(decks.sleeves, selected) === color}
+                    aria-checked={chosenSleeve(decks.sleeves, selected.id) === color}
                     aria-label={t('decks.sleeve', { color })}
                     className={styles.swatch}
                     style={{ background: color }}
@@ -187,7 +199,7 @@ export function DecksScreen() {
                 ))}
                 {career && (
                   <Suspense fallback={null}>
-                    <CareerSleeves current={sleeveFor(decks.sleeves, selected)} swatchClass={styles.swatch} onPick={(color) => decks.setSleeve(selected.id, color)} />
+                    <CareerSleeves current={chosenSleeve(decks.sleeves, selected.id) ?? ''} swatchClass={styles.swatch} onPick={(color) => decks.setSleeve(selected.id, color)} />
                   </Suspense>
                 )}
               </div>

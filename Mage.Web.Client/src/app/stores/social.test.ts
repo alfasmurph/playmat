@@ -17,6 +17,22 @@ beforeEach(() => {
 });
 
 describe('social store', () => {
+  test('removing a friend offers Undo, which puts them back where they were', async () => {
+    const { useSession, useSocial } = await load();
+    const { useToasts } = await import('./toasts');
+    useSession.setState({ userName: 'me', serverUrl: SERVER });
+    for (const name of ['Alice', 'Raypist', 'Bob']) useSocial.getState().addFriend(name);
+
+    useSocial.getState().removeFriend('raypist');
+    expect(useSocial.getState().friends).toEqual(['Alice', 'Bob']);
+    const toast = useToasts.getState().toasts.at(-1);
+    expect(toast?.message).toContain('Raypist');
+    expect(toast?.action?.label).toBe('Undo');
+
+    toast?.action?.run();
+    expect(useSocial.getState().friends).toEqual(['Alice', 'Raypist', 'Bob']);
+  });
+
   test('keeps friends and ignored players apart, case-insensitively, and never lists yourself', async () => {
     const { useSession, useSocial, isFriend, isIgnored } = await load();
     useSession.setState({ userName: 'me', serverUrl: SERVER });

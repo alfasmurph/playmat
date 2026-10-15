@@ -12,7 +12,11 @@ export const CARD_BACKS = [
 
 export type CardBackId = (typeof CARD_BACKS)[number] | 'classic';
 
-export const DEFAULT_CARD_BACK: CardBackId = 'stitch-hand';
+/** Unsleeved decks show the real Magic back, like a deck on a kitchen table. */
+export const DEFAULT_CARD_BACK: CardBackId = 'classic';
+
+/** The painted design an unknown saved id falls back to. */
+const FALLBACK_PAINTED = 'stitch-hand';
 
 /** The original Magic card back as Scryfall serves it (its default card_back_id), through the image proxy if any. */
 export const CLASSIC_BACK = proxiedScryfallUrl(
@@ -23,15 +27,22 @@ export const CLASSIC_BACK = proxiedScryfallUrl(
 /** The picture of a card back choice (whatever the painted-art setting). */
 export function cardBackImage(id: CardBackId): string {
   if (id === 'classic') return CLASSIC_BACK;
-  return `/card-back/${(CARD_BACKS as readonly string[]).includes(id) ? id : DEFAULT_CARD_BACK}.webp`;
+  return `/card-back/${(CARD_BACKS as readonly string[]).includes(id) ? id : FALLBACK_PAINTED}.webp`;
 }
 
+/** What a hidden card shows: a picture, the sleeve's own dye, or (null) the printed weave. */
+export type BackLook = { art: string } | { dye: string } | null;
+
 /**
- * The picture on a hidden card: a Career sleeve's own back wins, then the chosen back (the classic one always, a
- * painted one only with painted art on). Null means the printed weave.
+ * The back of a hidden card. A sleeved deck shows its sleeve: a Career sleeve's painted back (painted art on), else
+ * the sleeve's dye. An unsleeved deck shows the chosen back (the classic one always, a painted one only with painted
+ * art on; null is the printed weave).
  */
-export function cardBackOf(sleeveBack: string | null, { paintedArt, back }: { paintedArt: boolean; back: CardBackId }): string | null {
-  if (paintedArt && sleeveBack) return sleeveBack;
-  if (back === 'classic') return CLASSIC_BACK;
-  return paintedArt ? cardBackImage(back) : null;
+export function cardBackOf(
+  sleeve: { color: string; back: string | null } | null,
+  { paintedArt, back }: { paintedArt: boolean; back: CardBackId },
+): BackLook {
+  if (sleeve) return paintedArt && sleeve.back ? { art: sleeve.back } : { dye: sleeve.color };
+  if (back === 'classic') return { art: CLASSIC_BACK };
+  return paintedArt ? { art: cardBackImage(back) } : null;
 }

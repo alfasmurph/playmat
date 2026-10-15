@@ -14,6 +14,7 @@ import mage.server.admin.RuntimeSettings;
 import mage.server.game.GamesRoom;
 import mage.server.managers.ConfigSettings;
 import mage.server.managers.ManagerFactory;
+import mage.server.websocket.WebSocketCallbackHandler;
 import mage.util.RandomUtil;
 import mage.util.ThreadUtils;
 import mage.utils.SystemUtil;
@@ -106,6 +107,26 @@ public class Session {
         // inject custom thread pool instead buggy jboss's
         if (ASYNC_MESSAGES) {
             setupAsyncSendingPool(callbackHandler);
+        }
+    }
+
+    /**
+     * The connection this login replaced gets nothing more (the user's messages come here now), but its session lived on:
+     * it could still make calls as the user, and when it dropped later it marked the user offline under the new
+     * connection. End it, without touching the user, and close a web connection with the reason, so a client signed
+     * in elsewhere says so instead of quietly signing back in and pushing this one out in turn.
+     */
+    private void endReplacedSession(String replacedSessionId, boolean signedInElsewhere) {
+        if (replacedSessionId == null || replacedSessionId.isEmpty() || replacedSessionId.equals(sessionId)) {
+            return;
+        }
+        Session replaced = managerFactory.sessionManager().getSession(replacedSessionId).orElse(null);
+        if (replaced == null) {
+            return;
+        }
+        managerFactory.sessionManager().disconnect(replacedSessionId, DisconnectReason.AnotherUserInstanceSilent, false);
+        if (replaced.callbackHandler instanceof WebSocketCallbackHandler) {
+            ((WebSocketCallbackHandler) replaced.callbackHandler).closeReplaced(signedInElsewhere);
         }
     }
 
@@ -477,7 +498,9 @@ public class Session {
                             reason = DisconnectReason.AnotherUserInstanceSilent;
                         }
 
+                        String replacedSessionId = anotherUser.getSessionId();
                         managerFactory.userManager().disconnect(anotherUser.getId(), reason);
+                        endReplacedSession(replacedSessionId, canDisconnectAuthDueAnotherInstance && !canDisconnectAnyDueSessionRestore);
                     }
                     isReconnection = true;
                     newUser = anotherUser;

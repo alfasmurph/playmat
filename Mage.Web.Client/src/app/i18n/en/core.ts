@@ -23,6 +23,9 @@ export default {
   'shell.feedback': 'Send feedback',
   'shell.about': 'About and credits',
   'shell.signOut': 'Sign out',
+  'session.elsewhere.title': 'Playing somewhere else',
+  'session.elsewhere.note': '{name} signed in on another device or tab, so this one stepped aside. Your games and tables went along.',
+  'session.elsewhere.useHere': 'Play here instead',
 
   // sign-in
   'login.title.sit': 'Take a seat',
@@ -184,6 +187,7 @@ export default {
   'decks.sleeves': 'Sleeves',
   'decks.sleeveColor': 'Sleeve color',
   'decks.sleeve': 'Sleeve {color}',
+  'decks.noSleeve': 'No sleeves: hidden cards show the card back from Settings',
   'decks.copyAndEdit': 'Copy and edit',
   'decks.edit': 'Edit deck',
   'decks.duplicate': 'Duplicate',

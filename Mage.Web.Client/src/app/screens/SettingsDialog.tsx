@@ -47,7 +47,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   return (
     <Dialog open={open} onOpenChange={onOpenChange} title={t('settings.title')} width="lg"
       footer={(
-        <Button variant="quiet" onClick={() => update({ ...DEFAULT_SETTINGS, avatarId: settings.avatarId, flag: settings.flag, locale: settings.locale, matCloth: settings.matCloth, matArt: settings.matArt, matCard: settings.matCard, cardBack: settings.cardBack })}>
+        <Button variant="quiet" onClick={() => update({ ...DEFAULT_SETTINGS, avatarId: settings.avatarId, flag: settings.flag, locale: settings.locale, matCloth: settings.matCloth, matArt: settings.matArt, matCard: settings.matCard, cardBack: settings.cardBack, cardBackPicked: settings.cardBackPicked })}>
           {t('settings.restore')}
         </Button>
       )}>
@@ -419,7 +419,7 @@ function PlaymatSettings() {
         <div className={styles.rowLabel} id={`${listId}-backs`}>{t('settings.playmat.back')}</div>
         <div className={styles.rowDetail}>{t('settings.playmat.back.detail')}</div>
         <div className={styles.backGrid} role="radiogroup" aria-labelledby={`${listId}-backs`}>
-          {([...CARD_BACKS, 'classic'] as CardBackId[]).map((id) => {
+          {(['classic', ...CARD_BACKS] as CardBackId[]).map((id) => {
             const label = t(`settings.playmat.back.${id}` as MessageKey);
             return (
               <button

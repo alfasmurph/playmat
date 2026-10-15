@@ -105,7 +105,7 @@
   font-size: max(9px, 9cqi);
 }
 
-/* card back: no WotC back, our own printed weave */
+/* card back with painted art off and a painted back chosen: our own printed weave */
 .back {
   position: absolute;
   inset: 0;
@@ -115,6 +115,15 @@
     repeating-linear-gradient(-45deg, rgb(var(--ink-rgb) / 0.06) 0 6px, transparent 6px 12px),
     linear-gradient(180deg, var(--mat-600), var(--mat-900));
   box-shadow: inset 0 0 0 3px rgb(var(--ink-rgb) / 0.15);
+}
+
+/* an opaque sleeve in the deck's dye: the matte back of a real sleeve, a soft sheen across it */
+.back[data-dye] {
+  background:
+    linear-gradient(155deg, rgb(var(--gloss-rgb) / 0.16), transparent 34%, transparent 66%, rgb(var(--shade-rgb) / 0.28)),
+    radial-gradient(120% 80% at 30% 15%, rgb(var(--gloss-rgb) / 0.08), transparent 60%),
+    var(--sleeve);
+  box-shadow: inset 0 0 0 1px rgb(var(--gloss-rgb) / 0.06);
 }
 
 /* a picture back: a Career sleeve's, Playmat's or the classic one (the weave shows through while it loads) */

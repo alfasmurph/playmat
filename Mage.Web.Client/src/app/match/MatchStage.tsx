@@ -15,7 +15,7 @@ import { matchProgress } from '../../core/game/matchProgress';
 import { pregameChoice } from '../../core/game/pregame';
 import { offBoardTargets } from '../../core/game/offBoardTargets';
 import type { CardView, ChatMessage, GameView, PlayerView } from '../../protocol/generated/views';
-import { rosterOf, sleeveFor, SLEEVE_COLORS, useDecks } from '../stores/decks';
+import { chosenSleeve, rosterOf, SLEEVE_COLORS, useDecks } from '../stores/decks';
 import { useT } from '../i18n';
 import { useEvents } from '../stores/events';
 import { useGames } from '../stores/games';
@@ -24,6 +24,7 @@ import { useSettings } from '../stores/settings';
 import { notify } from '../stores/toasts';
 import { Button } from '../ui/Button';
 import { CardFace } from '../ui/CardFace';
+import { SleevedContext } from '../ui/sleeveArt';
 import { Dialog } from '../ui/Dialog';
 import { MatPrint } from '../ui/MatPrint';
 import { SettingsDialog } from '../screens/SettingsDialog';
@@ -103,18 +104,25 @@ function combatSets(combat: GameView['combat']) {
   return { attacking, blocking, links, attacks };
 }
 
+/**
+ * The rims in play: my deck's sleeves (or a plain rim when it's unsleeved, its backs then the chosen card back) and a
+ * different dye for opponents so their cards read as theirs at a glance. `chosen` is set only for a sleeved deck.
+ */
 function useSleeves() {
-  const deckId = usePlay((state) => state.deckId);
+  const playingId = useDecks((state) => state.playingId);
+  const aiDeckId = usePlay((state) => state.deckId);
   const sleeves = useDecks((state) => state.sleeves);
   const saved = useDecks((state) => state.saved);
   const starters = useDecks((state) => state.starters);
+  const shared = useDecks((state) => state.shared);
+  const deckId = playingId ?? aiDeckId;
   return useMemo(() => {
-    const deck = rosterOf({ saved, starters }).find((candidate) => candidate.id === deckId);
-    const mine = sleeveFor(sleeves, deck);
-    // opponents' sleeves must read as "theirs" at a glance
-    const theirs = SLEEVE_COLORS.find((color) => color !== mine && color !== SLEEVE_COLORS[0]) ?? SLEEVE_COLORS[2];
-    return { mine, theirs, cover: deck?.cover ?? null };
-  }, [deckId, sleeves, saved, starters]);
+    const deck = rosterOf({ saved, starters, shared }).find((candidate) => candidate.id === deckId);
+    const chosen = chosenSleeve(sleeves, deckId);
+    const mine = chosen ?? 'var(--sleeve-default)';
+    const theirs = SLEEVE_COLORS.find((color) => color !== chosen && color !== SLEEVE_COLORS[0]) ?? SLEEVE_COLORS[2];
+    return { mine, theirs, chosen, cover: deck?.cover ?? null };
+  }, [deckId, sleeves, saved, starters, shared]);
 }
 
 export interface MatchStageProps {
@@ -374,241 +382,243 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   } : null), [activeId, view?.step, view?.turn, view?.activePlayerName, spectating, myId]);
 
   return (
-    <Stage style={matStyle}>
-      {(stage) => {
-        // the stage widens with the window and the field takes the extra width; a portrait window gets the tall layout
-        const layout = matchLayout(stage);
-        // your seat and piles: in the seat column (wide), or one row above the hand (tall)
-        const myPlate = board.me && (
-          <PlayerPlate
-            player={board.me.player}
-            isMe={board.me.isMe}
-            sleeve={sleeves.mine}
-            targetable={clickable.has(board.me.player.playerId!)}
-            selected={interaction.selected.has(board.me.player.playerId!)}
-            deciding={canAct && interaction.mode !== 'waiting'}
-            onClick={() => onClick(board.me!.player.playerId!)}
-            toPay={canAct && !awaitingServer ? payment?.cost : null}
-            payable={canAct ? clickable : undefined}
-            onPay={onClick}
-            commanderDamage={damageTaken(board.me.player)}
-            extrasBeside={!layout.tall}
-            bare={layout.tall}
-            handSize={hand.length}
-            onViewHand={bigHand ? () => setHandList(true) : undefined}
-            turn={board.me.player.playerId === activeId ? turnRing : null}
-          />
-        );
-        const myPiles = board.me && (
-          <Piles
-            player={board.me.player}
-            sleeve={sleeves.mine}
-            isMe={board.me.isMe}
-            commanders={myId ? commanders.get(myId) : undefined}
-            clickable={canAct ? clickable : undefined}
-            onTap={onTap}
-            libraryTop={board.me.isMe ? libraryTop : null}
-          />
-        );
-        return (
-          <div
-            className={styles.layout}
-            style={{ ['--seam' as string]: `${layout.seam}px`, ['--hand-raise' as string]: `${layout.handRaise}px`, ['--right-column' as string]: `${layout.rightColumn}px` }}
-          >
-            <div className={styles.mat} aria-hidden="true" />
-            {/* each half carries its player's deck art, printed faintly into the mat */}
-            <div className={styles.printTheirs}><MatPrint card={opponentArt} /></div>
-            <div className={styles.printMine}><MatPrint card={myArt} /></div>
-            <div className={styles.seam} aria-hidden="true" />
-
-            {board.opponents.map((opponent, index) => (
-              <OpponentSide
-                key={opponent.player.playerId}
-                board={opponent}
-                index={index}
-                count={board.opponents.length}
-                sleeve={sleeves.theirs}
-                handCount={opponent.player.handCount ?? 0}
-                clickable={clickable}
-                selected={interaction.selected}
-                quiet={EMPTY}
-                attacking={attacking}
-                targeting={targeting}
-                blocking={blocking}
-                onClick={onClick}
-                onTap={onTap}
-                deciding={!!opponent.player.hasPriority && interaction.mode === 'waiting'}
-                layout={layout}
-                commanders={commanders.get(opponent.player.playerId!) ?? NO_COMMANDERS}
-                commanderDamage={damageTaken(opponent.player)}
-                outOfRange={!inRange(view, myId, opponent.player.playerId!)}
-                turn={opponent.player.playerId === activeId ? turnRing : null}
-              />
-            ))}
-
-            {board.me && (
-              <>
-                <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onTap={onTap} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
-                {layout.tall ? (
-                  // tall: your piles and your seat share the row above the hand
-                  <div className={styles.myBand} style={layout.myPiles}>
-                    <div className={styles.myBandPiles}>
-                      {myPiles}
-                    </div>
-                    <div className={styles.myBandSeat}>
-                      {myPlate}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className={[styles.myPlate, styles.myPlateWide].join(' ')} style={layout.myPlate}>
-                      {myPlate}
-                    </div>
-                    <div className={styles.myPiles} style={layout.myPiles}>
-                      {myPiles}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-
-            <Reveals looks={looks} myPlayerId={myId} opponentIds={opponentIds} />
-            <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} onTap={onTap} originOf={originOf} />
-
-            {board.me && seatHand && (
-              <Hand
-                cards={seatHand.cards}
-                faceDown={seatHand.faceDown}
-                label={`${board.me.player.name ?? 'Player'}'s hand`}
-                clickable={EMPTY}
-                selected={EMPTY}
-                sleeve={sleeves.mine}
-                onPlay={ignore}
-                playLine={0}
-                libraryOrigin={`library:${board.me.player.playerId}`}
-              />
-            )}
-            {board.me && !handHidden && mode === 'play' && (
-              <Hand
-                cards={hand}
-                choosing={choosingInHand}
-                clickable={pickerCards ? EMPTY : clickable}
-                selected={interaction.selected}
-                sleeve={sleeves.mine}
-                onPlay={onClick}
-                onTap={onTap}
-                playLine={layout.playLine}
-                libraryOrigin={`library:${board.me.player.playerId}`}
-              />
-            )}
-
-            {mode === 'play' ? (
-              !overlayOpen && <ActionCluster
-                interaction={cornerInteraction}
-                awaiting={awaitingServer}
-                status={state.status}
-                canAct={canAct}
-                special={!!view?.special}
-                holdingPriority={holding}
-                autoPassing={!!autoPassing}
-                extra={prompt?.kind === 'ask' ? <AlwaysAnswerMenu gameId={state.gameId} prompt={prompt} onCommand={onCommand} /> : undefined}
-                fullControl={fullControl}
-                onFullControl={setFullControl}
-                stalled={state.stalled}
-                conceding={state.conceding ? { waitingOn: priorityName } : null}
-                cards={askCards}
-                onResend={onResend}
-                onResync={onResync}
-                onCommand={onCommand}
-              />
-            ) : (
-              <SpectatorBar session={session} state={state} onLeave={leave} />
-            )}
-
-            {damageSplit && canAct && !awaitingServer && <DamageAssigner split={damageSplit} />}
-            {defenders && <DefenderPicker attacker={attackerName} options={defenders} onPick={onClick} />}
-            <Vfx view={view} myPlayerId={myId} />
-            <Arrows sourceId={arrowSource} targetIds={arrowTargets} live={choosingTargets} links={links} attacks={attacks} />
-            <EmoteBubbles view={view} />
-            {mode === 'play' && <Coach view={view ?? null} mode={choosingStarter ? 'panel' : interaction.mode} awaiting={awaitingServer} gameOver={!!state.gameOver} />}
-            {mode === 'play' && <LessonCoach gameId={state.gameId} view={view ?? null} mode={choosingStarter ? 'panel' : interaction.mode} awaiting={awaitingServer} gameOver={!!state.gameOver} />}
-            <GameLog gameId={state.gameId} notices={state.notices} canChat={mode !== 'replay'} view={view} replayLog={replayLog} delayMs={state.broadcastDelayMs} />
-            {mode === 'watch' && !view && state.broadcastDelayMs > 0 && (
-              <p className={styles.delayNote} role="status">
-                The table appears in {delayLabel(Math.round(state.broadcastDelayMs / 1000))}: the broadcast delay holds the game back.
-              </p>
-            )}
-            {mode === 'play' && <WatcherCount watchers={watchers} className={styles.watchers} />}
-            <GameMenu
-              gameId={state.gameId}
-              practice={mode === 'play' && !state.gameOver && !career && board.opponents.length > 0 && board.opponents.every((opponent) => opponent.player.isHuman === false)}
-              canConcede={canAct}
-              onConcede={() => onCommand({ type: 'action', action: 'CONCEDE' })}
-              onLeave={leave}
-              rollback={canAct && !!view?.rollbackTurnsAllowed && (view?.turn ?? 0) > 0
-                ? { ready: interaction.mode === 'priority' && !awaitingServer, request: () => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: 0 }) }
-                : null}
+    <SleevedContext.Provider value={sleeves.chosen}>
+      <Stage style={matStyle}>
+        {(stage) => {
+          // the stage widens with the window and the field takes the extra width; a portrait window gets the tall layout
+          const layout = matchLayout(stage);
+          // your seat and piles: in the seat column (wide), or one row above the hand (tall)
+          const myPlate = board.me && (
+            <PlayerPlate
+              player={board.me.player}
+              isMe={board.me.isMe}
+              sleeve={sleeves.mine}
+              targetable={clickable.has(board.me.player.playerId!)}
+              selected={interaction.selected.has(board.me.player.playerId!)}
+              deciding={canAct && interaction.mode !== 'waiting'}
+              onClick={() => onClick(board.me!.player.playerId!)}
+              toPay={canAct && !awaitingServer ? payment?.cost : null}
+              payable={canAct ? clickable : undefined}
+              onPay={onClick}
+              commanderDamage={damageTaken(board.me.player)}
+              extrasBeside={!layout.tall}
+              bare={layout.tall}
+              handSize={hand.length}
+              onViewHand={bigHand ? () => setHandList(true) : undefined}
+              turn={board.me.player.playerId === activeId ? turnRing : null}
             />
+          );
+          const myPiles = board.me && (
+            <Piles
+              player={board.me.player}
+              sleeve={sleeves.mine}
+              isMe={board.me.isMe}
+              commanders={myId ? commanders.get(myId) : undefined}
+              clickable={canAct ? clickable : undefined}
+              onTap={onTap}
+              libraryTop={board.me.isMe ? libraryTop : null}
+            />
+          );
+          return (
+            <div
+              className={styles.layout}
+              style={{ ['--seam' as string]: `${layout.seam}px`, ['--hand-raise' as string]: `${layout.handRaise}px`, ['--right-column' as string]: `${layout.rightColumn}px` }}
+            >
+              <div className={styles.mat} aria-hidden="true" />
+              {/* each half carries its player's deck art, printed faintly into the mat */}
+              <div className={styles.printTheirs}><MatPrint card={opponentArt} /></div>
+              <div className={styles.printMine}><MatPrint card={myArt} /></div>
+              <div className={styles.seam} aria-hidden="true" />
 
-            {interaction.mode === 'mulligan' && !awaitingServer && (
-              <MulliganOverlay hand={hand} interaction={interaction} sleeve={sleeves.mine} onCommand={onCommand} />
-            )}
-            {choosingStarter && board.me && !awaitingServer && (
-              <StartingPlayerOverlay
-                me={{ id: board.me.player.playerId!, name: board.me.player.name ?? 'You' }}
-                opponents={board.opponents.map((opponent) => ({ id: opponent.player.playerId!, name: opponent.player.name ?? 'Opponent' }))}
-                onChoose={onClick}
-              />
-            )}
-            {pickerCards && !awaitingServer && (
-              <CardPicker
-                title={choosingFromHand ? 'Put cards on the bottom' : 'Choose cards'}
-                cards={pickerCards}
-                interaction={interaction}
-                sleeve={sleeves.mine}
-                footer={prompt ? <TriggerOrderOptions gameId={state.gameId} prompt={prompt} onCommand={onCommand} /> : undefined}
-                onCommand={onCommand}
-              />
-            )}
-            {interaction.mode === 'panel' && prompt && !awaitingServer && <ChoicePanel prompt={prompt} onCommand={onCommand} xLimit={announceLimit} />}
-            {viewer && <ZoneViewer title={viewer.title} cards={viewer.cards} onClose={() => openViewer(null)} />}
-            {handList && !handHidden && mode === 'play' && hand.length > 0 && (
-              <HandList
-                cards={hand}
-                clickable={pickerCards ? EMPTY : clickable}
-                selected={interaction.selected}
-                sleeve={sleeves.mine}
-                onTap={onTap}
-                onClose={() => setHandList(false)}
-              />
-            )}
-            {state.gameOver && betweenGames && (
-              <BetweenGames
-                progress={betweenGames}
-                won={state.endInfo?.won ? true : /\bdraw\b/i.test(state.endInfo?.gameInfo ?? '') ? null : false}
+              {board.opponents.map((opponent, index) => (
+                <OpponentSide
+                  key={opponent.player.playerId}
+                  board={opponent}
+                  index={index}
+                  count={board.opponents.length}
+                  sleeve={sleeves.theirs}
+                  handCount={opponent.player.handCount ?? 0}
+                  clickable={clickable}
+                  selected={interaction.selected}
+                  quiet={EMPTY}
+                  attacking={attacking}
+                  targeting={targeting}
+                  blocking={blocking}
+                  onClick={onClick}
+                  onTap={onTap}
+                  deciding={!!opponent.player.hasPriority && interaction.mode === 'waiting'}
+                  layout={layout}
+                  commanders={commanders.get(opponent.player.playerId!) ?? NO_COMMANDERS}
+                  commanderDamage={damageTaken(opponent.player)}
+                  outOfRange={!inRange(view, myId, opponent.player.playerId!)}
+                  turn={opponent.player.playerId === activeId ? turnRing : null}
+                />
+              ))}
+
+              {board.me && (
+                <>
+                  <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onTap={onTap} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
+                  {layout.tall ? (
+                    // tall: your piles and your seat share the row above the hand
+                    <div className={styles.myBand} style={layout.myPiles}>
+                      <div className={styles.myBandPiles}>
+                        {myPiles}
+                      </div>
+                      <div className={styles.myBandSeat}>
+                        {myPlate}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={[styles.myPlate, styles.myPlateWide].join(' ')} style={layout.myPlate}>
+                        {myPlate}
+                      </div>
+                      <div className={styles.myPiles} style={layout.myPiles}>
+                        {myPiles}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              <Reveals looks={looks} myPlayerId={myId} opponentIds={opponentIds} />
+              <StackZone items={stack} clickable={clickable} selected={interaction.selected} sleeveOf={sleeveOf} onClick={onClick} onTap={onTap} originOf={originOf} />
+
+              {board.me && seatHand && (
+                <Hand
+                  cards={seatHand.cards}
+                  faceDown={seatHand.faceDown}
+                  label={`${board.me.player.name ?? 'Player'}'s hand`}
+                  clickable={EMPTY}
+                  selected={EMPTY}
+                  sleeve={sleeves.mine}
+                  onPlay={ignore}
+                  playLine={0}
+                  libraryOrigin={`library:${board.me.player.playerId}`}
+                />
+              )}
+              {board.me && !handHidden && mode === 'play' && (
+                <Hand
+                  cards={hand}
+                  choosing={choosingInHand}
+                  clickable={pickerCards ? EMPTY : clickable}
+                  selected={interaction.selected}
+                  sleeve={sleeves.mine}
+                  onPlay={onClick}
+                  onTap={onTap}
+                  playLine={layout.playLine}
+                  libraryOrigin={`library:${board.me.player.playerId}`}
+                />
+              )}
+
+              {mode === 'play' ? (
+                !overlayOpen && <ActionCluster
+                  interaction={cornerInteraction}
+                  awaiting={awaitingServer}
+                  status={state.status}
+                  canAct={canAct}
+                  special={!!view?.special}
+                  holdingPriority={holding}
+                  autoPassing={!!autoPassing}
+                  extra={prompt?.kind === 'ask' ? <AlwaysAnswerMenu gameId={state.gameId} prompt={prompt} onCommand={onCommand} /> : undefined}
+                  fullControl={fullControl}
+                  onFullControl={setFullControl}
+                  stalled={state.stalled}
+                  conceding={state.conceding ? { waitingOn: priorityName } : null}
+                  cards={askCards}
+                  onResend={onResend}
+                  onResync={onResync}
+                  onCommand={onCommand}
+                />
+              ) : (
+                <SpectatorBar session={session} state={state} onLeave={leave} />
+              )}
+
+              {damageSplit && canAct && !awaitingServer && <DamageAssigner split={damageSplit} />}
+              {defenders && <DefenderPicker attacker={attackerName} options={defenders} onPick={onClick} />}
+              <Vfx view={view} myPlayerId={myId} />
+              <Arrows sourceId={arrowSource} targetIds={arrowTargets} live={choosingTargets} links={links} attacks={attacks} />
+              <EmoteBubbles view={view} />
+              {mode === 'play' && <Coach view={view ?? null} mode={choosingStarter ? 'panel' : interaction.mode} awaiting={awaitingServer} gameOver={!!state.gameOver} />}
+              {mode === 'play' && <LessonCoach gameId={state.gameId} view={view ?? null} mode={choosingStarter ? 'panel' : interaction.mode} awaiting={awaitingServer} gameOver={!!state.gameOver} />}
+              <GameLog gameId={state.gameId} notices={state.notices} canChat={mode !== 'replay'} view={view} replayLog={replayLog} delayMs={state.broadcastDelayMs} />
+              {mode === 'watch' && !view && state.broadcastDelayMs > 0 && (
+                <p className={styles.delayNote} role="status">
+                  The table appears in {delayLabel(Math.round(state.broadcastDelayMs / 1000))}: the broadcast delay holds the game back.
+                </p>
+              )}
+              {mode === 'play' && <WatcherCount watchers={watchers} className={styles.watchers} />}
+              <GameMenu
+                gameId={state.gameId}
+                practice={mode === 'play' && !state.gameOver && !career && board.opponents.length > 0 && board.opponents.every((opponent) => opponent.player.isHuman === false)}
+                canConcede={canAct}
+                onConcede={() => onCommand({ type: 'action', action: 'CONCEDE' })}
                 onLeave={leave}
-                leaveLabel={eventId ? 'Back to the event' : 'Leave match'}
-                concedes={!eventId}
+                rollback={canAct && !!view?.rollbackTurnsAllowed && (view?.turn ?? 0) > 0
+                  ? { ready: interaction.mode === 'priority' && !awaitingServer, request: () => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: 0 }) }
+                  : null}
               />
-            )}
-            {state.gameOver && !betweenGames && (
-              <GameOverOverlay
-                message={state.gameOver}
-                endInfo={state.endInfo}
-                myName={board.me?.player.name ?? null}
-                onLeave={leave}
-                leaveLabel={eventId ? 'Back to the event' : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
-                // a rematch is only dealt against the computer; people go back to Tables
-                onPlayAgain={mode === 'play' && deckId && !eventId && vsAi ? playAgain : undefined}
-              />
-            )}
-            <CardZoom large={spectating && largeZoom} />
-            <PickedUpCard view={view} interaction={interaction} awaitingServer={awaitingServer} extra={pickupExtra} sleeveOf={sleeveOf} onActivate={onActivate} />
-            <CardDetail view={view} extra={pickerCards ?? viewer?.cards ?? NO_CARDS} sleeveOf={sleeveOf} attacking={attacking} blocking={blocking} />
-          </div>
-        );
-      }}
-    </Stage>
+
+              {interaction.mode === 'mulligan' && !awaitingServer && (
+                <MulliganOverlay hand={hand} interaction={interaction} sleeve={sleeves.mine} onCommand={onCommand} />
+              )}
+              {choosingStarter && board.me && !awaitingServer && (
+                <StartingPlayerOverlay
+                  me={{ id: board.me.player.playerId!, name: board.me.player.name ?? 'You' }}
+                  opponents={board.opponents.map((opponent) => ({ id: opponent.player.playerId!, name: opponent.player.name ?? 'Opponent' }))}
+                  onChoose={onClick}
+                />
+              )}
+              {pickerCards && !awaitingServer && (
+                <CardPicker
+                  title={choosingFromHand ? 'Put cards on the bottom' : 'Choose cards'}
+                  cards={pickerCards}
+                  interaction={interaction}
+                  sleeve={sleeves.mine}
+                  footer={prompt ? <TriggerOrderOptions gameId={state.gameId} prompt={prompt} onCommand={onCommand} /> : undefined}
+                  onCommand={onCommand}
+                />
+              )}
+              {interaction.mode === 'panel' && prompt && !awaitingServer && <ChoicePanel prompt={prompt} onCommand={onCommand} xLimit={announceLimit} />}
+              {viewer && <ZoneViewer title={viewer.title} cards={viewer.cards} onClose={() => openViewer(null)} />}
+              {handList && !handHidden && mode === 'play' && hand.length > 0 && (
+                <HandList
+                  cards={hand}
+                  clickable={pickerCards ? EMPTY : clickable}
+                  selected={interaction.selected}
+                  sleeve={sleeves.mine}
+                  onTap={onTap}
+                  onClose={() => setHandList(false)}
+                />
+              )}
+              {state.gameOver && betweenGames && (
+                <BetweenGames
+                  progress={betweenGames}
+                  won={state.endInfo?.won ? true : /\bdraw\b/i.test(state.endInfo?.gameInfo ?? '') ? null : false}
+                  onLeave={leave}
+                  leaveLabel={eventId ? 'Back to the event' : 'Leave match'}
+                  concedes={!eventId}
+                />
+              )}
+              {state.gameOver && !betweenGames && (
+                <GameOverOverlay
+                  message={state.gameOver}
+                  endInfo={state.endInfo}
+                  myName={board.me?.player.name ?? null}
+                  onLeave={leave}
+                  leaveLabel={eventId ? 'Back to the event' : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
+                  // a rematch is only dealt against the computer; people go back to Tables
+                  onPlayAgain={mode === 'play' && deckId && !eventId && vsAi ? playAgain : undefined}
+                />
+              )}
+              <CardZoom large={spectating && largeZoom} />
+              <PickedUpCard view={view} interaction={interaction} awaitingServer={awaitingServer} extra={pickupExtra} sleeveOf={sleeveOf} onActivate={onActivate} />
+              <CardDetail view={view} extra={pickerCards ?? viewer?.cards ?? NO_CARDS} sleeveOf={sleeveOf} attacking={attacking} blocking={blocking} />
+            </div>
+          );
+        }}
+      </Stage>
+    </SleevedContext.Provider>
   );
 }
 

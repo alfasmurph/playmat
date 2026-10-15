@@ -17,6 +17,7 @@ export function createFakeConnection() {
   const eventListeners = new Set<(event: ServerEvent) => void>();
   const sessionListeners = new Set<() => void>();
   const lostListeners = new Set<(method: string) => void>();
+  const elsewhereListeners = new Set<() => void>();
 
   const setStatus = (next: ConnectionStatus) => {
     status = next;
@@ -47,7 +48,15 @@ export function createFakeConnection() {
       lostListeners.add(listener);
       return () => lostListeners.delete(listener);
     },
+    onSignedInElsewhere: (listener: () => void) => {
+      elsewhereListeners.add(listener);
+      return () => elsewhereListeners.delete(listener);
+    },
     /** test helpers */
+    signInElsewhere: () => {
+      elsewhereListeners.forEach((listener) => listener());
+      setStatus('closed');
+    },
     setStatus,
     loseSession: (method: string) => lostListeners.forEach((listener) => listener(method)),
     emit: (event: ServerEvent) => eventListeners.forEach((listener) => listener(event)),

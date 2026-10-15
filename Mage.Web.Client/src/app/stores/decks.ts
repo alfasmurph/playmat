@@ -47,6 +47,7 @@ export interface RosterDeck {
 const SELECTED_KEY = 'playmat.selectedDeck';
 const SLEEVES_KEY = 'playmat.sleeves';
 const FAVORITES_KEY = 'playmat.favoriteDecks';
+const PLAYING_KEY = 'playmat.playingDeck';
 export const STARTER_PREFIX = 'starter:';
 /** a deck another player shares: "shared:<owner>:<deck id>" */
 export const SHARED_PREFIX = 'shared:';
@@ -136,7 +137,10 @@ export interface DeckLibraryState {
   /** the decks pinned to the top of the shelf, in this browser */
   favorites: string[];
   selectedId: string | null;
+  /** sleeves the player chose, by deck; a deck without one plays unsleeved (the chosen card back) */
   sleeves: Record<string, string>;
+  /** the deck last sent to a game, so the match shows its sleeve whichever way the game started */
+  playingId: string | null;
   loaded: boolean;
   refresh(): Promise<void>;
   /** the decks other players share (servers with accounts); quietly none when the server can't say */
@@ -145,9 +149,13 @@ export interface DeckLibraryState {
   /** share your deck with everyone on the server, or stop; `by` is your account name as you spell it */
   setShared(ids: readonly string[], on: boolean, by: string): Promise<void>;
   select(id: string): void;
-  setSleeve(id: string, color: string): void;
-  /** the deck list to send to the server; starter decks are saved to the library on first use */
-  loadForPlay(id: string): Promise<{ deck: DeckCardLists; id: string }>;
+  /** sleeve a deck in a colour, or (null) take its sleeves off */
+  setSleeve(id: string, color: string | null): void;
+  /**
+   * the deck list to send to the server; starter decks are saved to the library on first use. The deck becomes the
+   * one in play unless `editing` (the builder opening a starter).
+   */
+  loadForPlay(id: string, options?: { editing?: boolean }): Promise<{ deck: DeckCardLists; id: string }>;
   /** a deck from the import sheet, saved as a new deck and selected */
   saveImported(deck: DeckCardLists): Promise<string>;
   /** a deck brought up to date with its site, under its own id */
@@ -179,6 +187,7 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   starters: [],
   selectedId: readJson<string | null>(SELECTED_KEY, null),
   sleeves: readJson<Record<string, string>>(SLEEVES_KEY, {}),
+  playingId: readJson<string | null>(PLAYING_KEY, null),
   shared: [],
   sharedLists: {},
   favorites: readJson<string[]>(FAVORITES_KEY, []),
@@ -239,12 +248,21 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   },
 
   setSleeve(id, color) {
-    const sleeves = { ...get().sleeves, [id]: color };
+    const sleeves = { ...get().sleeves };
+    if (color) sleeves[id] = color;
+    else delete sleeves[id];
     writeJson(SLEEVES_KEY, sleeves);
     set({ sleeves });
   },
 
-  async loadForPlay(id) {
+  async loadForPlay(id, { editing = false } = {}) {
+    const playing = (loaded: { deck: DeckCardLists; id: string }) => {
+      if (!editing) {
+        writeJson(PLAYING_KEY, loaded.id);
+        set({ playingId: loaded.id });
+      }
+      return loaded;
+    };
     if (id.startsWith(STARTER_PREFIX)) {
       const deck = await get().loadList(id);
       deck.format = starterFormat(get().starters, id);
@@ -253,15 +271,15 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
       await get().refresh();
       if (sleeve) get().setSleeve(savedId, sleeve);
       get().select(savedId);
-      return { deck, id: savedId };
+      return playing({ deck, id: savedId });
     }
     if (id.startsWith(SHARED_PREFIX)) {
       // someone else's deck plays as they last saved it; nothing is copied
-      return { deck: await get().loadList(id), id };
+      return playing({ deck: await get().loadList(id), id });
     }
     const deck = await deckStorage.loadDeck(id);
     if (!deck) throw new Error('That deck is no longer saved.');
-    return { deck, id };
+    return playing({ deck, id });
   },
 
   async saveImported(deck) {
@@ -285,8 +303,8 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     const deck = await get().loadList(id);
     const roster = rosterOf(get());
     const taken = roster.map((entry) => entry.name);
-    // the copy wears the sleeve the original shows, even when that is the original's default
-    const sleeve = sleeveFor(get().sleeves, roster.find((entry) => entry.id === id));
+    // the copy wears the original's sleeves; an unsleeved deck's copy stays unsleeved
+    const sleeve = get().sleeves[id] ?? null;
     const starter = id.startsWith(STARTER_PREFIX);
     const name = copyName(deck.name, taken);
     // a copy is the player's own deck: it no longer follows the site it was imported from
@@ -294,7 +312,7 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     if (starter) copy.format = starterFormat(get().starters, id);
     const newId = await deckStorage.saveDeck(copy, { forceNew: true });
     await get().refresh();
-    get().setSleeve(newId, sleeve);
+    if (sleeve) get().setSleeve(newId, sleeve);
     get().select(newId);
     return newId;
   },
@@ -342,6 +360,12 @@ export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'> & P
   return [...marked.filter((deck) => deck.favorite), ...marked.filter((deck) => !deck.favorite)];
 }
 
+/** The sleeves the player chose for a deck, or null for an unsleeved deck. */
+export function chosenSleeve(sleeves: Record<string, string>, id: string | null | undefined): string | null {
+  return (id && sleeves[id]) || null;
+}
+
+/** The colour a deck shows on the shelf: its sleeves, or a stable dye of its own when it has none. */
 export function sleeveFor(sleeves: Record<string, string>, deck: RosterDeck | null | undefined): string {
   if (!deck) return SLEEVE_COLORS[0];
   if (sleeves[deck.id]) return sleeves[deck.id];

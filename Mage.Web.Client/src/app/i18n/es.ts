@@ -26,6 +26,9 @@ const es: Catalog = {
   'shell.feedback': 'Enviar comentarios',
   'shell.about': 'Acerca de y créditos',
   'shell.signOut': 'Cerrar sesión',
+  'session.elsewhere.title': 'Jugando en otro lugar',
+  'session.elsewhere.note': '{name} inició sesión en otro dispositivo o pestaña, así que esta se hizo a un lado. Tus partidas y mesas siguen allí.',
+  'session.elsewhere.useHere': 'Jugar aquí',
 
   // sign-in
   'login.title.sit': 'Toma asiento',
@@ -185,6 +188,7 @@ const es: Catalog = {
   'decks.sleeves': 'Fundas',
   'decks.sleeveColor': 'Color de las fundas',
   'decks.sleeve': 'Funda {color}',
+  'decks.noSleeve': 'Sin fundas: las cartas ocultas muestran el dorso elegido en Ajustes',
   'decks.copyAndEdit': 'Copiar y editar',
   'decks.edit': 'Editar mazo',
   'decks.duplicate': 'Duplicar',
@@ -345,7 +349,7 @@ const es: Catalog = {
   'settings.playmat.art.card': 'Una carta que elijas',
   'settings.playmat.art.none': 'Sin arte',
   'settings.playmat.back': 'Dorso de las cartas',
-  'settings.playmat.back.detail': 'Se ve en las cartas ocultas. Las fundas de Carrera conservan su dorso. El clásico se carga de Scryfall como las imágenes de cartas; los demás son arte pintado.',
+  'settings.playmat.back.detail': 'Se ve en las cartas ocultas de los mazos sin fundas; un mazo con fundas muestra su funda. El dorso clásico de Magic se carga de Scryfall como las imágenes de cartas; los demás son arte pintado.',
   'settings.playmat.back.stitch-hand': 'Mano cosida',
   'settings.playmat.back.stitched-rings': 'Anillos cosidos',
   'settings.playmat.back.quiet': 'Sobrio',

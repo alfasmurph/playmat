@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { ConnectionError, RpcClient, RpcError, type SocketLike } from './RpcClient';
+import { CLOSE_SIGNED_IN_ELSEWHERE, ConnectionError, RpcClient, RpcError, type SocketLike } from './RpcClient';
 import { EventBus } from './EventBus';
 
 class FakeSocket implements SocketLike {
@@ -140,6 +140,30 @@ describe('RpcClient', () => {
     second.reply(second.sent[0].id as number, { testMode: true });
     await expect(queued).resolves.toEqual({ testMode: true });
     expect(statuses).toEqual(['connecting', 'open', 'reconnecting', 'open']);
+  });
+
+  test('signed in elsewhere: says so and stays closed instead of reconnecting', async () => {
+    const client = createClient();
+    const statuses: string[] = [];
+    let told = 0;
+    client.onStatus((status) => statuses.push(status));
+    client.onSignedInElsewhere(() => {
+      told++;
+      // told before the status changes, so listeners can tell this from a lost connection
+      expect(client.getStatus()).toBe('open');
+    });
+    const connected = client.connect('ws://test');
+    last().open();
+    await connected;
+
+    const socket = last();
+    socket.readyState = 3;
+    socket.onclose?.({ code: CLOSE_SIGNED_IN_ELSEWHERE, reason: 'Signed in elsewhere' });
+    vi.advanceTimersByTime(60_000);
+
+    expect(told).toBe(1);
+    expect(statuses).toEqual(['connecting', 'open', 'closed']);
+    expect(FakeSocket.instances).toHaveLength(1);
   });
 
   test('ignores events from a replaced socket', async () => {

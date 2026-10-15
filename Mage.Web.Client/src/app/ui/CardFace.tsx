@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useContext, useState, type CSSProperties } from 'react';
 import { printsPowerToughness } from '../../core/game/cards';
 import { useCardImage } from '../../core/images/useCardImage';
 import { isDecoded, markDecoded } from './imageCache';
@@ -7,7 +7,7 @@ import type { CardType, SubType } from '../../protocol/generated/views';
 import { useT } from '../i18n';
 import { ManaCost } from './ManaCost';
 import { cardBackOf } from './cardBack';
-import { sleeveBackOf } from './sleeveArt';
+import { SleevedContext, sleeveOnBack } from './sleeveArt';
 import { useSettings } from '../stores/settings';
 import styles from './CardFace.module.css';
 
@@ -93,17 +93,20 @@ export function CardFace({ card, face = 'front', size = 'normal', sleeve, hidden
   );
 }
 
-/** The back: a Career sleeve's painted back, the chosen back (Playmat's or the classic one), or the printed weave (see cardBackOf). */
+/** The back: the deck's sleeve (painted or dyed), the chosen back (classic or Playmat's), or the printed weave (see cardBackOf). */
 function CardBack({ sleeve, label }: { sleeve: string | undefined; label: string }) {
   const paintedArt = useSettings((state) => state.settings.paintedArt);
   const back = useSettings((state) => state.settings.cardBack);
-  const art = cardBackOf(sleeveBackOf(sleeve), { paintedArt, back });
+  const sleeved = useContext(SleevedContext);
+  const look = cardBackOf(sleeveOnBack(sleeve, sleeved), { paintedArt, back });
+  const art = look && 'art' in look ? look.art : null;
   return (
     <div
       className={styles.back}
       aria-label={label}
       role="img"
       data-art={art ? '' : undefined}
+      data-dye={look && 'dye' in look ? '' : undefined}
       style={art ? { backgroundImage: `url(${art})` } : undefined}
     />
   );

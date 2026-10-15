@@ -44,6 +44,13 @@ export interface SessionState {
   error: string | null;
   /** the server restarted (or forgot this session) while we were signed in: the sign-in screen says so */
   expired: boolean;
+  /**
+   * the account signed in on another device or tab, which took over. This one waits (no reconnecting, which would
+   * push the other out in turn) until the player chooses to play here.
+   */
+  elsewhere: boolean;
+  /** play here again after signing in elsewhere: the other device or tab is the one that waits now */
+  useHere(): Promise<void>;
   /** with remember, an account stays signed in on this device ("keep me signed in") until it signs out */
   signIn(serverUrl: string, userName: string, password: string, remember?: boolean): Promise<boolean>;
   /** creates an account with the chosen password and signs in with it */
@@ -136,9 +143,16 @@ export const useSession = create<SessionState>((set, get) => ({
   loginCount: 0,
   error: null,
   expired: false,
+  elsewhere: false,
+
+  async useHere() {
+    set({ elsewhere: false, error: null });
+    // the silent login on the reopened connection (below) takes the account back, or asks for the password
+    await connectTo(get().serverUrl).catch((error: unknown) => set({ phase: 'signedOut', roomId: null, error: describeError(error) }));
+  },
 
   async signIn(serverUrl, userName, password, remember = false) {
-    set({ phase: 'signingIn', error: null, expired: false, serverUrl, userName });
+    set({ phase: 'signingIn', error: null, expired: false, elsewhere: false, serverUrl, userName });
     try {
       await connectTo(serverUrl);
       const device = password ? '' : rememberToken(serverUrl, userName);
@@ -187,7 +201,7 @@ export const useSession = create<SessionState>((set, get) => ({
   },
 
   async register(serverUrl, userName, email, password, remember = false, inviteCode) {
-    set({ phase: 'signingIn', error: null, serverUrl, userName });
+    set({ phase: 'signingIn', error: null, elsewhere: false, serverUrl, userName });
     try {
       await connectTo(serverUrl);
       await api.authRegister(userName, password, email, inviteCode || null);
@@ -239,13 +253,13 @@ export const useSession = create<SessionState>((set, get) => ({
     }
     writeJson<RememberedLogin>(LOGIN_KEY, { serverUrl: get().serverUrl, userName: get().userName, passwordless: false, account: false });
     rpc.disconnect();
-    set({ phase: 'signedOut', roomId: null });
+    set({ phase: 'signedOut', roomId: null, elsewhere: false });
   },
 }));
 
 rpc.onStatus((connection) => {
   useSession.setState({ connection });
-  if (connection === 'closed' && useSession.getState().phase === 'signedIn') {
+  if (connection === 'closed' && useSession.getState().phase === 'signedIn' && !useSession.getState().elsewhere) {
     useSession.setState({ phase: 'signedOut', roomId: null, error: 'The connection to the server was lost.' });
   }
 });
@@ -287,3 +301,7 @@ rpc.onStatus((connection) => {
 
 // a call the server turned away because this connection has no session any more
 rpc.onSessionLost(() => expire());
+
+rpc.onSignedInElsewhere(() => {
+  if (useSession.getState().phase === 'signedIn') useSession.setState({ elsewhere: true });
+});

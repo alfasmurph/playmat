@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { deckStorage } from '../../core/decks/DeckStorageService';
 import type { DeckCardLists } from '../../core/decks/types';
 import { api } from '../connection';
-import { deckKind, rosterOf, SHARED_PREFIX, STARTER_PREFIX, useDecks } from './decks';
+import { chosenSleeve, deckKind, rosterOf, SHARED_PREFIX, STARTER_PREFIX, useDecks } from './decks';
 
 const BURN: DeckCardLists = {
   name: 'Burn',
@@ -22,7 +22,7 @@ beforeEach(async () => {
     if (url.endsWith('red.dck')) return new Response('20 [M19:156] Shock\n40 [M19:280] Mountain\n', { status: 200 });
     return new Response(null, { status: 404 });
   }));
-  useDecks.setState({ saved: [], starters: [], shared: [], sharedLists: {}, favorites: [], selectedId: null, sleeves: {}, loaded: false });
+  useDecks.setState({ saved: [], starters: [], shared: [], sharedLists: {}, favorites: [], selectedId: null, sleeves: {}, playingId: null, loaded: false });
   vi.restoreAllMocks();
 });
 
@@ -85,6 +85,32 @@ describe('deck library', () => {
     expect(starter.name).toBe('Red Starter');
     expect(starter.cards.reduce((sum, card) => sum + card.amount, 0)).toBe(60);
     expect(await deckStorage.listDecks()).toHaveLength(1);
+  });
+});
+
+describe('sleeves and the deck in play', () => {
+  test('every way into a game marks the deck in play, so its sleeve shows; the builder opening a starter does not', async () => {
+    const id = await deckStorage.saveDeck(BURN, { forceNew: true });
+    await useDecks.getState().refresh();
+    await useDecks.getState().loadForPlay(id);
+    expect(useDecks.getState().playingId).toBe(id);
+    expect(JSON.parse(localStorage.getItem('playmat.playingDeck') ?? 'null')).toBe(id);
+
+    await useDecks.getState().loadForPlay(STARTER_PREFIX + STARTER.file, { editing: true });
+    expect(useDecks.getState().playingId).toBe(id);
+  });
+
+  test('sleeves come off, and an unsleeved deck\'s copy stays unsleeved', async () => {
+    const id = await deckStorage.saveDeck(BURN, { forceNew: true });
+    await useDecks.getState().refresh();
+    useDecks.getState().setSleeve(id, '#1f2a44');
+    expect(chosenSleeve(useDecks.getState().sleeves, id)).toBe('#1f2a44');
+    useDecks.getState().setSleeve(id, null);
+    expect(chosenSleeve(useDecks.getState().sleeves, id)).toBeNull();
+    expect(JSON.parse(localStorage.getItem('playmat.sleeves') ?? '{}')).toEqual({});
+
+    const copyId = await useDecks.getState().duplicate(id);
+    expect(useDecks.getState().sleeves[copyId]).toBeUndefined();
   });
 });
 

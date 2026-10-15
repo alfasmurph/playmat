@@ -100,6 +100,8 @@ interface PendingCall {
 
 const OPEN = 1;
 const CLOSE_HEARTBEAT_TIMEOUT = 4000;
+/** The server closed this connection because the account signed in on another device or tab. */
+export const CLOSE_SIGNED_IN_ELSEWHERE = 4001;
 
 type Listener<T> = (value: T) => void;
 
@@ -124,6 +126,7 @@ export class RpcClient implements RpcCaller {
   private readonly eventListeners = new Set<Listener<ServerEvent>>();
   private readonly sessionStartListeners = new Set<Listener<void>>();
   private readonly sessionLostListeners = new Set<Listener<string>>();
+  private readonly elsewhereListeners = new Set<Listener<void>>();
   private openWaiters: { resolve: () => void; reject: (error: Error) => void }[] = [];
   private readonly gameStates = new GameStateCache((gameId) => this.call('gameStateResync', gameId, ''));
 
@@ -225,6 +228,15 @@ export class RpcClient implements RpcCaller {
     return () => this.sessionLostListeners.delete(listener);
   }
 
+  /**
+   * The account signed in somewhere else and the server closed this connection: it stays closed (reconnecting would
+   * push the other one out, and so on) until the player chooses to play here again.
+   */
+  onSignedInElsewhere(listener: Listener<void>): () => void {
+    this.elsewhereListeners.add(listener);
+    return () => this.elsewhereListeners.delete(listener);
+  }
+
   private openSocket(status: 'connecting' | 'reconnecting'): void {
     if (!this.url) return;
     this.dropSocket(1000, 'replaced');
@@ -256,12 +268,19 @@ export class RpcClient implements RpcCaller {
     socket.onerror = () => {
       // a close event always follows; reconnect logic lives there
     };
-    socket.onclose = () => {
+    socket.onclose = (event) => {
       if (this.socket !== socket) return;
       this.socket = null;
       this.stopHeartbeat();
       this.failPending(new ConnectionError('Connection lost'));
       if (this.status === 'closed') return;
+      if (event?.code === CLOSE_SIGNED_IN_ELSEWHERE) {
+        // listeners first: the closed status that follows is then known not to be a lost connection
+        this.elsewhereListeners.forEach((listener) => listener());
+        this.setStatus('closed');
+        this.rejectOpenWaiters(new ConnectionError('Signed in elsewhere'));
+        return;
+      }
       if (this.status === 'connecting') {
         // first attempt: report the failure instead of retrying an address that may be wrong
         this.setStatus('closed');

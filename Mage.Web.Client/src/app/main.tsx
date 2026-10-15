@@ -23,6 +23,7 @@ import './stores/settings';
 import './stores/social';
 import './stores/toasts';
 import { NATIVE_APP } from './brand';
+import { SignedInElsewhere } from './session/SignedInElsewhere';
 
 /** Screens that need a signed-in player; also opens games when the server starts them. */
 function SignedIn() {
@@ -140,6 +141,7 @@ void i18nReady.then(() => createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <Tooltip.Provider delayDuration={300}>
         <RouterProvider router={router} />
+        <SignedInElsewhere />
       </Tooltip.Provider>
     </QueryClientProvider>
   </StrictMode>,

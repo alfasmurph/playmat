@@ -121,7 +121,7 @@ export default {
   'settings.playmat.art.card': 'A card you choose',
   'settings.playmat.art.none': 'No art',
   'settings.playmat.back': 'Card back',
-  'settings.playmat.back.detail': 'Shown on hidden cards. Career sleeves keep their own backs. The classic back loads from Scryfall like card pictures; the others are painted art.',
+  'settings.playmat.back.detail': 'Shown on hidden cards of decks without sleeves; a sleeved deck shows its sleeve. The classic Magic back loads from Scryfall like card pictures; the others are painted art.',
   'settings.playmat.back.stitch-hand': 'Stitched hand',
   'settings.playmat.back.stitched-rings': 'Stitched rings',
   'settings.playmat.back.quiet': 'Quiet',
