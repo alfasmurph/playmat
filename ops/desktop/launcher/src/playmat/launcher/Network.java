@@ -117,12 +117,38 @@ final class Network {
 
     /** This computer's name on its tailnet (e.g. "mac.tail1234.ts.net"), or empty without Tailscale. */
     static String tailnetName() {
+        Matcher match = SELF_DNS_NAME.matcher(tailscale("status", "--json"));
+        if (!match.find()) {
+            return "";
+        }
+        String name = match.group(1).toLowerCase(Locale.ENGLISH);
+        return name.endsWith(".") ? name.substring(0, name.length() - 1) : name;
+    }
+
+    /**
+     * The client's address on the internet when Tailscale Funnel publishes this computer's HTTPS port
+     * ("https://mac.tail1234.ts.net"), or empty: what links people share should point at.
+     */
+    static String funnelOrigin() {
+        String name = tailnetName();
+        if (name.isEmpty()) {
+            return "";
+        }
+        Pattern on = Pattern.compile("\"AllowFunnel\"\\s*:\\s*\\{[^}]*\"" + Pattern.quote(name) + ":443\"\\s*:\\s*true");
+        return on.matcher(tailscale("funnel", "status", "--json")).find() ? "https://" + name : "";
+    }
+
+    /** What the Tailscale command line prints for these arguments, or empty without Tailscale. */
+    private static String tailscale(String... args) {
         for (String cli : TAILSCALE_CLI) {
             if (!new java.io.File(cli).canExecute()) {
                 continue;
             }
+            List<String> command = new ArrayList<>();
+            command.add(cli);
+            command.addAll(java.util.Arrays.asList(args));
             try {
-                Process process = new ProcessBuilder(cli, "status", "--json").redirectErrorStream(false).start();
+                Process process = new ProcessBuilder(command).redirectErrorStream(false).start();
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 try (InputStream in = process.getInputStream()) {
                     in.transferTo(out);
@@ -131,14 +157,9 @@ final class Network {
                     process.destroyForcibly();
                     return "";
                 }
-                Matcher match = SELF_DNS_NAME.matcher(out.toString(java.nio.charset.StandardCharsets.UTF_8));
-                if (!match.find()) {
-                    return "";
-                }
-                String name = match.group(1).toLowerCase(Locale.ENGLISH);
-                return name.endsWith(".") ? name.substring(0, name.length() - 1) : name;
+                return out.toString(java.nio.charset.StandardCharsets.UTF_8);
             } catch (IOException e) {
-                Log.warn("Can't ask Tailscale for this computer's name: " + e.getMessage());
+                Log.warn("Can't ask Tailscale (" + String.join(" ", args) + "): " + e.getMessage());
                 return "";
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

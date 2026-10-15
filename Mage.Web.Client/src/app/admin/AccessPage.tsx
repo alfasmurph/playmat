@@ -3,7 +3,9 @@ import { Check, Copy, Link2, Trash2, UserPlus, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import type { createApi } from '../../protocol/generated/api';
 import type { AccessOverview, AccessRequest, AllowEntry, Invite } from '../../protocol/generated/views';
+import { PUBLIC_ORIGIN } from '../brand';
 import { Button } from '../ui/Button';
+import { copyText } from '../ui/clipboard';
 import { Field } from '../ui/Field';
 import { ConfirmAction } from './ConfirmAction';
 import { describeAge, formatDate, inviteLink, inviteState } from './adminFormat';
@@ -164,15 +166,17 @@ function Invites({ api, invites, now }: { api: AdminApi; invites: Invite[]; now:
     onSettled: refresh,
   });
   const revoke = useMutation({ mutationFn: (code: string) => api.adminInviteRevoke(code), onSettled: refresh });
-  const link = made?.code ? inviteLink(made.code, window.location.origin) : '';
+  const link = made?.code ? inviteLink(made.code, PUBLIC_ORIGIN) : '';
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(link);
+  const [copyFailed, setCopyFailed] = useState(false);
+  function copy() {
+    copyText(link).then(() => {
       setCopied(true);
-    } catch {
+      setCopyFailed(false);
+    }, () => {
       setCopied(false);
-    }
+      setCopyFailed(true);
+    });
   }
 
   function submit(event: FormEvent) {
@@ -195,6 +199,7 @@ function Invites({ api, invites, now }: { api: AdminApi; invites: Invite[]; now:
         <div className={styles.inline} role="status">
           <code className={styles.mono}>{link}</code>
           <Button size="sm" variant="quiet" icon={<Copy size={14} />} onClick={copy}>{copied ? 'Copied' : 'Copy'}</Button>
+          {copyFailed && <p className={styles.quiet}>The browser wouldn't copy it: press and hold the link to copy it.</p>}
         </div>
       )}
       {invites.length > 0 && (

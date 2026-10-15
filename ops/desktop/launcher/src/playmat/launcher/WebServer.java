@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * Serves the built web client, which then talks to the game server's WebSocket bridge on port 17172 of the same
@@ -75,11 +76,14 @@ final class WebServer {
 
     private final Path root;
     private final BooleanSupplier gameServerReady;
+    /** where the client is published for others (see Main), or empty: named in the page for the links it shares */
+    private final Supplier<String> publicOrigin;
     private HttpServer server;
 
-    WebServer(Path root, BooleanSupplier gameServerReady) {
+    WebServer(Path root, BooleanSupplier gameServerReady, Supplier<String> publicOrigin) {
         this.root = root.toAbsolutePath().normalize();
         this.gameServerReady = gameServerReady;
+        this.publicOrigin = publicOrigin;
     }
 
     void start() throws IOException {
@@ -139,12 +143,34 @@ final class WebServer {
             } else {
                 cache = "public, max-age=3600";
             }
-            send(exchange, 200, type(name), Files.readAllBytes(file), cache);
+            byte[] body = Files.readAllBytes(file);
+            if (name.equals("index.html")) {
+                body = namePublicOrigin(body);
+            }
+            send(exchange, 200, type(name), body, cache);
         } catch (IllegalArgumentException e) {
             send(exchange, 400, "text/plain; charset=utf-8", "Bad request".getBytes(StandardCharsets.UTF_8), "no-store");
         } finally {
             exchange.close();
         }
+    }
+
+    /**
+     * The page names the client's public address (a Tailscale Funnel link), so the invite links it makes work for
+     * people outside this network even when the page was opened on a LAN or tailnet address.
+     */
+    private byte[] namePublicOrigin(byte[] page) {
+        String origin = publicOrigin.get();
+        if (origin.isEmpty() || !origin.matches("https://[A-Za-z0-9.-]+(:\\d+)?")) {
+            return page;
+        }
+        String html = new String(page, StandardCharsets.UTF_8);
+        int head = html.indexOf("</head>");
+        if (head < 0) {
+            return page;
+        }
+        String meta = "<meta name=\"playmat-public-origin\" content=\"" + origin + "\">";
+        return (html.substring(0, head) + meta + html.substring(head)).getBytes(StandardCharsets.UTF_8);
     }
 
     private static boolean wantsHtml(HttpExchange exchange) {

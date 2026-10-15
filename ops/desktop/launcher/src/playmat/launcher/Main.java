@@ -45,7 +45,7 @@ public final class Main {
         this.layout = layout;
         this.settings = new Settings(layout.data.resolve("settings.properties"));
         this.gameServer = new GameServer(layout, settings);
-        this.webServer = new WebServer(layout.web(), gameServer::isReady);
+        this.webServer = new WebServer(layout.web(), gameServer::isReady, new PublicOrigin(settings));
         this.openBrowser = openBrowser;
     }
 

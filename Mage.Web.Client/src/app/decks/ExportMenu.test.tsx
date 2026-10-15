@@ -12,6 +12,7 @@ const DECK: DeckCardLists = {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 async function openMenu() {
@@ -22,6 +23,8 @@ async function openMenu() {
 
 describe('ExportMenu', () => {
   test('copies the list in the chosen format', async () => {
+    // a secure page (https), where the Clipboard API is used
+    vi.stubGlobal('isSecureContext', true);
     render(<ExportMenu getDeck={() => DECK} />);
     // user-event installs its own clipboard on setup: watch that one
     let user = await openMenu();

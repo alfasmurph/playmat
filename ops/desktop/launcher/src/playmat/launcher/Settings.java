@@ -47,6 +47,14 @@ final class Settings {
         return values.getProperty("owner", "").trim();
     }
 
+    /**
+     * Where the client is published for people outside this network ("https://play.example.com"), for the links
+     * it shares; empty: the Tailscale Funnel link while Funnel is on.
+     */
+    String publicUrl() {
+        return values.getProperty("publicUrl", "").trim().replaceAll("/+$", "");
+    }
+
     /** More browser origins the server accepts, comma separated (e.g. a domain a tunnel serves the client at). */
     java.util.List<String> extraOrigins() {
         java.util.List<String> origins = new java.util.ArrayList<>();

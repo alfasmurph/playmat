@@ -4,6 +4,7 @@ import type { DeckCardLists } from '../../core/decks/types';
 import { DECK_EXPORT_FORMATS, deckFileName, exportDeckAs, type DeckExportFormat } from '../../core/decks/exportFormats';
 import { notify } from '../stores/toasts';
 import { Button, type ButtonProps } from '../ui/Button';
+import { copyText } from '../ui/clipboard';
 import { downloadText } from '../ui/download';
 import styles from './ExportMenu.module.css';
 
@@ -31,7 +32,7 @@ export function ExportMenu({ getDeck, size = 'sm', side = 'bottom', disabled }: 
   async function copy(format: DeckExportFormat) {
     try {
       const deck = await getDeck();
-      await navigator.clipboard.writeText(exportDeckAs(deck, format));
+      await copyText(exportDeckAs(deck, format));
       notify('Deck list copied', `${DECK_EXPORT_FORMATS[format].label} format. Paste it anywhere that reads deck lists.`);
     } catch (error) {
       notify("Couldn't copy", error instanceof Error && !/clipboard|permission|denied/i.test(error.message) ? error.message : 'The browser blocked the clipboard.', 'error');

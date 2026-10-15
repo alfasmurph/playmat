@@ -8,8 +8,18 @@ export const APP_NAME = (import.meta.env.VITE_APP_NAME as string | undefined)?.t
 export const NATIVE_APP = import.meta.env.VITE_NATIVE === '1';
 
 /**
- * Where the site lives, for links people share (table invites, the deck bookmarklet). The page's own origin on the
- * web; the packaged app runs from https://localhost, so its build names the site (VITE_PUBLIC_ORIGIN).
+ * Where the site lives, for links people share (table and server invites, the deck bookmarklet). The packaged app runs
+ * from https://localhost, so its build names the site (VITE_PUBLIC_ORIGIN); a server that also publishes the client
+ * somewhere else (the desktop app behind a Tailscale Funnel, opened on its LAN address) names it in the page
+ * (<meta name="playmat-public-origin">); otherwise the page's own origin.
  */
 export const PUBLIC_ORIGIN = (import.meta.env.VITE_PUBLIC_ORIGIN as string | undefined)?.trim().replace(/\/+$/, '')
+  || pageOrigin()
   || (typeof window === 'undefined' ? '' : window.location.origin);
+
+function pageOrigin(): string {
+  if (typeof document === 'undefined') return '';
+  const named = document.querySelector('meta[name="playmat-public-origin"]')?.getAttribute('content')?.trim() ?? '';
+  // only a plain https origin: nothing a page could turn into a link elsewhere
+  return /^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(named) ? named : '';
+}

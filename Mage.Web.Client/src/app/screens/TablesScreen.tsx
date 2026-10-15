@@ -9,6 +9,7 @@ import { useSession } from '../stores/session';
 import { notify } from '../stores/toasts';
 import type { TableView } from '../../protocol/generated/views';
 import { Button, IconButton } from '../ui/Button';
+import { copyText } from '../ui/clipboard';
 import { Dialog } from '../ui/Dialog';
 import { Field } from '../ui/Field';
 import { Zone } from '../ui/Zone';
@@ -204,7 +205,7 @@ function MyTable({ table }: { table: TableView }) {
   const copyInvite = () => {
     if (!table.tableId) return;
     const link = inviteLink(PUBLIC_ORIGIN, table.tableId);
-    navigator.clipboard.writeText(link)
+    copyText(link)
       .then(() => notify('Invite link copied', table.passworded ? 'Send it to a friend, with the table password.' : 'Send it to a friend: it opens this table.'))
       .catch(() => notify('Invite link', link));
   };
