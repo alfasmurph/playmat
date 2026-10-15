@@ -3,7 +3,8 @@ import { describe, expect, test, vi } from 'vitest';
 import type { Command, Interaction } from '../../core/game/interaction';
 import { parsePrompt } from '../../core/game/prompt';
 import type { CardView, GameClientMessage } from '../../protocol/generated/views';
-import { CardPicker, ChoicePanel, GameOverOverlay, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
+import { CardPicker, ChoicePanel, GameOverOverlay, HandList, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
+import { useMatchUi } from './matchUi';
 
 const card = (id: string, name: string) => ({ id, name, expansionSetCode: 'M10', cardNumber: '1' } as CardView);
 
@@ -308,5 +309,35 @@ describe('ZoneViewer', () => {
   test('says when the zone is empty', () => {
     render(<ZoneViewer title="Exile" cards={[]} onClose={vi.fn()} />);
     expect(screen.getByText('Empty.')).toBeTruthy();
+  });
+});
+
+describe('HandList', () => {
+  const hand = Array.from({ length: 11 }, (_, index) => card(`c${index}`, `Card ${index}`));
+
+  test('lists every card; a tap does what a tap on the fan does, and playable or chosen cards say so', () => {
+    const onTap = vi.fn();
+    render(<HandList cards={hand} clickable={new Set(['c2'])} selected={new Set(['c4'])} sleeve="#333" onTap={onTap} onClose={vi.fn()} />);
+    const list = within(dialog('Your hand · 11 cards')).getByRole('list');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(11);
+    fireEvent.click(button('Card 2, playable'));
+    expect(onTap).toHaveBeenCalledWith('c2');
+    fireEvent.click(button('Card 7'));
+    expect(onTap).toHaveBeenCalledWith('c7');
+    expect(button('Card 4, chosen')).toBeTruthy();
+  });
+
+  test('closes with its button, the scrim or Escape, but Escape puts a held card down first', () => {
+    const onClose = vi.fn();
+    render(<HandList cards={hand} clickable={new Set()} selected={new Set()} sleeve="#333" onTap={vi.fn()} onClose={onClose} />);
+    useMatchUi.setState({ pickup: { id: 'c1' } });
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+    useMatchUi.setState({ pickup: null });
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(button('Close'));
+    fireEvent.click(dialog(/Your hand/));
+    expect(onClose).toHaveBeenCalledTimes(3);
   });
 });

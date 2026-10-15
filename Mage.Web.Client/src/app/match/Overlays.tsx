@@ -421,3 +421,54 @@ export function ZoneViewer({ title, cards, onClose }: { title: string; cards: Ca
     </div>
   );
 }
+
+/**
+ * Your hand as a list, for a hand too big for the fan: each card shown whole, and a tap does what a tap on the fan
+ * does (picks it up to read it and use it, or chooses it while the game asks for cards from hand). The list stays
+ * open behind the card held up, and follows the hand as it changes.
+ */
+export function HandList({ cards, clickable, selected, sleeve, onTap, onClose }: {
+  cards: CardView[];
+  clickable: ReadonlySet<string>;
+  selected: ReadonlySet<string>;
+  sleeve: string;
+  onTap(id: string): void;
+  onClose(): void;
+}) {
+  const t = useT();
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && !useMatchUi.getState().detail && !useMatchUi.getState().pickup && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  const title = t('match.handList.title', { count: cards.length });
+  return (
+    <div className={styles.scrim} role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
+      <div className={styles.panel} onClick={(event) => event.stopPropagation()}>
+        <header className={styles.panelHead}>
+          <h2 className={styles.panelTitle}>{title}</h2>
+          <Button variant="quiet" size="sm" onClick={onClose}>{t('match.handList.close')}</Button>
+        </header>
+        <p className={styles.panelText}>{t('match.handList.hint')}</p>
+        <div className={[styles.grid, styles.handGrid].join(' ')} role="list">
+          {cards.map((card) => {
+            const playable = clickable.has(card.id!);
+            const chosen = selected.has(card.id!);
+            return (
+              <div key={card.id} role="listitem">
+                <button
+                  type="button"
+                  className={[styles.pick, styles.pickable, playable ? styles.handPlayable : '', chosen ? styles.picked : ''].join(' ')}
+                  aria-label={`${card.name ?? 'Card'}${playable ? ', playable' : ''}${chosen ? ', chosen' : ''}`}
+                  onClick={() => onTap(card.id!)}
+                >
+                  <CardFace card={card} sleeve={sleeve} size="normal" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

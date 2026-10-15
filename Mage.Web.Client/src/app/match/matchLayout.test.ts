@@ -74,7 +74,7 @@ describe('matchLayout', () => {
     expect(layout.theirPlate(2, 3).top + SEAT + 40).toBeLessThan(layout.myPiles.top);
   });
 
-  test.each([1440, 1554, 1728, 1920, 2337, 2400])('tall %i: top band, their rows, the turn, your rows, your piles, your seat, the hand, in that order', (height) => {
+  test.each([1440, 1554, 1728, 1920, 2337, 2400])('tall %i: top band, their rows, the turn, your rows, your piles and seat, the hand, in that order', (height) => {
     const layout = matchLayout({ layout: 'tall', width: 1080, height });
     const them = layout.them(0, 1);
     const me = layout.me;
@@ -90,11 +90,10 @@ describe('matchLayout', () => {
     // the decision corner's main row (about 96 tall) stands at the seam, between the creature rows
     expect(layout.seam - 48).toBeGreaterThan(them.frontTop + them.frontIdeal * CARD_RATIO);
     expect(layout.seam + 48).toBeLessThan(me.frontTop);
-    // your piles in their own row under your rows; your seat, a strip about 112 tall, between them and the hand
+    // your piles and your seat share one row under your rows, above the hand
     expect(layout.myPiles.top).toBeGreaterThan(me.backTop + me.backIdeal * CARD_RATIO);
-    expect(layout.myPiles.left).toBe(layout.myPlate.left);
-    expect(layout.myPlate.top).toBeGreaterThanOrEqual(layout.myPiles.top + 191);
-    expect(layout.myPlate.top + 112).toBeLessThanOrEqual(height - 130 - layout.handRaise);
+    expect(layout.myPlate).toEqual(layout.myPiles);
+    expect(layout.myPiles.top + 191).toBeLessThanOrEqual(height - 130 - layout.handRaise);
     expect(layout.playLine).toBeLessThan(height - 118 - layout.handRaise);
     expect(layout.handRaise).toBeGreaterThanOrEqual(0);
   });

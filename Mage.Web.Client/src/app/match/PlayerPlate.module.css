@@ -343,37 +343,88 @@
   color: var(--ink-faint);
 }
 
-/* a strip across the stage (your seat in the tall layout): avatar, name, life and extras in one line, as slim as the ring */
-.strip {
-  left: 0;
-  right: 0;
+/*
+ * printed straight on the mat (your seat beside your piles, tall layout): no box, no fill. Whose turn it is shows in
+ * the ring of steps, a decision on the avatar's amber edge; the box comes back only to be targeted or chosen.
+ */
+.bare {
+  position: relative;
   min-width: 0;
-  padding: 8px 22px 8px 36px;
-  gap: 20px;
-}
-
-.strip .info {
-  flex: 1;
-  flex-direction: row;
-  align-items: center;
+  height: 100%;
+  padding: 0 0 0 30px;
   gap: 22px;
+  background: none;
 }
 
-.strip .name {
-  flex: none;
-  max-width: 330px;
-  font-size: 22px;
+.bare:not(.targetable, .selected) {
+  box-shadow: none;
 }
 
-.strip .life {
-  font-size: 58px;
-}
-
-.strip .extras {
+/* the name on its own line; life, and then the extras, share the line under it while they fit */
+.bare .info {
+  flex: 1;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
+  gap: 6px 18px;
+}
+
+.bare .name {
+  flex-basis: 100%;
+  max-width: 100%;
+  font-size: 22px;
+}
+
+.bare .life {
+  font-size: 64px;
+}
+
+.bare .extras {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px 14px;
-  margin-left: auto;
+}
+
+/* a big hand, offered as a list */
+.viewHand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: rgb(var(--ink-rgb) / 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--ink-soft);
+  color: var(--ink-strong);
+  font-family: var(--font-print);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* printed slim; on a touch screen it takes a finger's height of taps around it */
+.viewHand::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (48px - var(--touch-target, 48px)) / 2) 0;
+}
+
+.viewHand:hover,
+.viewHand:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ink-strong);
+}
+
+/* wide: in the tab beside the seat, set smaller so it keeps to the tab */
+.beside .viewHand {
+  height: 38px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 16px;
 }

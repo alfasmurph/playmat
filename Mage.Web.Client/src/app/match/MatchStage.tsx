@@ -52,7 +52,7 @@ import { useAutoPass } from './useAutoPass';
 import { useBlockDrag } from './useBlockDrag';
 import { useAutoOrder } from './useAutoOrder';
 import { Vfx } from './Vfx';
-import { CardPicker, ChoicePanel, GameOverOverlay, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
+import { CardPicker, ChoicePanel, GameOverOverlay, HandList, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
 import { PermanentStack } from './PermanentStack';
 import { PickedUpCard } from './PickedUpCard';
 import { clothOf, clothStyle } from './playmats';
@@ -73,6 +73,8 @@ const EMPTY: ReadonlySet<string> = new Set();
 const ignore = () => undefined;
 const NO_CARDS: readonly CardView[] = [];
 const NO_COMMANDERS: readonly CommanderStatus[] = [];
+/** a hand bigger than this is offered as a list too: the fan's cards get too thin to pick out */
+const HAND_LIST_AFTER = 8;
 /**
  * Decisions made by tapping cards on the table (targets, attackers, blockers, mana, damage) or in an overlay: there
  * a tap is the choice. Anywhere else a tap picks the card up to read it and see what it can do.
@@ -141,6 +143,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const openViewer = useMatchUi((ui) => ui.openViewer);
   const sleeves = useSleeves();
   const [holding, setHolding] = useState(false);
+  const [handList, setHandList] = useState(false);
   const fullControl = useSettings((settings) => settings.fullControl);
   const setFullControl = useSettings((settings) => settings.setFullControl);
   // full control lasts for the match on screen, as on Arena
@@ -341,6 +344,8 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const handHidden = (interaction.mode === 'mulligan' || choosingStarter || !!pickerCards) && !awaitingServer;
   // a choice among cards in hand (discard, reveal...): eligible cards take the decision edge
   const choosingInHand = interaction.mode === 'target' && !pickerCards && [...clickable].some((id) => handIds.has(id));
+  // a big hand, in play: your seat offers it as a list, where each card can be picked up as from the fan
+  const bigHand = !!board.me && !handHidden && mode === 'play' && hand.length > HAND_LIST_AFTER;
   const opponentIds = useMemo(() => board.opponents.map((opponent) => opponent.player.playerId!), [board.opponents]);
   const matCloth = useSettings((state) => state.settings.matCloth);
   const matArt = useSettings((state) => state.settings.matArt);
@@ -367,6 +372,37 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
       {(stage) => {
         // the stage widens with the window and the field takes the extra width; a portrait window gets the tall layout
         const layout = matchLayout(stage);
+        // your seat and piles: in the seat column (wide), or one row above the hand (tall)
+        const myPlate = board.me && (
+          <PlayerPlate
+            player={board.me.player}
+            isMe={board.me.isMe}
+            sleeve={sleeves.mine}
+            targetable={clickable.has(board.me.player.playerId!)}
+            selected={interaction.selected.has(board.me.player.playerId!)}
+            deciding={canAct && interaction.mode !== 'waiting'}
+            onClick={() => onClick(board.me!.player.playerId!)}
+            toPay={canAct && !awaitingServer ? payment?.cost : null}
+            payable={canAct ? clickable : undefined}
+            onPay={onClick}
+            commanderDamage={damageTaken(board.me.player)}
+            extrasBeside={!layout.tall}
+            bare={layout.tall}
+            handSize={hand.length}
+            onViewHand={bigHand ? () => setHandList(true) : undefined}
+            turn={board.me.player.playerId === activeId ? turnRing : null}
+          />
+        );
+        const myPiles = board.me && (
+          <Piles
+            player={board.me.player}
+            sleeve={sleeves.mine}
+            isMe={board.me.isMe}
+            commanders={myId ? commanders.get(myId) : undefined}
+            clickable={canAct ? clickable : undefined}
+            onTap={onTap}
+          />
+        );
         return (
           <div
             className={styles.layout}
@@ -406,34 +442,26 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
             {board.me && (
               <>
                 <Battlefield board={board.me} sleeve={sleeves.mine} clickable={clickable} selected={interaction.selected} quiet={quiet} attacking={attacking} blocking={blocking} targeting={targeting} onClick={onClick} onTap={onTap} onBlockDrop={interaction.mode === 'declareBlockers' && canAct ? onBlockDrop : undefined} place={layout.me} />
-                <div className={[styles.myPlate, layout.tall ? styles.myPlateStrip : styles.myPlateWide].join(' ')} style={layout.myPlate}>
-                  <PlayerPlate
-                    player={board.me.player}
-                    isMe={board.me.isMe}
-                    sleeve={sleeves.mine}
-                    targetable={clickable.has(board.me.player.playerId!)}
-                    selected={interaction.selected.has(board.me.player.playerId!)}
-                    deciding={canAct && interaction.mode !== 'waiting'}
-                    onClick={() => onClick(board.me!.player.playerId!)}
-                    toPay={canAct && !awaitingServer ? payment?.cost : null}
-                    payable={canAct ? clickable : undefined}
-                    onPay={onClick}
-                    commanderDamage={damageTaken(board.me.player)}
-                    extrasBeside={!layout.tall}
-                    strip={layout.tall}
-                    turn={board.me.player.playerId === activeId ? turnRing : null}
-                  />
-                </div>
-                <div className={styles.myPiles} style={layout.myPiles}>
-                  <Piles
-                    player={board.me.player}
-                    sleeve={sleeves.mine}
-                    isMe={board.me.isMe}
-                    commanders={myId ? commanders.get(myId) : undefined}
-                    clickable={canAct ? clickable : undefined}
-                    onTap={onTap}
-                  />
-                </div>
+                {layout.tall ? (
+                  // tall: your piles and your seat share the row above the hand
+                  <div className={styles.myBand} style={layout.myPiles}>
+                    <div className={styles.myBandPiles}>
+                      {myPiles}
+                    </div>
+                    <div className={styles.myBandSeat}>
+                      {myPlate}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={[styles.myPlate, styles.myPlateWide].join(' ')} style={layout.myPlate}>
+                      {myPlate}
+                    </div>
+                    <div className={styles.myPiles} style={layout.myPiles}>
+                      {myPiles}
+                    </div>
+                  </>
+                )}
               </>
             )}
 
@@ -537,6 +565,16 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
             )}
             {interaction.mode === 'panel' && prompt && !awaitingServer && <ChoicePanel prompt={prompt} onCommand={onCommand} xLimit={announceLimit} />}
             {viewer && <ZoneViewer title={viewer.title} cards={viewer.cards} onClose={() => openViewer(null)} />}
+            {handList && !handHidden && mode === 'play' && hand.length > 0 && (
+              <HandList
+                cards={hand}
+                clickable={pickerCards ? EMPTY : clickable}
+                selected={interaction.selected}
+                sleeve={sleeves.mine}
+                onTap={onTap}
+                onClose={() => setHandList(false)}
+              />
+            )}
             {state.gameOver && betweenGames && (
               <BetweenGames
                 progress={betweenGames}

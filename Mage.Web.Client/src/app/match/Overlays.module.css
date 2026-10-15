@@ -130,6 +130,26 @@
   transform: translateY(-4px);
 }
 
+/* your hand as a list: a card you can play now carries the decision edge, as it does in the fan */
+.handPlayable::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px var(--decision);
+  pointer-events: none;
+}
+
+.handGrid .pick {
+  display: block;
+  width: 100%;
+}
+
+/* tall: three across, big enough to read */
+:global([data-layout='tall']) .handGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .unpickable {
   opacity: 0.45;
 }

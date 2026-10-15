@@ -94,9 +94,29 @@
   position: absolute;
 }
 
-/* tall: your seat is a strip across the stage, above the hand */
-.myPlateStrip {
+/* tall: your piles and, in the room after them, your seat: one row above the hand */
+.myBand {
+  position: absolute;
   right: 24px;
+  height: 192px;
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+}
+
+.myBandPiles {
+  flex: none;
+}
+
+/* in the row, the piles take their own width, so the seat starts after them */
+.myBandPiles > * {
+  position: relative;
+}
+
+.myBandSeat {
+  flex: 1;
+  min-width: 0;
+  z-index: var(--z-seat);
 }
 
 /* the piles stand two by two in the seat column */
@@ -107,7 +127,7 @@
   row-gap: 10px;
 }
 
-/* tall: they stand in a row: yours above your seat's strip, theirs beside their seat */
+/* tall: they stand in a row, beside the seat */
 :global([data-layout='tall']) .myPiles > *,
 :global([data-layout='tall']) .theirPiles > * {
   flex-wrap: nowrap;

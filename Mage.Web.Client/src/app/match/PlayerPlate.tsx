@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { Swords } from 'lucide-react';
+import { Layers, Swords } from 'lucide-react';
 import { COMMANDER_DAMAGE_LETHAL } from '../../core/game/commander';
 import { POOL_MANA, poolId } from '../../core/game/payment';
 import { ROPE_SECONDS, ropeSecondsLeft, ropeVisible } from '../../core/game/rope';
@@ -40,8 +40,11 @@ export interface PlayerPlateProps {
   extrasBeside?: boolean;
   /** whose turn it is: the turn's steps ring this seat's avatar, and its number is printed by the name */
   turn?: PhaseRingProps | null;
-  /** a slim strip across the stage (yours, above the hand in the tall layout): name, life and extras in one line */
-  strip?: boolean;
+  /** printed straight on the mat, with no box around it (yours, beside your piles in the tall layout) */
+  bare?: boolean;
+  /** your hand's size, and a way to see it as a list: offered when it's too big for the fan (see onViewHand) */
+  handSize?: number;
+  onViewHand?(): void;
 }
 
 const ROPE_TICK_MS = 250;
@@ -84,7 +87,7 @@ function useRopeSeconds(player: PlayerView): number {
 }
 
 /** A player's seat: who they are, their life, counters, floating mana and clock. */
-export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null, strip = false }: PlayerPlateProps) {
+export function PlayerPlate({ player, isMe, targetable, selected, deciding, sleeve, onClick, toPay, payable, onPay, commanderDamage = [], outOfRange = false, extrasBeside = false, turn = null, bare = false, handSize = 0, onViewHand }: PlayerPlateProps) {
   const t = useT();
   const life = player.life ?? 0;
   // a player out of the game (lost, conceded or left: leaving loses) has no life worth showing, however low it went
@@ -111,7 +114,7 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
   // the player's sigil from their profile, or their initial
   const initial = sigilOf(player.userData?.avatarId) ?? (player.name ?? '?').slice(0, 1).toUpperCase();
 
-  const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0;
+  const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0 || !!onViewHand;
   const extras = hasExtras && (
     <div className={[styles.extras, extrasBeside ? styles.beside : ''].join(' ')}>
       {commanderDamage.length > 0 && (
@@ -163,6 +166,18 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
           })}
         </div>
       )}
+      {onViewHand && (
+        <button
+          type="button"
+          className={styles.viewHand}
+          onClick={(event) => {
+            event.stopPropagation();
+            onViewHand();
+          }}
+        >
+          <Layers size={18} aria-hidden="true" /> {t('match.plate.viewHand', { count: handSize })}
+        </button>
+      )}
     </div>
   );
 
@@ -170,7 +185,7 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
     <div
       className={[
         styles.plate,
-        strip ? styles.strip : '',
+        bare ? styles.bare : '',
         isMe ? styles.mine : styles.theirs,
         targetable ? styles.targetable : '',
         selected ? styles.selected : '',
