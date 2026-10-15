@@ -435,9 +435,23 @@ function Choice({ campaignId, node, state }: { campaignId: string; node: CareerN
         >
           <b>{option.text}</b>
           <OptionReward option={option} />
+          <UpgradeCards option={option} />
         </button>
       ))}
     </div>
+  );
+}
+
+/** An upgrade pack: the cards it swaps into the chapter's deck for the rest of the chapter, and the ones they replace. */
+function UpgradeCards({ option }: { option: CareerOption }) {
+  const t = useT();
+  const upgrade = option.upgrade;
+  if (!upgrade || (!upgrade.in?.length && !upgrade.out?.length)) return null;
+  return (
+    <span className={styles.upgrade}>
+      {upgrade.in?.length ? <span className={styles.upgradeIn}>{t('career.choice.in', { cards: upgrade.in.join(', ') })}</span> : null}
+      {upgrade.out?.length ? <span className={styles.upgradeOut}>{t('career.choice.out', { cards: upgrade.out.join(', ') })}</span> : null}
+    </span>
   );
 }
 

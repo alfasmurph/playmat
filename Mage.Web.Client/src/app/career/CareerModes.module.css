@@ -718,6 +718,22 @@
   color: var(--ink-dim);
 }
 
+/* an upgrade pack's swap: what comes into the deck, and what goes */
+.upgrade {
+  display: grid;
+  gap: 2px;
+  font-size: var(--text-sm);
+  line-height: 1.35;
+}
+
+.upgradeIn {
+  color: var(--ink);
+}
+
+.upgradeOut {
+  color: var(--ink-dim);
+}
+
 .option:hover:not(:disabled) {
   box-shadow: inset 0 0 0 2px var(--decision);
 }

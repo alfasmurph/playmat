@@ -873,6 +873,8 @@ const es: Catalog = {
   'career.choice.pick': 'Elige una',
   'career.choice.taken': 'Elegido',
   'career.choice.took': 'Elegiste: {option}',
+  'career.choice.in': 'Entran: {cards}',
+  'career.choice.out': 'Salen: {cards}',
   'career.choice.failed': 'No se pudo elegir',
 
   'career.puzzles.title': 'Libro de acertijos',

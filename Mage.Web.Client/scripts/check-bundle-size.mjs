@@ -62,10 +62,13 @@ import { gzipSync } from 'node:zlib';
 // game cues went (-0.6 kB). Measured app 477.0 kB (the entry's split adds about 4 kB of chunk overhead to it)
 // app raised 2026-10-15 from 480 kB for shared decks, favorites, the deck builder's phone tabs, the library's top card
 // (Mystic Forge) and the phone fixes to import and Decks; measured 480.3 kB
+// app raised 2026-10-16 from 486 kB for the Commander precons browser (lazy), visual cues and the mana readout, Undo to
+// your last turn, the signed-in-elsewhere screen, saved games (Unfinished games on Play, Play on after a restart) and
+// the campaign forks' upgrade packs; measured 486.2 kB
 const BUDGET_KB = {
   entry: 66,
   initial: 212,
-  app: 486,
+  app: 495,
 };
 
 const dist = new URL('../dist/', import.meta.url).pathname;

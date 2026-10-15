@@ -343,6 +343,8 @@ export default {
   'career.choice.pick': 'Take one',
   'career.choice.taken': 'Taken',
   'career.choice.took': 'You took: {option}',
+  'career.choice.in': 'In: {cards}',
+  'career.choice.out': 'Out: {cards}',
   'career.choice.failed': "That couldn't be taken",
 
   'career.puzzles.title': 'Puzzle book',
