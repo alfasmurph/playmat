@@ -1056,6 +1056,8 @@ const es: Catalog = {
   'match.turn.aria.yours': 'Turno {turn}, tu turno',
   'match.turn.aria.theirs': 'Turno {turn}, turno del rival',
   'match.turn.aria.player': 'Turno {turn}, turno de {name}',
+  'match.upright': 'Pon el teléfono en vertical',
+  'match.upright.note': 'La mesa está hecha para un teléfono en vertical. La partida sigue mientras lo giras.',
   'match.plate.lost': 'Perdió',
   'match.plate.out': 'Fuera',
   'match.plate.disconnected': 'Desconectado {time}',

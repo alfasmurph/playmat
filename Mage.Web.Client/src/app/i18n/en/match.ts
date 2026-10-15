@@ -19,6 +19,10 @@ export default {
   'match.turn.aria.theirs': "Turn {turn}, opponent's turn",
   'match.turn.aria.player': "Turn {turn}, {name}'s turn",
 
+  // a phone held sideways in a game
+  'match.upright': 'Turn your phone upright',
+  'match.upright.note': 'The table is made for a phone held upright. The game keeps going while you turn it.',
+
   // player plates
   'match.plate.lost': 'Lost',
   'match.plate.out': 'Out',

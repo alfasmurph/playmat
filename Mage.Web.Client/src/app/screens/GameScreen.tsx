@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { Smartphone } from 'lucide-react';
 import { useStore } from 'zustand';
 import { useEvents } from '../stores/events';
 import { useGames } from '../stores/games';
@@ -7,6 +8,7 @@ import { MatchErrorBoundary } from '../match/MatchErrorBoundary';
 import { MatchStage } from '../match/MatchStage';
 import { ReconnectScrim } from '../match/ReconnectScrim';
 import { useSession } from '../stores/session';
+import { useT } from '../i18n';
 import { Button } from '../ui/Button';
 import styles from './GameScreen.module.css';
 
@@ -55,9 +57,16 @@ function ConnectedStage({ gameId, leaveLabel, onLeave }: { gameId: string; leave
   const state = useStore(session.store);
   const connection = useSession((session) => session.connection);
   const offline = connection !== 'open';
+  const t = useT();
   return (
     <>
       <MatchStage session={session} state={state} />
+      {/* a phone on its side gets the table at a third of its size, too small for a finger: ask for upright (CSS shows it) */}
+      <div className={styles.upright} role="status">
+        <Smartphone size={48} aria-hidden="true" />
+        <p className={styles.uprightTitle}>{t('match.upright')}</p>
+        <p className={styles.uprightNote}>{t('match.upright.note')}</p>
+      </div>
       {(offline || state.resyncing) && !state.gameOver && state.mode !== 'replay' && (
         <ReconnectScrim offline={offline} onLeave={onLeave} leaveLabel={leaveLabel} />
       )}

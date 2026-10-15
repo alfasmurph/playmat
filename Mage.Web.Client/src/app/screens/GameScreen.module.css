@@ -18,3 +18,58 @@
 .missing p {
   color: var(--ink-soft);
 }
+
+/* a phone held sideways: the table is built upright for phones, so ask for that (nothing shows anywhere else) */
+.upright {
+  display: none;
+}
+
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  .upright {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-dialog) + 10);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: rgb(var(--void-rgb) / 0.92);
+    color: var(--ink-strong);
+    text-align: center;
+  }
+
+  .upright svg {
+    animation: upright 1.6s var(--ease-place) infinite alternate;
+  }
+}
+
+.uprightTitle {
+  margin: 0;
+  font-family: var(--font-print);
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+}
+
+.uprightNote {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+@keyframes upright {
+  from {
+    transform: rotate(-90deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upright svg {
+    animation: none;
+  }
+}
