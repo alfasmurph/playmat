@@ -5,6 +5,7 @@ import mage.abilities.Ability;
 import mage.abilities.Mode;
 import mage.abilities.TriggeredAbility;
 import mage.abilities.costs.Cost;
+import mage.abilities.costs.mana.ManaCost;
 import mage.abilities.effects.ContinuousEffect;
 import mage.abilities.effects.Effect;
 import mage.abilities.effects.Effects;
@@ -12,6 +13,7 @@ import mage.abilities.effects.OneShotEffect;
 import mage.abilities.hint.Hint;
 import mage.constants.Outcome;
 import mage.game.Game;
+import mage.game.permanent.Permanent;
 import mage.players.Player;
 import mage.util.CardUtil;
 
@@ -105,6 +107,10 @@ public class DoIfCostPaid extends OneShotEffect {
         if (player == null || mageObject == null) {
             return false;
         }
+        if (paysOnlyToUntapAnUntappedSource(game, source)) {
+            // "you may pay {4}. If you do, untap Mana Vault" with Mana Vault already untapped: paying would do nothing
+            return true;
+        }
         String message = CardUtil.replaceSourceName(makeChooseText(game, source), mageObject.getName());
         Outcome payOutcome = executingEffects.getOutcome(source, this.outcome);
         // nothing to pay (do not support mana cost - it's true all the time)
@@ -131,6 +137,24 @@ public class DoIfCostPaid extends OneShotEffect {
             applyEffects(game, source, otherwiseEffects);
         }
         return true;
+    }
+
+    /**
+     * An optional mana payment whose only effect is untapping this permanent, which is already untapped (Mana Vault,
+     * Goblin War Wagon...): nothing to ask. Other costs still ask, since they can matter by themselves (a discard for
+     * madness, a sacrifice for death triggers).
+     */
+    private boolean paysOnlyToUntapAnUntappedSource(Game game, Ability source) {
+        if (!optional || !(cost instanceof ManaCost) || executingEffects.isEmpty() || !otherwiseEffects.isEmpty()) {
+            return false;
+        }
+        for (Effect effect : executingEffects) {
+            if (!(effect instanceof UntapSourceEffect)) {
+                return false;
+            }
+        }
+        Permanent permanent = source.getSourcePermanentIfItStillExists(game);
+        return permanent != null && !permanent.isTapped();
     }
 
     private void applyEffects(Game game, Ability source, Effects effects) {

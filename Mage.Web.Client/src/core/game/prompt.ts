@@ -136,6 +136,8 @@ export function isPromptEvent(method: CallbackMethodName): method is PromptEvent
 export function stripMarkup(html: string | undefined): string {
   if (!html) return '';
   return html
+    // the server's hint icons ("ICON_GOOD" before "Mana Vault is untapped") are pictures in the desktop client
+    .replace(/ICON_(DUNGEON_ROOM_CURRENT|DUNGEON_ROOM_NEXT|RESTRICT|REQUIRE|GOOD|BAD)/g, '')
     .replace(/<br\s*\/?>/gi, ' ')
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')

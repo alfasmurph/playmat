@@ -39,8 +39,7 @@ public class DoIfCostPaidTest extends CardTestPlayerBase {
         addCard(Zone.BATTLEFIELD, playerA, "Mana Vault", 1);
         addCard(Zone.BATTLEFIELD, playerA, "Island", 4);
 
-        // turn 1 - untapped and ask about untap
-        setChoice(playerA, false); // do not pay
+        // turn 1 - untapped: paying {4} would do nothing, so no question
         checkPermanentTapped("must be untapped on start", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Mana Vault", false, 1);
         checkLife("no damage on untapped", 1, PhaseStep.PRECOMBAT_MAIN, playerA, 20);
 
@@ -66,11 +65,29 @@ public class DoIfCostPaidTest extends CardTestPlayerBase {
     }
 
     @Test
+    public void test_Optional_UntapCostOtherThanMana_StillAsks() {
+        // Elaborate Firecannon doesn't untap during your untap step.
+        // At the beginning of your upkeep, you may discard a card. If you do, untap Elaborate Firecannon.
+        // (a discard can matter by itself, e.g. madness: the question stays even when it's untapped)
+        addCard(Zone.BATTLEFIELD, playerA, "Elaborate Firecannon", 1);
+        addCard(Zone.HAND, playerA, "Grizzly Bears", 1);
+
+        setChoice(playerA, true);
+        setChoice(playerA, "Grizzly Bears");
+
+        setStrictChooseMode(true);
+        setStopAt(1, PhaseStep.PRECOMBAT_MAIN);
+        execute();
+
+        assertGraveyardCount(playerA, "Grizzly Bears", 1);
+    }
+
+    @Test
     public void test_Optional_ManaVault_2() {
-        // Make sure it allow to pay untap cost anyway, so some combos can be used, see https://github.com/magefree/mage/issues/2656
+        // Make sure combos still work, see https://github.com/magefree/mage/issues/2656
         // Example:
-        // When Mana Vault is untapped you can respond to the trigger pay four to untap is to tap it and then pay 4
-        // to untap it. That would not be possible if the trigger is skipped.
+        // When Mana Vault is untapped you can respond to the trigger: tap it for mana, then pay 4 to untap it.
+        // The question is only skipped while Mana Vault is untapped as the trigger resolves.
         // That's legal according to the rules and would net mana if Mana Reflection was in play, would allow
         // self milling with Mesmeric Orb in play, and I'm sure many other interactions that change the game state.
 
@@ -87,7 +104,9 @@ public class DoIfCostPaidTest extends CardTestPlayerBase {
         // their library into their graveyard.
         addCard(Zone.BATTLEFIELD, playerA, "Mesmeric Orb", 1);
 
-        setChoice(playerA, true); // pay by itself
+        // tap it in response to the trigger, then pay from the floating mana
+        activateManaAbility(1, PhaseStep.UPKEEP, playerA, "{T}: Add {C}");
+        setChoice(playerA, true);
         checkPermanentTapped("must be untapped", 1, PhaseStep.PRECOMBAT_MAIN, playerA, "Mana Vault", false, 1);
         checkLife("no damage on untapped", 1, PhaseStep.PRECOMBAT_MAIN, playerA, 20);
 

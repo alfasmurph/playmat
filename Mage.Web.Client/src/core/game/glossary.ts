@@ -310,10 +310,11 @@ export function splitRules(card: CardView): { rules: string[]; hints: Hint[] } {
     }
   }
   const hints = hintLines.flatMap((line) => line.split(/<br\s*\/?>/i)).map((line) => {
+    // the icon is read before stripMarkup, which drops it
+    const icon = HINT_ICON.exec(line.replace(/<[^>]*>/g, '').trim())?.[1];
     const text = stripMarkup(line);
-    const icon = HINT_ICON.exec(text)?.[1];
     return {
-      text: icon ? text.slice(`ICON_${icon}`.length).trim() : text,
+      text,
       tone: icon === 'GOOD' ? 'good' as const : icon === 'BAD' || icon === 'RESTRICT' ? 'bad' as const : 'neutral' as const,
     };
   }).filter((hint) => hint.text.length > 0);

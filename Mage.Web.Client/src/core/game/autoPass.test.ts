@@ -41,6 +41,19 @@ describe('autoAnswer', () => {
     expect(autoAnswer(theirTurn, priority, { ...on, abilitiesOnTheirTurn: true })).toBeNull();
     expect(autoAnswer(myTurn, priority, on)).toBeNull();
   });
+  it('your own triggers resolve by themselves unless a spell could answer them', () => {
+    const tomb = { other: [{ value: '{2}, {T}: You gain 1 life for each colorless creature you control.' }] };
+    const vaults = { a: { controllerId: 'me' }, b: { controllerId: 'me' } } as never;
+    const upkeep: GameView = { ...view({ tomb }), activePlayerId: 'me', step: 'UPKEEP', stack: vaults };
+    expect(autoAnswer(upkeep, priority, on)).toBe('pass');
+    // an instant in hand: the stop stays, so it can answer
+    expect(autoAnswer({ ...upkeep, canPlayObjects: { objects: { tomb, bolt: { basicCastAbilities: record } } } }, priority, on)).toBeNull();
+    // anything of an opponent's on the stack: the usual rules
+    expect(autoAnswer({ ...upkeep, stack: { a: { controllerId: 'me' }, c: { controllerId: 'them' } } as never }, priority, on)).toBeNull();
+    // the stack empty again: your permanents' abilities count on your turn, as before
+    expect(autoAnswer({ ...upkeep, stack: {} }, priority, on)).toBeNull();
+    expect(autoAnswer(upkeep, priority, { ...on, autoPass: false })).toBeNull();
+  });
   it('stops when there is something to cast, or when the setting is off', () => {
     expect(autoAnswer(view({ bolt: { basicCastAbilities: record } }), priority, on)).toBeNull();
     expect(autoAnswer(view({}), priority, { ...on, autoPass: false })).toBeNull();

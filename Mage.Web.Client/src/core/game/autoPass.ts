@@ -92,6 +92,12 @@ function noCombat(view: GameView): boolean {
     && !(view.combat ?? []).some((group) => Object.keys(group.attackers ?? {}).length > 0);
 }
 
+/** Something is on the stack, and all of it is the player's own. */
+function onlyMineOnTheStack(view: GameView): boolean {
+  const items = Object.values(view.stack ?? {});
+  return items.length > 0 && !!view.myPlayerId && items.every((item) => item.controllerId === view.myPlayerId);
+}
+
 export type AutoAnswer = 'pass' | 'noAttacks' | 'noBlocks';
 
 /** What to answer for the player right now, or null when the decision is theirs. */
@@ -110,6 +116,9 @@ export function autoAnswer(view: GameView | null | undefined, prompt: Prompt | n
       if (combatStopHere(view, settings.combatStops)) return null;
       // like Arena: when no creature attacks, the rest of combat goes by even with instants in hand
       if (settings.autoSkipCombat && noCombat(view)) return 'pass';
+      // like Arena: your own triggers and abilities (Mana Vault at upkeep, a land's trigger) resolve one after another
+      // unless you could respond with a spell; your permanents' abilities wait until the stack is empty
+      if (onlyMineOnTheStack(view)) return meaningfulPlays(view, false).length === 0 ? 'pass' : null;
       return meaningfulPlays(view, myTurn || settings.abilitiesOnTheirTurn).length === 0 ? 'pass' : null;
     }
     // the server stops listing creatures once they are declared: with everything chosen the list is empty too, and

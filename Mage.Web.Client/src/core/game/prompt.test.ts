@@ -187,6 +187,8 @@ describe('prompt helpers', () => {
 
   test('stripMarkup removes tags and decodes entities', () => {
     expect(stripMarkup('Pay <b>2</b>&nbsp;life&mdash;or&hellip;<br/>not &amp; &#65;')).toBe('Pay 2 life—or… not & A');
+    expect(stripMarkup('Pay {4} to untap Mana Vault? (ICON_GOOD<font color=#00ff00>Mana Vault is untapped</font>)'))
+      .toBe('Pay {4} to untap Mana Vault? (Mana Vault is untapped)');
     expect(stripMarkup(undefined)).toBe('');
   });
 });
