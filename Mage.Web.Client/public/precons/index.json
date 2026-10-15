@@ -1,0 +1,1312 @@
+[
+  {
+    "id": "commander-2011",
+    "name": "Commander 2011",
+    "year": 2011,
+    "decks": [
+      {
+        "file": "commander-2011/counterpunch.dck",
+        "name": "Counterpunch",
+        "cards": 100,
+        "commanders": [
+          "Ghave, Guru of Spores"
+        ],
+        "cover": {
+          "name": "Ghave, Guru of Spores",
+          "setCode": "CMD",
+          "cardNumber": "200"
+        }
+      },
+      {
+        "file": "commander-2011/devour-for-power.dck",
+        "name": "Devour for Power",
+        "cards": 100,
+        "commanders": [
+          "The Mimeoplasm"
+        ],
+        "cover": {
+          "name": "The Mimeoplasm",
+          "setCode": "CMD",
+          "cardNumber": "210"
+        }
+      },
+      {
+        "file": "commander-2011/heavenly-inferno.dck",
+        "name": "Heavenly Inferno",
+        "cards": 100,
+        "commanders": [
+          "Kaalia of the Vast"
+        ],
+        "cover": {
+          "name": "Kaalia of the Vast",
+          "setCode": "CMD",
+          "cardNumber": "206"
+        }
+      },
+      {
+        "file": "commander-2011/mirror-mastery.dck",
+        "name": "Mirror Mastery",
+        "cards": 100,
+        "commanders": [
+          "Riku of Two Reflections"
+        ],
+        "cover": {
+          "name": "Riku of Two Reflections",
+          "setCode": "CMD",
+          "cardNumber": "220"
+        }
+      },
+      {
+        "file": "commander-2011/political-puppets.dck",
+        "name": "Political Puppets",
+        "cards": 100,
+        "commanders": [
+          "Zedruu the Greathearted"
+        ],
+        "cover": {
+          "name": "Zedruu the Greathearted",
+          "setCode": "CMD",
+          "cardNumber": "240"
+        },
+        "changes": [
+          "Trade Secrets is banned in Commander: an Island plays in its place."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "commander-2013",
+    "name": "Commander 2013",
+    "year": 2013,
+    "decks": [
+      {
+        "file": "commander-2013/eternal-bargain.dck",
+        "name": "Eternal Bargain",
+        "cards": 100,
+        "commanders": [
+          "Oloro, Ageless Ascetic"
+        ],
+        "cover": {
+          "name": "Oloro, Ageless Ascetic",
+          "setCode": "C13",
+          "cardNumber": "203"
+        }
+      },
+      {
+        "file": "commander-2013/evasive-maneuvers.dck",
+        "name": "Evasive Maneuvers",
+        "cards": 100,
+        "commanders": [
+          "Derevi, Empyrial Tactician"
+        ],
+        "cover": {
+          "name": "Derevi, Empyrial Tactician",
+          "setCode": "C13",
+          "cardNumber": "186"
+        }
+      },
+      {
+        "file": "commander-2013/mind-seize.dck",
+        "name": "Mind Seize",
+        "cards": 100,
+        "commanders": [
+          "Jeleva, Nephalia's Scourge"
+        ],
+        "cover": {
+          "name": "Jeleva, Nephalia's Scourge",
+          "setCode": "C13",
+          "cardNumber": "194"
+        }
+      },
+      {
+        "file": "commander-2013/nature-of-the-beast.dck",
+        "name": "Nature of the Beast",
+        "cards": 100,
+        "commanders": [
+          "Marath, Will of the Wild"
+        ],
+        "cover": {
+          "name": "Marath, Will of the Wild",
+          "setCode": "C13",
+          "cardNumber": "198"
+        }
+      },
+      {
+        "file": "commander-2013/power-hungry.dck",
+        "name": "Power Hungry",
+        "cards": 100,
+        "commanders": [
+          "Prossh, Skyraider of Kher"
+        ],
+        "cover": {
+          "name": "Prossh, Skyraider of Kher",
+          "setCode": "C13",
+          "cardNumber": "204"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2014",
+    "name": "Commander 2014",
+    "year": 2014,
+    "decks": [
+      {
+        "file": "commander-2014/built-from-scratch.dck",
+        "name": "Built from Scratch",
+        "cards": 100,
+        "commanders": [
+          "Daretti, Scrap Savant"
+        ],
+        "cover": {
+          "name": "Daretti, Scrap Savant",
+          "setCode": "C14",
+          "cardNumber": "33"
+        }
+      },
+      {
+        "file": "commander-2014/forged-in-stone.dck",
+        "name": "Forged in Stone",
+        "cards": 100,
+        "commanders": [
+          "Nahiri, the Lithomancer"
+        ],
+        "cover": {
+          "name": "Nahiri, the Lithomancer",
+          "setCode": "C14",
+          "cardNumber": "10"
+        }
+      },
+      {
+        "file": "commander-2014/guided-by-nature.dck",
+        "name": "Guided by Nature",
+        "cards": 100,
+        "commanders": [
+          "Freyalise, Llanowar's Fury"
+        ],
+        "cover": {
+          "name": "Freyalise, Llanowar's Fury",
+          "setCode": "C14",
+          "cardNumber": "43"
+        }
+      },
+      {
+        "file": "commander-2014/peer-through-time.dck",
+        "name": "Peer Through Time",
+        "cards": 100,
+        "commanders": [
+          "Teferi, Temporal Archmage"
+        ],
+        "cover": {
+          "name": "Teferi, Temporal Archmage",
+          "setCode": "C14",
+          "cardNumber": "19"
+        }
+      },
+      {
+        "file": "commander-2014/sworn-to-darkness.dck",
+        "name": "Sworn to Darkness",
+        "cards": 100,
+        "commanders": [
+          "Ob Nixilis of the Black Oath"
+        ],
+        "cover": {
+          "name": "Ob Nixilis of the Black Oath",
+          "setCode": "C14",
+          "cardNumber": "27"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2015",
+    "name": "Commander 2015",
+    "year": 2015,
+    "decks": [
+      {
+        "file": "commander-2015/call-the-spirits.dck",
+        "name": "Call the Spirits",
+        "cards": 100,
+        "commanders": [
+          "Daxos the Returned"
+        ],
+        "cover": {
+          "name": "Daxos the Returned",
+          "setCode": "C15",
+          "cardNumber": "43"
+        }
+      },
+      {
+        "file": "commander-2015/plunder-the-graves.dck",
+        "name": "Plunder the Graves",
+        "cards": 100,
+        "commanders": [
+          "Meren of Clan Nel Toth"
+        ],
+        "cover": {
+          "name": "Meren of Clan Nel Toth",
+          "setCode": "C15",
+          "cardNumber": "49"
+        }
+      },
+      {
+        "file": "commander-2015/seize-control.dck",
+        "name": "Seize Control",
+        "cards": 100,
+        "commanders": [
+          "Mizzix of the Izmagnus"
+        ],
+        "cover": {
+          "name": "Mizzix of the Izmagnus",
+          "setCode": "C15",
+          "cardNumber": "50"
+        }
+      },
+      {
+        "file": "commander-2015/swell-the-host.dck",
+        "name": "Swell the Host",
+        "cards": 100,
+        "commanders": [
+          "Ezuri, Claw of Progress"
+        ],
+        "cover": {
+          "name": "Ezuri, Claw of Progress",
+          "setCode": "C15",
+          "cardNumber": "44"
+        }
+      },
+      {
+        "file": "commander-2015/wade-into-battle.dck",
+        "name": "Wade into Battle",
+        "cards": 100,
+        "commanders": [
+          "Kalemne, Disciple of Iroas"
+        ],
+        "cover": {
+          "name": "Kalemne, Disciple of Iroas",
+          "setCode": "C15",
+          "cardNumber": "45"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2016",
+    "name": "Commander 2016",
+    "year": 2016,
+    "decks": [
+      {
+        "file": "commander-2016/breed-lethality.dck",
+        "name": "Breed Lethality",
+        "cards": 100,
+        "commanders": [
+          "Atraxa, Praetors' Voice"
+        ],
+        "cover": {
+          "name": "Atraxa, Praetors' Voice",
+          "setCode": "C16",
+          "cardNumber": "28"
+        }
+      },
+      {
+        "file": "commander-2016/entropic-uprising.dck",
+        "name": "Entropic Uprising",
+        "cards": 100,
+        "commanders": [
+          "Yidris, Maelstrom Wielder"
+        ],
+        "cover": {
+          "name": "Yidris, Maelstrom Wielder",
+          "setCode": "C16",
+          "cardNumber": "50"
+        }
+      },
+      {
+        "file": "commander-2016/invent-superiority.dck",
+        "name": "Invent Superiority",
+        "cards": 100,
+        "commanders": [
+          "Breya, Etherium Shaper"
+        ],
+        "cover": {
+          "name": "Breya, Etherium Shaper",
+          "setCode": "C16",
+          "cardNumber": "29"
+        }
+      },
+      {
+        "file": "commander-2016/open-hostility.dck",
+        "name": "Open Hostility",
+        "cards": 100,
+        "commanders": [
+          "Saskia the Unyielding"
+        ],
+        "cover": {
+          "name": "Saskia the Unyielding",
+          "setCode": "C16",
+          "cardNumber": "41"
+        }
+      },
+      {
+        "file": "commander-2016/stalwart-unity.dck",
+        "name": "Stalwart Unity",
+        "cards": 100,
+        "commanders": [
+          "Kynaios and Tiro of Meletis"
+        ],
+        "cover": {
+          "name": "Kynaios and Tiro of Meletis",
+          "setCode": "C16",
+          "cardNumber": "36"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2017",
+    "name": "Commander 2017",
+    "year": 2017,
+    "decks": [
+      {
+        "file": "commander-2017/arcane-wizardry.dck",
+        "name": "Arcane Wizardry",
+        "cards": 100,
+        "commanders": [
+          "Inalla, Archmage Ritualist"
+        ],
+        "cover": {
+          "name": "Inalla, Archmage Ritualist",
+          "setCode": "C17",
+          "cardNumber": "38"
+        }
+      },
+      {
+        "file": "commander-2017/draconic-domination.dck",
+        "name": "Draconic Domination",
+        "cards": 100,
+        "commanders": [
+          "The Ur-Dragon"
+        ],
+        "cover": {
+          "name": "The Ur-Dragon",
+          "setCode": "C17",
+          "cardNumber": "48"
+        }
+      },
+      {
+        "file": "commander-2017/feline-ferocity.dck",
+        "name": "Feline Ferocity",
+        "cards": 100,
+        "commanders": [
+          "Arahbo, Roar of the World"
+        ],
+        "cover": {
+          "name": "Arahbo, Roar of the World",
+          "setCode": "C17",
+          "cardNumber": "35"
+        }
+      },
+      {
+        "file": "commander-2017/vampiric-bloodlust.dck",
+        "name": "Vampiric Bloodlust",
+        "cards": 100,
+        "commanders": [
+          "Edgar Markov"
+        ],
+        "cover": {
+          "name": "Edgar Markov",
+          "setCode": "C17",
+          "cardNumber": "36"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2018",
+    "name": "Commander 2018",
+    "year": 2018,
+    "decks": [
+      {
+        "file": "commander-2018/adaptive-enchantment.dck",
+        "name": "Adaptive Enchantment",
+        "cards": 100,
+        "commanders": [
+          "Estrid, the Masked"
+        ],
+        "cover": {
+          "name": "Estrid, the Masked",
+          "setCode": "C18",
+          "cardNumber": "40"
+        }
+      },
+      {
+        "file": "commander-2018/exquisite-invention.dck",
+        "name": "Exquisite Invention",
+        "cards": 100,
+        "commanders": [
+          "Saheeli, the Gifted"
+        ],
+        "cover": {
+          "name": "Saheeli, the Gifted",
+          "setCode": "C18",
+          "cardNumber": "44"
+        }
+      },
+      {
+        "file": "commander-2018/nature-s-vengeance.dck",
+        "name": "Nature's Vengeance",
+        "cards": 100,
+        "commanders": [
+          "Lord Windgrace"
+        ],
+        "cover": {
+          "name": "Lord Windgrace",
+          "setCode": "C18",
+          "cardNumber": "43"
+        }
+      },
+      {
+        "file": "commander-2018/subjective-reality.dck",
+        "name": "Subjective Reality",
+        "cards": 100,
+        "commanders": [
+          "Aminatou, the Fateshifter"
+        ],
+        "cover": {
+          "name": "Aminatou, the Fateshifter",
+          "setCode": "C18",
+          "cardNumber": "37"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2019",
+    "name": "Commander 2019",
+    "year": 2019,
+    "decks": [
+      {
+        "file": "commander-2019/faceless-menace.dck",
+        "name": "Faceless Menace",
+        "cards": 100,
+        "commanders": [
+          "Kadena, Slinking Sorcerer"
+        ],
+        "cover": {
+          "name": "Kadena, Slinking Sorcerer",
+          "setCode": "C19",
+          "cardNumber": "45"
+        }
+      },
+      {
+        "file": "commander-2019/merciless-rage.dck",
+        "name": "Merciless Rage",
+        "cards": 100,
+        "commanders": [
+          "Anje Falkenrath"
+        ],
+        "cover": {
+          "name": "Anje Falkenrath",
+          "setCode": "C19",
+          "cardNumber": "37"
+        }
+      },
+      {
+        "file": "commander-2019/mystic-intellect.dck",
+        "name": "Mystic Intellect",
+        "cards": 100,
+        "commanders": [
+          "Sevinne, the Chronoclasm"
+        ],
+        "cover": {
+          "name": "Sevinne, the Chronoclasm",
+          "setCode": "C19",
+          "cardNumber": "49"
+        },
+        "changes": [
+          "Dockside Extortionist is banned in Commander: a Mountain plays in its place."
+        ]
+      },
+      {
+        "file": "commander-2019/primal-genesis.dck",
+        "name": "Primal Genesis",
+        "cards": 100,
+        "commanders": [
+          "Ghired, Conclave Exile"
+        ],
+        "cover": {
+          "name": "Ghired, Conclave Exile",
+          "setCode": "C19",
+          "cardNumber": "42"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2020",
+    "name": "Commander 2020",
+    "year": 2020,
+    "decks": [
+      {
+        "file": "commander-2020/arcane-maelstrom.dck",
+        "name": "Arcane Maelstrom",
+        "cards": 100,
+        "commanders": [
+          "Kalamax, the Stormsire"
+        ],
+        "cover": {
+          "name": "Kalamax, the Stormsire",
+          "setCode": "C20",
+          "cardNumber": "9"
+        }
+      },
+      {
+        "file": "commander-2020/ruthless-regiment.dck",
+        "name": "Ruthless Regiment",
+        "cards": 100,
+        "commanders": [
+          "Jirina Kudro"
+        ],
+        "cover": {
+          "name": "Jirina Kudro",
+          "setCode": "C20",
+          "cardNumber": "8"
+        }
+      },
+      {
+        "file": "commander-2020/symbiotic-swarm.dck",
+        "name": "Symbiotic Swarm",
+        "cards": 100,
+        "commanders": [
+          "Kathril, Aspect Warper"
+        ],
+        "cover": {
+          "name": "Kathril, Aspect Warper",
+          "setCode": "C20",
+          "cardNumber": "10"
+        }
+      },
+      {
+        "file": "commander-2020/timeless-wisdom.dck",
+        "name": "Timeless Wisdom",
+        "cards": 100,
+        "commanders": [
+          "Gavi, Nest Warden"
+        ],
+        "cover": {
+          "name": "Gavi, Nest Warden",
+          "setCode": "C20",
+          "cardNumber": "7"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-legends",
+    "name": "Commander Legends",
+    "year": 2020,
+    "decks": [
+      {
+        "file": "commander-legends/arm-for-battle.dck",
+        "name": "Arm for Battle",
+        "cards": 100,
+        "commanders": [
+          "Wyleth, Soul of Steel"
+        ],
+        "cover": {
+          "name": "Wyleth, Soul of Steel",
+          "setCode": "CMR",
+          "cardNumber": "362"
+        }
+      },
+      {
+        "file": "commander-legends/reap-the-tides.dck",
+        "name": "Reap the Tides",
+        "cards": 100,
+        "commanders": [
+          "Aesi, Tyrant of Gyre Strait"
+        ],
+        "cover": {
+          "name": "Aesi, Tyrant of Gyre Strait",
+          "setCode": "CMR",
+          "cardNumber": "365"
+        }
+      }
+    ]
+  },
+  {
+    "id": "zendikar-rising",
+    "name": "Zendikar Rising",
+    "year": 2020,
+    "decks": [
+      {
+        "file": "zendikar-rising/land-s-wrath.dck",
+        "name": "Land's Wrath",
+        "cards": 100,
+        "commanders": [
+          "Obuun, Mul Daya Ancestor"
+        ],
+        "cover": {
+          "name": "Obuun, Mul Daya Ancestor",
+          "setCode": "ZNC",
+          "cardNumber": "2"
+        }
+      },
+      {
+        "file": "zendikar-rising/sneak-attack.dck",
+        "name": "Sneak Attack",
+        "cards": 100,
+        "commanders": [
+          "Anowon, the Ruin Thief"
+        ],
+        "cover": {
+          "name": "Anowon, the Ruin Thief",
+          "setCode": "ZNC",
+          "cardNumber": "1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "adventures-in-the-forgotten-realms-2021",
+    "name": "Adventures in the Forgotten Realms",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "adventures-in-the-forgotten-realms-2021/aura-of-courage.dck",
+        "name": "Aura of Courage",
+        "cards": 100,
+        "commanders": [
+          "Galea, Kindler of Hope"
+        ],
+        "cover": {
+          "name": "Galea, Kindler of Hope",
+          "setCode": "AFC",
+          "cardNumber": "1"
+        }
+      },
+      {
+        "file": "adventures-in-the-forgotten-realms-2021/draconic-rage.dck",
+        "name": "Draconic Rage",
+        "cards": 100,
+        "commanders": [
+          "Vrondiss, Rage of Ancients"
+        ],
+        "cover": {
+          "name": "Vrondiss, Rage of Ancients",
+          "setCode": "AFC",
+          "cardNumber": "328"
+        }
+      },
+      {
+        "file": "adventures-in-the-forgotten-realms-2021/dungeons-of-death.dck",
+        "name": "Dungeons of Death",
+        "cards": 100,
+        "commanders": [
+          "Sefris of the Hidden Ways"
+        ],
+        "cover": {
+          "name": "Sefris of the Hidden Ways",
+          "setCode": "AFC",
+          "cardNumber": "3"
+        }
+      },
+      {
+        "file": "adventures-in-the-forgotten-realms-2021/planar-portal.dck",
+        "name": "Planar Portal",
+        "cards": 100,
+        "commanders": [
+          "Prosper, Tome-Bound"
+        ],
+        "cover": {
+          "name": "Prosper, Tome-Bound",
+          "setCode": "AFC",
+          "cardNumber": "2"
+        }
+      }
+    ]
+  },
+  {
+    "id": "commander-2021",
+    "name": "Commander 2021",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "commander-2021/lorehold-legacies.dck",
+        "name": "Lorehold Legacies",
+        "cards": 100,
+        "commanders": [
+          "Osgir, the Reconstructor"
+        ],
+        "cover": {
+          "name": "Osgir, the Reconstructor",
+          "setCode": "C21",
+          "cardNumber": "335"
+        }
+      },
+      {
+        "file": "commander-2021/prismari-performance.dck",
+        "name": "Prismari Performance",
+        "cards": 100,
+        "commanders": [
+          "Zaffai, Thunder Conductor"
+        ],
+        "cover": {
+          "name": "Zaffai, Thunder Conductor",
+          "setCode": "C21",
+          "cardNumber": "331"
+        }
+      },
+      {
+        "file": "commander-2021/quantum-quandrix.dck",
+        "name": "Quantum Quandrix",
+        "cards": 100,
+        "commanders": [
+          "Adrix and Nev, Twincasters"
+        ],
+        "cover": {
+          "name": "Adrix and Nev, Twincasters",
+          "setCode": "MKC",
+          "cardNumber": "198"
+        }
+      },
+      {
+        "file": "commander-2021/silverquill-statement.dck",
+        "name": "Silverquill Statement",
+        "cards": 100,
+        "commanders": [
+          "Breena, the Demagogue"
+        ],
+        "cover": {
+          "name": "Breena, the Demagogue",
+          "setCode": "OTC",
+          "cardNumber": "217"
+        }
+      },
+      {
+        "file": "commander-2021/witherbloom-witchcraft.dck",
+        "name": "Witherbloom Witchcraft",
+        "cards": 100,
+        "commanders": [
+          "Willowdusk, Essence Seer"
+        ],
+        "cover": {
+          "name": "Willowdusk, Essence Seer",
+          "setCode": "C21",
+          "cardNumber": "333"
+        }
+      }
+    ]
+  },
+  {
+    "id": "innistrad-crimson-vow-2021",
+    "name": "Innistrad Crimson Vow",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "innistrad-crimson-vow-2021/spirit-squadron.dck",
+        "name": "Spirit Squadron",
+        "cards": 100,
+        "commanders": [
+          "Millicent, Restless Revenant"
+        ],
+        "cover": {
+          "name": "Millicent, Restless Revenant",
+          "setCode": "VOC",
+          "cardNumber": "1"
+        }
+      },
+      {
+        "file": "innistrad-crimson-vow-2021/vampiric-bloodline.dck",
+        "name": "Vampiric Bloodline",
+        "cards": 100,
+        "commanders": [
+          "Strefan, Maurer Progenitor"
+        ],
+        "cover": {
+          "name": "Strefan, Maurer Progenitor",
+          "setCode": "VOC",
+          "cardNumber": "2"
+        }
+      }
+    ]
+  },
+  {
+    "id": "innistrad-midnight-hunt-2021",
+    "name": "Innistrad Midnight Hunt",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "innistrad-midnight-hunt-2021/coven-counters.dck",
+        "name": "Coven Counters",
+        "cards": 100,
+        "commanders": [
+          "Leinore, Autumn Sovereign"
+        ],
+        "cover": {
+          "name": "Leinore, Autumn Sovereign",
+          "setCode": "MIC",
+          "cardNumber": "1"
+        }
+      },
+      {
+        "file": "innistrad-midnight-hunt-2021/undead-unleashed.dck",
+        "name": "Undead Unleashed",
+        "cards": 100,
+        "commanders": [
+          "Wilhelt, the Rotcleaver"
+        ],
+        "cover": {
+          "name": "Wilhelt, the Rotcleaver",
+          "setCode": "MIC",
+          "cardNumber": "2"
+        }
+      }
+    ]
+  },
+  {
+    "id": "kaldheim",
+    "name": "Kaldheim",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "kaldheim/elven-empire.dck",
+        "name": "Elven Empire",
+        "cards": 100,
+        "commanders": [
+          "Lathril, Blade of the Elves"
+        ],
+        "cover": {
+          "name": "Lathril, Blade of the Elves",
+          "setCode": "KHC",
+          "cardNumber": "1"
+        }
+      },
+      {
+        "file": "kaldheim/phantom-premonition.dck",
+        "name": "Phantom Premonition",
+        "cards": 100,
+        "commanders": [
+          "Ranar the Ever-Watchful"
+        ],
+        "cover": {
+          "name": "Ranar the Ever-Watchful",
+          "setCode": "KHC",
+          "cardNumber": "2"
+        }
+      }
+    ]
+  },
+  {
+    "id": "secret-lair-heads-i-win-tails-you-lose-2021",
+    "name": "SECRET LAIR Heads I Win, Tails You Lose",
+    "year": 2021,
+    "decks": [
+      {
+        "file": "secret-lair-heads-i-win-tails-you-lose-2021/heads-i-win-tails-you-lose.dck",
+        "name": "Heads I Win, Tails You Lose",
+        "cards": 100,
+        "commanders": [
+          "Okaun, Eye of Chaos",
+          "Zndrsplt, Eye of Wisdom"
+        ],
+        "cover": {
+          "name": "Okaun, Eye of Chaos",
+          "setCode": "SLD",
+          "cardNumber": "380"
+        }
+      }
+    ]
+  },
+  {
+    "id": "kamigawa-neon-dynasty-2022",
+    "name": "Kamigawa Neon Dynasty",
+    "year": 2022,
+    "decks": [
+      {
+        "file": "kamigawa-neon-dynasty-2022/buckle-up.dck",
+        "name": "Buckle Up",
+        "cards": 100,
+        "commanders": [
+          "Kotori, Pilot Prodigy"
+        ],
+        "cover": {
+          "name": "Kotori, Pilot Prodigy",
+          "setCode": "NEC",
+          "cardNumber": "2"
+        }
+      },
+      {
+        "file": "kamigawa-neon-dynasty-2022/upgrades-unleashed.dck",
+        "name": "Upgrades Unleashed",
+        "cards": 100,
+        "commanders": [
+          "Chishiro, the Shattered Blade"
+        ],
+        "cover": {
+          "name": "Chishiro, the Shattered Blade",
+          "setCode": "NEC",
+          "cardNumber": "1"
+        },
+        "changes": [
+          "The source list had two Mossfire Valleys; the second is a Mountain."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "streets-of-new-capenna-2022",
+    "name": "Streets of New Capenna",
+    "year": 2022,
+    "decks": [
+      {
+        "file": "streets-of-new-capenna-2022/bedecked-brokers.dck",
+        "name": "Bedecked Brokers",
+        "cards": 100,
+        "commanders": [
+          "Perrie, the Pulverizer"
+        ],
+        "cover": {
+          "name": "Perrie, the Pulverizer",
+          "setCode": "NCC",
+          "cardNumber": "5"
+        }
+      },
+      {
+        "file": "streets-of-new-capenna-2022/cabaretti-cacophony.dck",
+        "name": "Cabaretti Cacophony",
+        "cards": 100,
+        "commanders": [
+          "Kitt Kanto, Mayhem Diva"
+        ],
+        "cover": {
+          "name": "Kitt Kanto, Mayhem Diva",
+          "setCode": "NCC",
+          "cardNumber": "4"
+        }
+      },
+      {
+        "file": "streets-of-new-capenna-2022/maestros-massacre.dck",
+        "name": "Maestros Massacre",
+        "cards": 100,
+        "commanders": [
+          "Anhelo, the Painter"
+        ],
+        "cover": {
+          "name": "Anhelo, the Painter",
+          "setCode": "NCC",
+          "cardNumber": "1"
+        }
+      },
+      {
+        "file": "streets-of-new-capenna-2022/obscura-operation.dck",
+        "name": "Obscura Operation",
+        "cards": 100,
+        "commanders": [
+          "Kamiz, Obscura Oculus"
+        ],
+        "cover": {
+          "name": "Kamiz, Obscura Oculus",
+          "setCode": "NCC",
+          "cardNumber": "3"
+        }
+      }
+    ]
+  },
+  {
+    "id": "duskmourn-house-of-horror-2024",
+    "name": "Duskmourn - House of Horror",
+    "year": 2024,
+    "decks": [
+      {
+        "file": "duskmourn-house-of-horror-2024/endless-punishment.dck",
+        "name": "Endless Punishment",
+        "cards": 100,
+        "commanders": [
+          "Valgavoth, Harrower of Souls"
+        ],
+        "cover": {
+          "name": "Valgavoth, Harrower of Souls",
+          "setCode": "DSC",
+          "cardNumber": "6"
+        }
+      },
+      {
+        "file": "duskmourn-house-of-horror-2024/jump-scare.dck",
+        "name": "Jump Scare",
+        "cards": 100,
+        "commanders": [
+          "Zimone, Mystery Unraveler"
+        ],
+        "cover": {
+          "name": "Zimone, Mystery Unraveler",
+          "setCode": "DSC",
+          "cardNumber": "8"
+        }
+      }
+    ]
+  },
+  {
+    "id": "modern-horizons-3-2024",
+    "name": "Modern Horizons 3",
+    "year": 2024,
+    "decks": [
+      {
+        "file": "modern-horizons-3-2024/creative-energy.dck",
+        "name": "Creative Energy",
+        "cards": 100,
+        "commanders": [
+          "Satya, Aetherflux Genius"
+        ],
+        "cover": {
+          "name": "Satya, Aetherflux Genius",
+          "setCode": "M3C",
+          "cardNumber": "3"
+        }
+      },
+      {
+        "file": "modern-horizons-3-2024/eldrazi-incursion.dck",
+        "name": "Eldrazi Incursion",
+        "cards": 100,
+        "commanders": [
+          "Ulalek, Fused Atrocity"
+        ],
+        "cover": {
+          "name": "Ulalek, Fused Atrocity",
+          "setCode": "M3C",
+          "cardNumber": "4"
+        }
+      },
+      {
+        "file": "modern-horizons-3-2024/graveyard-overdrive.dck",
+        "name": "Graveyard Overdrive",
+        "cards": 100,
+        "commanders": [
+          "Disa the Restless"
+        ],
+        "cover": {
+          "name": "Disa the Restless",
+          "setCode": "M3C",
+          "cardNumber": "1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "aetherdrift-2025",
+    "name": "Aetherdrift",
+    "year": 2025,
+    "decks": [
+      {
+        "file": "aetherdrift-2025/eternal-might.dck",
+        "name": "Eternal Might",
+        "cards": 100,
+        "commanders": [
+          "Temmet, Naktamun's Will"
+        ],
+        "cover": {
+          "name": "Temmet, Naktamun's Will",
+          "setCode": "DRC",
+          "cardNumber": "4"
+        }
+      },
+      {
+        "file": "aetherdrift-2025/living-energy.dck",
+        "name": "Living Energy",
+        "cards": 100,
+        "commanders": [
+          "Saheeli, Radiant Creator"
+        ],
+        "cover": {
+          "name": "Saheeli, Radiant Creator",
+          "setCode": "DRC",
+          "cardNumber": "3"
+        }
+      }
+    ]
+  },
+  {
+    "id": "edge-of-eternities-2025",
+    "name": "Edge of Eternities",
+    "year": 2025,
+    "decks": [
+      {
+        "file": "edge-of-eternities-2025/counter-intelligence.dck",
+        "name": "Counter Intelligence",
+        "cards": 100,
+        "commanders": [
+          "Inspirit, Flagship Vessel"
+        ],
+        "cover": {
+          "name": "Inspirit, Flagship Vessel",
+          "setCode": "EOC",
+          "cardNumber": "2"
+        }
+      },
+      {
+        "file": "edge-of-eternities-2025/world-shaper.dck",
+        "name": "World Shaper",
+        "cards": 100,
+        "commanders": [
+          "Hearthhull, the Worldseed"
+        ],
+        "cover": {
+          "name": "Hearthhull, the Worldseed",
+          "setCode": "EOC",
+          "cardNumber": "1"
+        }
+      }
+    ]
+  },
+  {
+    "id": "final-fantasy-2025",
+    "name": "Final Fantasy",
+    "year": 2025,
+    "decks": [
+      {
+        "file": "final-fantasy-2025/counter-blitz.dck",
+        "name": "Counter Blitz",
+        "cards": 100,
+        "commanders": [
+          "Tidus, Yuna's Guardian"
+        ],
+        "cover": {
+          "name": "Tidus, Yuna's Guardian",
+          "setCode": "FIC",
+          "cardNumber": "5"
+        }
+      },
+      {
+        "file": "final-fantasy-2025/limit-break.dck",
+        "name": "Limit Break",
+        "cards": 100,
+        "commanders": [
+          "Cloud, Ex-SOLDIER"
+        ],
+        "cover": {
+          "name": "Cloud, Ex-SOLDIER",
+          "setCode": "FIC",
+          "cardNumber": "2"
+        }
+      },
+      {
+        "file": "final-fantasy-2025/revival-trance.dck",
+        "name": "Revival Trance",
+        "cards": 100,
+        "commanders": [
+          "Terra, Herald of Hope"
+        ],
+        "cover": {
+          "name": "Terra, Herald of Hope",
+          "setCode": "FIC",
+          "cardNumber": "4"
+        }
+      },
+      {
+        "file": "final-fantasy-2025/scions-spellcraft.dck",
+        "name": "Scions & Spellcraft",
+        "cards": 100,
+        "commanders": [
+          "Y'shtola, Night's Blessed"
+        ],
+        "cover": {
+          "name": "Y'shtola, Night's Blessed",
+          "setCode": "FIC",
+          "cardNumber": "7"
+        }
+      }
+    ]
+  },
+  {
+    "id": "tarkir-dragonstorm-2025",
+    "name": "Tarkir Dragonstorm",
+    "year": 2025,
+    "decks": [
+      {
+        "file": "tarkir-dragonstorm-2025/abzan-armor.dck",
+        "name": "Abzan Armor",
+        "cards": 100,
+        "commanders": [
+          "Felothar the Steadfast"
+        ],
+        "cover": {
+          "name": "Felothar the Steadfast",
+          "setCode": "TDC",
+          "cardNumber": "4"
+        }
+      },
+      {
+        "file": "tarkir-dragonstorm-2025/jeskai-striker.dck",
+        "name": "Jeskai Striker",
+        "cards": 100,
+        "commanders": [
+          "Shiko and Narset, Unified"
+        ],
+        "cover": {
+          "name": "Shiko and Narset, Unified",
+          "setCode": "TDC",
+          "cardNumber": "7"
+        }
+      },
+      {
+        "file": "tarkir-dragonstorm-2025/mardu-surge.dck",
+        "name": "Mardu Surge",
+        "cards": 100,
+        "commanders": [
+          "Zurgo Stormrender"
+        ],
+        "cover": {
+          "name": "Zurgo Stormrender",
+          "setCode": "TDC",
+          "cardNumber": "10"
+        }
+      },
+      {
+        "file": "tarkir-dragonstorm-2025/sultai-arisen.dck",
+        "name": "Sultai Arisen",
+        "cards": 100,
+        "commanders": [
+          "Teval, the Balanced Scale"
+        ],
+        "cover": {
+          "name": "Teval, the Balanced Scale",
+          "setCode": "TDC",
+          "cardNumber": "8"
+        }
+      },
+      {
+        "file": "tarkir-dragonstorm-2025/temur-roar.dck",
+        "name": "Temur Roar",
+        "cards": 100,
+        "commanders": [
+          "Eshki, Temur's Roar"
+        ],
+        "cover": {
+          "name": "Eshki, Temur's Roar",
+          "setCode": "TDC",
+          "cardNumber": "3"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lorwyn-eclipsed-2026",
+    "name": "Lorwyn Eclipsed",
+    "year": 2026,
+    "decks": [
+      {
+        "file": "lorwyn-eclipsed-2026/blight-curse.dck",
+        "name": "Blight Curse",
+        "cards": 100,
+        "commanders": [
+          "Auntie Ool, Cursewretch"
+        ],
+        "cover": {
+          "name": "Auntie Ool, Cursewretch",
+          "setCode": "ECC",
+          "cardNumber": "2"
+        }
+      }
+    ]
+  }
+]

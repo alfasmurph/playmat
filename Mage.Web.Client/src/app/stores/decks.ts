@@ -17,6 +17,26 @@ export interface StarterDeck {
   format?: string;
 }
 
+/** A real Commander precon (public/precons, built by scripts/build-precons.mjs). */
+export interface PreconDeck {
+  /** its file under /precons, which makes its id ("precon:<file>") */
+  file: string;
+  name: string;
+  cards: number;
+  commanders: string[];
+  cover: { name: string; setCode: string; cardNumber: string };
+  /** what was changed to make it legal today (a card banned since swapped for a basic land) */
+  changes?: string[];
+}
+
+/** A product line's precons, as released (the index is oldest first). */
+export interface PreconSet {
+  id: string;
+  name: string;
+  year: number;
+  decks: PreconDeck[];
+}
+
 /** The two shelves of Play: commander decks, and every other (60-card) deck. */
 export type DeckKind = 'commander' | 'standard';
 
@@ -32,6 +52,8 @@ export interface RosterDeck {
   cover: { name?: string; setCode: string; cardNumber: string } | null;
   colors: string[];
   starter: StarterDeck | null;
+  /** a Commander precon being tried out: it's on the shelf while selected, and plays as printed */
+  precon?: { set: string; year: number; changes?: string[] };
   /** a saved copy of a starter deck (it keeps the starter's name), made when the starter was first played */
   fromStarter?: boolean;
   /** the deck website it was imported from */
@@ -51,6 +73,9 @@ const PLAYING_KEY = 'playmat.playingDeck';
 export const STARTER_PREFIX = 'starter:';
 /** a deck another player shares: "shared:<owner>:<deck id>" */
 export const SHARED_PREFIX = 'shared:';
+/** a Commander precon: "precon:<file under /precons>" */
+export const PRECON_PREFIX = 'precon:';
+const COMMANDER_FORMAT = 'Variant Magic - Commander';
 
 const COLOR_ORDER = ['white', 'blue', 'black', 'red', 'green'] as const;
 const COLOR_LETTER: Record<(typeof COLOR_ORDER)[number], string> = { white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' };
@@ -131,6 +156,10 @@ function starterToRoster(starter: StarterDeck): RosterDeck {
 export interface DeckLibraryState {
   saved: RosterDeck[];
   starters: StarterDeck[];
+  /** the Commander precons, by set, oldest first; empty until loadPrecons */
+  precons: PreconSet[];
+  /** reads the precon index (once) */
+  loadPrecons(): Promise<PreconSet[]>;
   /** decks other players share with everyone on the server, and their lists */
   shared: RosterDeck[];
   sharedLists: Record<string, DeckCardLists>;
@@ -186,6 +215,7 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   saved: [],
   starters: [],
   selectedId: readJson<string | null>(SELECTED_KEY, null),
+  precons: [],
   sleeves: readJson<Record<string, string>>(SLEEVES_KEY, {}),
   playingId: readJson<string | null>(PLAYING_KEY, null),
   shared: [],
@@ -228,11 +258,31 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     await get().refresh();
   },
 
+  async loadPrecons() {
+    if (get().precons.length) return get().precons;
+    let precons: PreconSet[] = [];
+    try {
+      const response = await fetch('/precons/index.json');
+      precons = response.ok ? ((await response.json()) as PreconSet[]) : [];
+    } catch {
+      precons = [];
+    }
+    set({ precons });
+    return precons;
+  },
+
   async refresh() {
     const [summaries, starters] = await Promise.all([deckStorage.listDecks(), get().starters.length ? get().starters : fetchStarters()]);
     const saved = summaries.map(summaryToRoster);
     let selectedId = get().selectedId;
-    const known = new Set([...saved.map((deck) => deck.id), ...get().shared.map((deck) => deck.id), ...starters.map((starter) => STARTER_PREFIX + starter.file)]);
+    // a precon being tried out stays selected while it's still in the index
+    if (selectedId?.startsWith(PRECON_PREFIX)) await get().loadPrecons();
+    const known = new Set([
+      ...saved.map((deck) => deck.id),
+      ...get().shared.map((deck) => deck.id),
+      ...starters.map((starter) => STARTER_PREFIX + starter.file),
+      ...get().precons.flatMap((preconSet) => preconSet.decks.map((deck) => PRECON_PREFIX + deck.file)),
+    ]);
     // a shared deck's list arrives just after: its selection waits for it
     if (!selectedId || (!known.has(selectedId) && !selectedId.startsWith(SHARED_PREFIX))) {
       selectedId = saved[0]?.id ?? (starters[0] ? STARTER_PREFIX + starters[0].file : null);
@@ -273,8 +323,8 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
       get().select(savedId);
       return playing({ deck, id: savedId });
     }
-    if (id.startsWith(SHARED_PREFIX)) {
-      // someone else's deck plays as they last saved it; nothing is copied
+    if (id.startsWith(SHARED_PREFIX) || id.startsWith(PRECON_PREFIX)) {
+      // someone else's deck plays as they last saved it, a precon as printed; nothing is copied
       return playing({ deck: await get().loadList(id), id });
     }
     const deck = await deckStorage.loadDeck(id);
@@ -306,10 +356,13 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     // the copy wears the original's sleeves; an unsleeved deck's copy stays unsleeved
     const sleeve = get().sleeves[id] ?? null;
     const starter = id.startsWith(STARTER_PREFIX);
-    const name = copyName(deck.name, taken);
+    // a precon's first copy keeps the precon's name: it's your deck now, and the precon leaves the shelf
+    const preconName = id.startsWith(PRECON_PREFIX) && !get().saved.some((entry) => entry.name === deck.name);
+    const name = preconName ? deck.name : copyName(deck.name, taken);
     // a copy is the player's own deck: it no longer follows the site it was imported from
     const copy: DeckCardLists = { ...deck, id: undefined, name, source: undefined, createdAt: undefined, shared: undefined, sharedBy: undefined };
     if (starter) copy.format = starterFormat(get().starters, id);
+    if (id.startsWith(PRECON_PREFIX)) copy.format = COMMANDER_FORMAT;
     const newId = await deckStorage.saveDeck(copy, { forceNew: true });
     await get().refresh();
     if (sleeve) get().setSleeve(newId, sleeve);
@@ -332,6 +385,15 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
       if (!list) throw new Error('That deck is no longer shared.');
       return structuredClone(list);
     }
+    if (id.startsWith(PRECON_PREFIX)) {
+      const precon = findPrecon(get().precons, id);
+      if (!precon) throw new Error('That precon is not available.');
+      const response = await fetch(`/precons/${precon.deck.file.split('/').map(encodeURIComponent).join('/')}`);
+      const text = response.ok ? await response.text() : '';
+      if (!text || /^\s*</.test(text)) throw new Error(`Couldn't load ${precon.deck.name}.`);
+      const deck = DeckSerializer.importDeck(text);
+      return { ...deck, name: precon.deck.name, coverCard: precon.deck.cover, format: COMMANDER_FORMAT };
+    }
     if (id.startsWith(STARTER_PREFIX)) {
       const starter = get().starters.find((candidate) => STARTER_PREFIX + candidate.file === id);
       if (!starter) throw new Error('That starter deck is not available.');
@@ -347,12 +409,42 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
   },
 }));
 
-export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'> & Partial<Pick<DeckLibraryState, 'shared' | 'favorites'>>): RosterDeck[] {
+/** A precon and its set, by id. */
+export function findPrecon(precons: PreconSet[], id: string): { set: PreconSet; deck: PreconDeck } | null {
+  for (const preconSet of precons) {
+    const deck = preconSet.decks.find((candidate) => PRECON_PREFIX + candidate.file === id);
+    if (deck) return { set: preconSet, deck };
+  }
+  return null;
+}
+
+export function preconToRoster(preconSet: PreconSet, deck: PreconDeck): RosterDeck {
+  return {
+    id: PRECON_PREFIX + deck.file,
+    name: deck.name,
+    note: `Precon · ${preconSet.name} · ${deck.cards} cards`,
+    cardCount: deck.cards,
+    kind: 'commander',
+    cover: deck.cover,
+    colors: [],
+    starter: null,
+    precon: { set: preconSet.name, year: preconSet.year, changes: deck.changes },
+  };
+}
+
+export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'> & Partial<Pick<DeckLibraryState, 'shared' | 'favorites' | 'precons' | 'selectedId'>>): RosterDeck[] {
   const savedNames = new Set(state.saved.map((deck) => deck.name));
   const starterNames = new Set(state.starters.map((starter) => starter.name));
   // starters already saved by the player don't show twice: the copy stands in for them, and says where it came from
   const saved = state.saved.map((deck) => (starterNames.has(deck.name) ? { ...deck, fromStarter: true } : deck));
-  const all = [...saved, ...(state.shared ?? []), ...state.starters.filter((starter) => !savedNames.has(starter.name)).map(starterToRoster)];
+  // a precon being tried out sits on the shelf while it's the selected deck
+  const tried = state.selectedId?.startsWith(PRECON_PREFIX) ? findPrecon(state.precons ?? [], state.selectedId) : null;
+  const all = [
+    ...(tried ? [preconToRoster(tried.set, tried.deck)] : []),
+    ...saved,
+    ...(state.shared ?? []),
+    ...state.starters.filter((starter) => !savedNames.has(starter.name)).map(starterToRoster),
+  ];
   const favorites = new Set(state.favorites ?? []);
   if (favorites.size === 0) return all;
   // favorites first, each group in its own order

@@ -115,14 +115,16 @@ function useSleeves() {
   const saved = useDecks((state) => state.saved);
   const starters = useDecks((state) => state.starters);
   const shared = useDecks((state) => state.shared);
+  const precons = useDecks((state) => state.precons);
   const deckId = playingId ?? aiDeckId;
   return useMemo(() => {
-    const deck = rosterOf({ saved, starters, shared }).find((candidate) => candidate.id === deckId);
+    // a precon is on the roster only as the selected deck: ask for it as that
+    const deck = rosterOf({ saved, starters, shared, precons, selectedId: deckId }).find((candidate) => candidate.id === deckId);
     const chosen = chosenSleeve(sleeves, deckId);
     const mine = chosen ?? 'var(--sleeve-default)';
     const theirs = SLEEVE_COLORS.find((color) => color !== chosen && color !== SLEEVE_COLORS[0]) ?? SLEEVE_COLORS[2];
     return { mine, theirs, chosen, cover: deck?.cover ?? null };
-  }, [deckId, sleeves, saved, starters, shared]);
+  }, [deckId, sleeves, saved, starters, shared, precons]);
 }
 
 export interface MatchStageProps {

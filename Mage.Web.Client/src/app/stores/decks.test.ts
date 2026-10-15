@@ -13,16 +13,24 @@ const BURN: DeckCardLists = {
   source: { site: 'moxfield', url: 'https://moxfield.com/decks/x', remoteId: 'x', importedAt: 1 },
 };
 
+const PRECONS = [{
+  id: 'commander-2011', name: 'Commander 2011', year: 2011,
+  decks: [{ file: 'commander-2011/counterpunch.dck', name: 'Counterpunch', cards: 100, commanders: ['Ghave, Guru of Spores'], cover: { name: 'Ghave, Guru of Spores', setCode: 'CMD', cardNumber: '200' } }],
+}];
+const COUNTERPUNCH = 'precon:commander-2011/counterpunch.dck';
+
 const STARTER = { file: 'red.dck', name: 'Red Starter', cards: 60, cover: { name: 'Shock', setCode: 'M19', cardNumber: '156' } };
 
 beforeEach(async () => {
   localStorage.clear();
   vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    if (url === '/precons/index.json') return new Response(JSON.stringify(PRECONS), { status: 200 });
+    if (url === '/precons/commander-2011/counterpunch.dck') return new Response('NAME:Counterpunch\n99 [CMD:315] Forest\nSB: 1 [CMD:200] Ghave, Guru of Spores\n', { status: 200 });
     if (url.endsWith('index.json')) return new Response(JSON.stringify([STARTER]), { status: 200 });
     if (url.endsWith('red.dck')) return new Response('20 [M19:156] Shock\n40 [M19:280] Mountain\n', { status: 200 });
     return new Response(null, { status: 404 });
   }));
-  useDecks.setState({ saved: [], starters: [], shared: [], sharedLists: {}, favorites: [], selectedId: null, sleeves: {}, playingId: null, loaded: false });
+  useDecks.setState({ saved: [], starters: [], shared: [], sharedLists: {}, favorites: [], selectedId: null, sleeves: {}, playingId: null, precons: [], loaded: false });
   vi.restoreAllMocks();
 });
 
@@ -85,6 +93,36 @@ describe('deck library', () => {
     expect(starter.name).toBe('Red Starter');
     expect(starter.cards.reduce((sum, card) => sum + card.amount, 0)).toBe(60);
     expect(await deckStorage.listDecks()).toHaveLength(1);
+  });
+});
+
+describe('precons', () => {
+  test('a precon tried out sits on the shelf while selected, and plays as printed without being saved', async () => {
+    await useDecks.getState().refresh();
+    await useDecks.getState().loadPrecons();
+    useDecks.getState().select(COUNTERPUNCH);
+    expect(rosterOf(useDecks.getState())[0]).toMatchObject({ id: COUNTERPUNCH, name: 'Counterpunch', kind: 'commander', precon: { set: 'Commander 2011', year: 2011 } });
+
+    const { deck, id } = await useDecks.getState().loadForPlay(COUNTERPUNCH);
+    expect(id).toBe(COUNTERPUNCH);
+    expect(deck).toMatchObject({ name: 'Counterpunch', format: 'Variant Magic - Commander' });
+    expect(deck.sideboard[0]).toMatchObject({ cardName: 'Ghave, Guru of Spores' });
+    expect(useDecks.getState().saved).toEqual([]);
+    expect(useDecks.getState().playingId).toBe(COUNTERPUNCH);
+
+    // another deck chosen: the precon leaves the shelf
+    useDecks.getState().select(STARTER_PREFIX + STARTER.file);
+    expect(rosterOf(useDecks.getState()).some((entry) => entry.id === COUNTERPUNCH)).toBe(false);
+  });
+
+  test('the selection survives a reload, and a copy is a Commander deck of your own', async () => {
+    useDecks.getState().select(COUNTERPUNCH);
+    await useDecks.getState().refresh();
+    expect(useDecks.getState().selectedId).toBe(COUNTERPUNCH);
+
+    const copyId = await useDecks.getState().duplicate(COUNTERPUNCH);
+    expect(await deckStorage.loadDeck(copyId)).toMatchObject({ name: 'Counterpunch', format: 'Variant Magic - Commander' });
+    expect(useDecks.getState().selectedId).toBe(copyId);
   });
 });
 

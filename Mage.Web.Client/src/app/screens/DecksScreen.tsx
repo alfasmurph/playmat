@@ -1,8 +1,11 @@
-import { ClipboardPaste, Cloud, CloudOff, Copy, Download, PencilLine, PencilRuler, RefreshCw, Share2, Star, Trash2 } from 'lucide-react';
+import { BookOpen, ClipboardPaste, Cloud, CloudOff, Copy, Download, PencilLine, PencilRuler, RefreshCw, Share2, Star, Trash2 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { siteById } from '../../core/deckImport/sites';
 import { ExportMenu } from '../decks/ExportMenu';
+
+// the precon browser loads the first time it opens
+const PreconsDialog = lazy(() => import('../decks/PreconsDialog').then((m) => ({ default: m.PreconsDialog })));
 import { SourceLine } from '../decks/import/SourceLine';
 import { UpdateDialog } from '../decks/import/UpdateDialog';
 import { useImportDrop, useImportPaste } from '../decks/import/useImportShortcuts';
@@ -38,6 +41,11 @@ export function DecksScreen() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<RosterDeck | null>(null);
   const selected = roster.find((deck) => deck.id === decks.selectedId) ?? null;
+  // someone else's shared deck, or a precon: played as it is, changed only as a copy
+  const readOnly = !!selected?.sharedBy || !!selected?.precon;
+  const [precons, setPrecons] = useState(false);
+  const [preconsLoaded, setPreconsLoaded] = useState(false);
+  if (precons && !preconsLoaded) setPreconsLoaded(true);
   const userName = useSession((state) => state.userName);
   // your own saved decks (not starters, not others' shared ones) that aren't shared yet
   const unshared = roster.filter((deck) => !deck.starter && !deck.sharedBy && !deck.shared);
@@ -104,6 +112,7 @@ export function DecksScreen() {
             <SyncNote />
             <Button size="sm" icon={<Download size={16} />} onClick={() => openImport()}>{t('decks.import')}</Button>
             <Button size="sm" icon={<PencilRuler size={16} />} onClick={() => navigate('/decks/new')}>{t('decks.build')}</Button>
+            <Button size="sm" icon={<BookOpen size={16} />} onClick={() => setPrecons(true)}>{t('decks.precons')}</Button>
             {userName && unshared.length > 0 && (
               <Button size="sm" icon={<Share2 size={16} />} onClick={() => share(unshared.map((deck) => deck.id), true)}>{t('decks.shareAll')}</Button>
             )}
@@ -147,7 +156,9 @@ export function DecksScreen() {
             </div>
             <p className={styles.detailNote}>{selected.note}</p>
             {selected.sharedBy && <p className={styles.detailNote}>{t('decks.sharedBy', { name: selected.sharedBy })}</p>}
-            {!selected.starter && !selected.sharedBy && userName && (
+            {selected.precon && <p className={styles.detailNote}>{t('decks.preconFixed')}</p>}
+            {selected.precon?.changes?.map((change) => <p key={change} className={styles.detailNote}>{change}</p>)}
+            {!selected.starter && !readOnly && userName && (
               <div className={styles.shareLine}>
                 <Button
                   variant="print"
@@ -204,8 +215,8 @@ export function DecksScreen() {
                 )}
               </div>
             </div>
-            {selected.sharedBy ? (
-              // someone else's deck: yours to play, theirs to change; a copy is yours to change
+            {readOnly ? (
+              // someone else's deck, or a precon: yours to play as it is; a copy is yours to change
               <Button variant="print" icon={<Copy size={16} />} onClick={() => void duplicate(selected)}>{t('decks.copyToMine')}</Button>
             ) : (
               <Button variant="print" icon={<PencilRuler size={16} />} onClick={() => navigate(`/decks/${encodeURIComponent(selected.id)}`)}>
@@ -214,14 +225,14 @@ export function DecksScreen() {
             )}
             <div className={styles.actions}>
               <ExportMenu getDeck={() => useDecks.getState().loadList(selected.id)} />
-              {!selected.sharedBy && (
+              {!readOnly && (
                 <Button variant="print" size="sm" icon={<Copy size={16} />} onClick={() => void duplicate(selected)}>{t('decks.duplicate')}</Button>
               )}
-              {!selected.starter && !selected.sharedBy && (
+              {!selected.starter && !readOnly && (
                 <Button variant="print" size="sm" icon={<PencilLine size={16} />} onClick={() => setRenaming(selected)}>{t('decks.rename')}</Button>
               )}
             </div>
-            {!selected.starter && !selected.sharedBy && (
+            {!selected.starter && !readOnly && (
               <Button variant="danger" size="sm" className={styles.remove} icon={<Trash2 size={16} />} onClick={() => setRemoving(selected)}>{t('decks.remove')}</Button>
             )}
           </div>
@@ -231,6 +242,12 @@ export function DecksScreen() {
       </Zone>
 
       <UpdateDialog deckId={updating} onClose={() => setUpdating(null)} />
+
+      {preconsLoaded && (
+        <Suspense fallback={null}>
+          <PreconsDialog open={precons} onOpenChange={setPrecons} />
+        </Suspense>
+      )}
 
       <RenameDialog deck={renaming} onClose={() => setRenaming(null)} />
 
