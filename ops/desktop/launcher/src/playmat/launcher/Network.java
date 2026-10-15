@@ -1,6 +1,8 @@
 package playmat.launcher;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -12,6 +14,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** This computer's addresses, for the "friends can join at" line and the server's allowed origins. */
 final class Network {
@@ -97,7 +102,50 @@ final class Network {
         for (String host : hosts) {
             origins.add("http://" + host + ":" + port);
         }
+        // Tailscale Serve or Funnel publishes the client at this computer's tailnet name, over HTTPS on 443
+        String tailnetName = tailnetName();
+        if (!tailnetName.isEmpty()) {
+            origins.add("https://" + tailnetName);
+        }
         return origins;
+    }
+
+    private static final String[] TAILSCALE_CLI = {
+            "/Applications/Tailscale.app/Contents/MacOS/Tailscale", "/opt/homebrew/bin/tailscale", "/usr/local/bin/tailscale", "/usr/bin/tailscale",
+    };
+    private static final Pattern SELF_DNS_NAME = Pattern.compile("\"Self\"\\s*:\\s*\\{.*?\"DNSName\"\\s*:\\s*\"([^\"]*)\"", Pattern.DOTALL);
+
+    /** This computer's name on its tailnet (e.g. "mac.tail1234.ts.net"), or empty without Tailscale. */
+    static String tailnetName() {
+        for (String cli : TAILSCALE_CLI) {
+            if (!new java.io.File(cli).canExecute()) {
+                continue;
+            }
+            try {
+                Process process = new ProcessBuilder(cli, "status", "--json").redirectErrorStream(false).start();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                try (InputStream in = process.getInputStream()) {
+                    in.transferTo(out);
+                }
+                if (!process.waitFor(3, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    return "";
+                }
+                Matcher match = SELF_DNS_NAME.matcher(out.toString(java.nio.charset.StandardCharsets.UTF_8));
+                if (!match.find()) {
+                    return "";
+                }
+                String name = match.group(1).toLowerCase(Locale.ENGLISH);
+                return name.endsWith(".") ? name.substring(0, name.length() - 1) : name;
+            } catch (IOException e) {
+                Log.warn("Can't ask Tailscale for this computer's name: " + e.getMessage());
+                return "";
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return "";
+            }
+        }
+        return "";
     }
 
     /** True when nothing else listens on the port (on any interface). */

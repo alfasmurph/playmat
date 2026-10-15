@@ -12,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.nio.channels.FileLock;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -191,7 +192,9 @@ public final class Main {
                 }
             }
 
-            gameServer.prepare(Network.origins(WebServer.PORT));
+            List<String> origins = new ArrayList<>(Network.origins(WebServer.PORT));
+            origins.addAll(settings.extraOrigins());
+            gameServer.prepare(origins);
             // after prepare: a new version drops the card database there
             boolean first = gameServer.firstStart();
             gameServer.start();

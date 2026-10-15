@@ -39,6 +39,25 @@ final class Settings {
         return values.getProperty("memory", "").trim();
     }
 
+    /**
+     * The owner's account name: always let in, owner in the admin console (Access: invite-only, invite links, the
+     * allowlist). Empty: no owner.
+     */
+    String owner() {
+        return values.getProperty("owner", "").trim();
+    }
+
+    /** More browser origins the server accepts, comma separated (e.g. a domain a tunnel serves the client at). */
+    java.util.List<String> extraOrigins() {
+        java.util.List<String> origins = new java.util.ArrayList<>();
+        for (String origin : values.getProperty("origins", "").split(",")) {
+            if (!origin.trim().isEmpty()) {
+                origins.add(origin.trim());
+            }
+        }
+        return origins;
+    }
+
     private void save() {
         try (OutputStream out = Files.newOutputStream(file)) {
             values.store(out, "Playmat settings");

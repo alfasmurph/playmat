@@ -120,6 +120,11 @@ final class GameServer {
         command.add("-Dxmage.replays=true");
         command.add("-Dxmage.replays.dir=" + home.resolve("saved").resolve("replays"));
         command.add("-Dxmage.healthPort=" + HEALTH_PORT);
+        // a tunnel on this computer (Tailscale Funnel) forwards players from here, naming each in X-Forwarded-For
+        command.add("-Dxmage.web.trustedProxies=127.0.0.1,::1");
+        if (!settings.owner().isEmpty()) {
+            command.add("-Dxmage.owner=" + settings.owner());
+        }
         command.add("-Dlog4j.configuration=" + home.resolve("config").resolve("log4j-playmat.properties").toUri());
         command.add("-cp");
         command.add(layout.serverRelease().resolve("lib") + File.separator + "*");
