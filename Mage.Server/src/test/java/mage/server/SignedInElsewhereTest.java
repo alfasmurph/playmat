@@ -20,8 +20,8 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * An account signs in on a second device: the first connection's session ends (it can't act as the user, and its
- * drop later can't mark the user offline) and its socket closes saying why, so that client doesn't sign back in.
+ * An account signs in on a second device: the first connection is told why and closed before its session ends, so
+ * that client waits instead of finding its session gone and signing straight back in (pushing the second one out).
  */
 public class SignedInElsewhereTest {
 
@@ -32,6 +32,8 @@ public class SignedInElsewhereTest {
     private final Map<String, Session> sessions = new HashMap<>();
     private final List<String> ended = new ArrayList<>();
     private final Map<String, List<Object>> closes = new HashMap<>();
+    /** closes and ended sessions, in the order they happened */
+    private final List<String> steps = new ArrayList<>();
     private AuthorizedUserRepository previousAccounts;
     private ManagerFactory managers;
 
@@ -62,10 +64,13 @@ public class SignedInElsewhereTest {
         });
         overrides.put("getSession", args -> Optional.ofNullable(sessions.get((String) args[0])));
         overrides.put("disconnect", args -> {
-            // the session manager's disconnect (by session id); the user manager's takes the user's id
+            // the session manager's disconnect takes a session id; the user manager's a user id, and ends their session
             if (args[0] instanceof String) {
                 ended.add((String) args[0]);
+                steps.add("end " + args[0]);
                 assertThat(args[2]).as("the user stays connected through the new session").isEqualTo(false);
+            } else {
+                users.values().stream().filter(u -> u.getId().equals(args[0])).forEach(u -> u.onLostConnection((DisconnectReason) args[1]));
             }
             return null;
         });
@@ -86,17 +91,18 @@ public class SignedInElsewhereTest {
 
         assertThat(ended).containsExactly("phone");
         assertThat(closes.get("phone")).containsExactly(WebSocketCallbackHandler.CLOSE_SIGNED_IN_ELSEWHERE, "Signed in elsewhere");
+        assertThat(steps).as("told before its session goes, so its next call can't find it gone and sign back in")
+                .containsExactly("close phone", "end phone");
         assertThat(closes.get("laptop")).isNull();
         assertThat(users.get("alice").getSessionId()).isEqualTo("laptop");
     }
 
     @Test
-    void signingInAgainOnTheSameConnectionEndsNothing() throws Exception {
+    void signingInAgainOnTheSameConnectionNeverClosesIt() throws Exception {
         Session phone = webSession("phone");
         assertThat(phone.connectUser("alice", PASSWORD, "")).isNull();
         assertThat(phone.connectUser("alice", PASSWORD, "")).isNull();
 
-        assertThat(ended).isEmpty();
         assertThat(closes).isEmpty();
     }
 
@@ -105,6 +111,7 @@ public class SignedInElsewhereTest {
                 (proxy, method, args) -> {
                     if (method.getName().equals("close") && args != null && args.length == 2) {
                         closes.put(id, Arrays.asList(args[0], args[1]));
+                        steps.add("close " + id);
                     }
                     return method.getReturnType() == boolean.class ? (Object) true : null;
                 });
