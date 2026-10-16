@@ -28,4 +28,10 @@ describe('the preferences sent to the server', () => {
     expect(toUserData({ ...DEFAULT_SETTINGS, autoPayMana: false }).manaPoolAutomatic).toBe(true);
     expect(toUserData({ ...DEFAULT_SETTINGS, autoPayMana: true }).manaPoolAutomatic).toBe(true);
   });
+
+  test('mana floating before the cast pays it too, whatever "only with spare mana" says', async () => {
+    const { toUserData, DEFAULT_SETTINGS } = await import('./settings');
+    expect(toUserData({ ...DEFAULT_SETTINGS, autoPayRestricted: true }).manaPoolAutomaticRestricted).toBe(false);
+    expect(toUserData({ ...DEFAULT_SETTINGS, autoPayRestricted: false }).manaPoolAutomaticRestricted).toBe(false);
+  });
 });

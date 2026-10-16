@@ -15,9 +15,12 @@ const POOL_COLOR: Partial<Record<ManaType, ManaColor>> = { WHITE: 'W', BLUE: 'U'
 /**
  * Pays mana costs for the player when the payment is unambiguous: spends floating mana or taps one source, waits
  * for the server to ask for the rest, and repeats. Stops (leaving the payment to the player) as soon as a choice
- * would be needed or a payment doesn't change what's still owed.
+ * would be needed or a payment doesn't change what's still owed. Floating mana is spent whenever the player is
+ * playing; sources are tapped only with auto-pay on (`tapLands`).
  */
-export function useAutoPay(session: GameSession, state: GameSessionState, me: PlayerBoard | null, enabled: boolean) {
+export function useAutoPay(
+  session: GameSession, state: GameSessionState, me: PlayerBoard | null, playing: boolean, tapLands: boolean, spareOnly = true,
+) {
   const lastAsk = useRef<{ text: string; tries: number; pool: ManaColor | null } | null>(null);
   /** floating mana the server wouldn't take for this payment: conditional mana (Mishra's Workshop's) it can't use */
   const unusablePool = useRef<{ payment: string; colors: Set<ManaColor> }>({ payment: '', colors: new Set() });
@@ -30,7 +33,7 @@ export function useAutoPay(session: GameSession, state: GameSessionState, me: Pl
     // the question right after a tap (a dual's two abilities, "one mana of any color") is about that tap
     const tap = tapped.current;
     if (tap && !awaitingServer && prompt && prompt !== tap.prompt) {
-      const answer = enabled && interaction.mode === 'panel' ? manaChoiceAnswer(prompt, tap.name, tap.color) : null;
+      const answer = tapLands && interaction.mode === 'panel' ? manaChoiceAnswer(prompt, tap.name, tap.color) : null;
       if (!answer) {
         tapped.current = null;
       } else {
@@ -42,7 +45,7 @@ export function useAutoPay(session: GameSession, state: GameSessionState, me: Pl
       }
     }
 
-    if (!enabled || !me || awaitingServer || interaction.mode !== 'payMana' || prompt?.kind !== 'playMana' || prompt.isX) {
+    if (!playing || !me || awaitingServer || interaction.mode !== 'payMana' || prompt?.kind !== 'playMana' || prompt.isX) {
       if (interaction.mode !== 'payMana') lastAsk.current = null;
       if (interaction.mode === 'priority') unusablePool.current = { payment: '', colors: new Set() };
       return;
@@ -75,7 +78,8 @@ export function useAutoPay(session: GameSession, state: GameSessionState, me: Pl
     // generic mana leaves untapped the colors the rest of the hand still needs this turn
     const owed = cost.generic + Object.values(cost.colored).reduce((sum, value) => sum + (value ?? 0), 0);
     const handCosts = Object.values(view?.myHand ?? {}).map((card) => (card.manaCostLeftStr ?? []).join(''));
-    const keep = handNeeds(handCosts, sources.length - owed);
+    // "only with spare mana": leave untapped what the rest of the hand needs; off, any source will do
+    const keep = spareOnly ? handNeeds(handCosts, sources.length - owed) : {};
     // floating mana first: the server leaves a pool of mixed kinds alone
     const pool: Partial<Record<ManaColor, number>> = {};
     for (const { key, manaType } of POOL_MANA) {
@@ -84,7 +88,8 @@ export function useAutoPay(session: GameSession, state: GameSessionState, me: Pl
     }
     const fromPool = nextPoolMana(cost, pool, keep);
     const poolType = POOL_MANA.find(({ manaType }) => fromPool && POOL_COLOR[manaType] === fromPool)?.manaType;
-    const plan = poolType ? null : nextTap(cost, sources, keep);
+    // floating mana is spent even with auto-pay off: it was tapped to pay, and it's no choice of which land to use
+    const plan = poolType || !tapLands ? null : nextTap(cost, sources, keep);
     const next = poolType ? poolId(poolType) : plan?.id;
     if (!next) return;
 
@@ -94,5 +99,5 @@ export function useAutoPay(session: GameSession, state: GameSessionState, me: Pl
       session.click(next);
     }, TAP_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [enabled, me, awaitingServer, interaction, prompt, session, view]);
+  }, [playing, tapLands, spareOnly, me, awaitingServer, interaction, prompt, session, view]);
 }

@@ -173,6 +173,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const navigate = useNavigate();
   const animations = useSettings((settings) => settings.settings.animations);
   const autoPay = useSettings((settings) => settings.settings.autoPayMana);
+  const spareOnly = useSettings((settings) => settings.settings.autoPayRestricted);
   // watching and replays: the broadcast options
   const spectating = mode !== 'play';
   const broadcastDelay = useSettings((settings) => settings.settings.broadcastDelay);
@@ -272,7 +273,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
     [commanders],
   );
   useWarmImages(view);
-  useAutoPay(session, state, board.me?.isMe ? board.me : null, autoPay && mode === 'play');
+  useAutoPay(session, state, board.me?.isMe ? board.me : null, mode === 'play', autoPay, spareOnly);
   // holding priority means the player wants every stop
   const autoPassing = useAutoPass(session, state, !holding);
   useGameCues(state, myId, !!autoPassing);

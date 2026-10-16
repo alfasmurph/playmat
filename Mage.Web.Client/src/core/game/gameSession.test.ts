@@ -314,3 +314,24 @@ describe('GameSession using an ability of a picked-up card', () => {
     expect(sent).toEqual([]);
   });
 });
+
+describe('joining a game', () => {
+  it('a player asks for floating mana to be spent on what they pay (a saved game keeps the mode it was saved with)', async () => {
+    const { bus, emit } = fakeBus();
+    const sendPlayerAction = vi.fn(async () => true);
+    new GameSession({ sendPlayerAction } as never, bus, { gameId: 'g1', playerId: 'me', mode: 'play' });
+    emit('GAME_INIT', base);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sendPlayerAction).toHaveBeenCalledWith('MANA_AUTO_PAYMENT_ON', 'g1');
+    expect(sendPlayerAction).toHaveBeenCalledWith('MANA_AUTO_PAYMENT_RESTRICTED_OFF', 'g1');
+  });
+
+  it('someone watching asks for nothing', async () => {
+    const { bus, emit } = fakeBus();
+    const sendPlayerAction = vi.fn(async () => true);
+    new GameSession({ sendPlayerAction } as never, bus, { gameId: 'g1', playerId: null, mode: 'watch' });
+    emit('GAME_INIT', base);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(sendPlayerAction).not.toHaveBeenCalled();
+  });
+});

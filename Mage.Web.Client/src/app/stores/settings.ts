@@ -178,7 +178,9 @@ export function toUserData(settings: PlaySettings, fullControl = false): UserDat
     // mana from a source the player taps while paying is spent on the cost, whether or not auto-pay taps for them:
     // with this off the server floats it and waits for a click on the pool, and the payment looks stuck
     manaPoolAutomatic: true,
-    manaPoolAutomaticRestricted: settings.autoPayRestricted,
+    // and so is mana already floating when the cast began (Mana Vault tapped first): restricted, the server leaves it
+    // in the pool for a click the player doesn't know to make. "Only with spare mana" is auto-pay's own rule (useAutoPay)
+    manaPoolAutomaticRestricted: false,
     passPriorityCast: settings.passAfterCasting && !fullControl,
     passPriorityActivation: settings.passAfterCasting && !fullControl,
     autoOrderTrigger: settings.autoOrderTriggers,

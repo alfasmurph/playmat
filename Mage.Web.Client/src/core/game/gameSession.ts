@@ -121,7 +121,10 @@ export class GameSession {
       };
 
     this.unsubscribers.push(
-      bus.on('GAME_INIT', forThisGame<GameView>((view) => this.applyView(view))),
+      bus.on('GAME_INIT', forThisGame<GameView>((view) => {
+        this.applyView(view);
+        this.spendFloatingMana();
+      })),
       bus.on('GAME_UPDATE', forThisGame<GameView>((view) => this.applyView(view))),
       bus.on('REPLAY_INIT', forThisGame<GameView>((view) => this.applyView(view))),
       bus.on('REPLAY_UPDATE', forThisGame<GameView>((view) => this.applyView(view))),
@@ -178,6 +181,21 @@ export class GameSession {
 
   private heard(): void {
     if (this.replyTimer) this.armReplyTimer();
+  }
+
+  /**
+   * A player's game spends mana from the pool on what's being paid, floating mana included. The server keeps the
+   * payment mode with the game (a saved game brings back the one it was saved with), so each join says it again:
+   * left to the old restricted mode, mana floated before a cast sat in the pool and the payment looked stuck.
+   */
+  private spendFloatingMana(): void {
+    if (this.store.getState().mode !== 'play') return;
+    const { gameId } = this.store.getState();
+    for (const action of ['MANA_AUTO_PAYMENT_ON', 'MANA_AUTO_PAYMENT_RESTRICTED_OFF'] as const) {
+      Promise.resolve()
+        .then(() => this.api.sendPlayerAction(action, gameId))
+        .catch(() => undefined);
+    }
   }
 
   /** The board may be out of date (connection lost, page reloaded) until the server sends the game again. */
