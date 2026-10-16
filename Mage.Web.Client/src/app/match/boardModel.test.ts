@@ -65,6 +65,16 @@ describe('buildBoard', () => {
     expect(board.opponents.map((o) => o.player.playerId)).toEqual(['c', 'a']);
   });
 
+  it('gives your permanents the extra mana other cards add (not an opponent\'s)', () => {
+    const view: GameView = {
+      players: [player('me', [permanent('wastes', { name: 'Wastes' })]), player('them', [permanent('ruins', { name: 'Scorched Ruins' })])],
+      manaBonus: { wastes: 1, ruins: 1 },
+    };
+    const board = buildBoard(view, 'me');
+    expect((board.me!.back[0].lead as { manaBonus?: number }).manaBonus).toBe(1);
+    expect((board.opponents[0].back[0].lead as { manaBonus?: number }).manaBonus).toBeUndefined();
+  });
+
   it('shows the first player at the bottom when watching', () => {
     const board = buildBoard({ players: [player('a', []), player('b', [])] }, null);
     expect(board.me?.isMe).toBe(false);

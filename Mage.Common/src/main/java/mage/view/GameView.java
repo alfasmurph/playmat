@@ -58,6 +58,8 @@ public class GameView implements Serializable {
     private PlayableObjectsList canPlayObjects;
     /** the mana the player could make right now; set with canPlayObjects (the web client's mana readout) */
     private ManaAvailableView manaAvailable;
+    /** your mana sources' extra mana when tapped, by permanent id (Forsaken Monument's {C}, Kinnan's one more) */
+    private Map<String, Integer> manaBonus = new HashMap<>();
     private final Map<String, SimpleCardsView> opponentHands = new HashMap<>();
     private final Map<String, SimpleCardsView> watchedHands = new HashMap<>();
     private final CardsView stack = new CardsView();
@@ -379,6 +381,14 @@ public class GameView implements Serializable {
 
     public void setManaAvailable(ManaAvailableView manaAvailable) {
         this.manaAvailable = manaAvailable;
+    }
+
+    public Map<String, Integer> getManaBonus() {
+        return manaBonus;
+    }
+
+    public void setManaBonus(Map<String, Integer> manaBonus) {
+        this.manaBonus = manaBonus == null ? new HashMap<>() : manaBonus;
     }
 
     public boolean isRollbackTurnsAllowed() {

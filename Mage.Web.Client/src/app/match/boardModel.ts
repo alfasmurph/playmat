@@ -31,6 +31,9 @@ export interface BoardModel {
   players: Map<string, PlayerView>;
 }
 
+/** a permanent as the board shows it: with the extra mana other cards give it when tapped (ManaBonus on the server) */
+export type BoardPermanent = PermanentView & { manaBonus?: number };
+
 const FRONT_TYPES = new Set(['CREATURE', 'PLANESWALKER', 'BATTLE']);
 
 function isFront(permanent: PermanentView): boolean {
@@ -100,8 +103,10 @@ function groupRow(permanents: PermanentView[], attachmentsByHost: Map<string, Pe
  * Board rows keep the order in which permanents arrived (the server's order), so nothing reshuffles
  * when a new permanent enters; lands are pulled to the left of the back row.
  */
-export function buildPlayerBoard(player: PlayerView, isMe: boolean): PlayerBoard {
-  const permanents = Object.values(player.battlefield ?? {});
+export function buildPlayerBoard(player: PlayerView, isMe: boolean, manaBonus: Record<string, number> = {}): PlayerBoard {
+  // your sources carry the extra mana other cards give them (Forsaken Monument, Kinnan), for the corner badge
+  const permanents = Object.values(player.battlefield ?? {})
+    .map((permanent) => (manaBonus[permanent.id ?? ''] ? { ...permanent, manaBonus: manaBonus[permanent.id!] } as BoardPermanent : permanent));
   const ids = new Set(permanents.map((permanent) => permanent.id));
   const attachmentsByHost = new Map<string, PermanentView[]>();
   const standalone: PermanentView[] = [];
@@ -135,7 +140,7 @@ export function buildBoard(view: GameView | null | undefined, myPlayerId: string
   const ordered = meIndex >= 0 ? [...players.slice(meIndex + 1), ...players.slice(0, meIndex)] : players.slice(1);
   const bottom = me ?? players[0] ?? null;
   return {
-    me: bottom ? buildPlayerBoard(bottom, !!me) : null,
+    me: bottom ? buildPlayerBoard(bottom, !!me, me ? view?.manaBonus ?? {} : {}) : null,
     opponents: (me ? ordered : players.slice(1)).map((player) => buildPlayerBoard(player, false)),
     players: new Map(players.map((player) => [player.playerId!, player])),
   };

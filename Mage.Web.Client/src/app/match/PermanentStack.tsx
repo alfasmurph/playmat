@@ -7,7 +7,7 @@ import { keywordEffects, keywordMarks, type KeywordEffect, type MarkedKeyword } 
 import type { PermanentView } from '../../protocol/generated/views';
 import { useSettings } from '../stores/settings';
 import { CardFace } from '../ui/CardFace';
-import { cardKey, stackOffsetRatio, type PermanentGroup } from './boardModel';
+import { cardKey, stackOffsetRatio, type BoardPermanent, type PermanentGroup } from './boardModel';
 import { useFlip } from './flip';
 import { useMatchUi } from './matchUi';
 import { useStage } from './stageContext';
@@ -113,6 +113,7 @@ export const PermanentStack = memo(function PermanentStack(props: PermanentStack
           top={group.attachments.length * attachOffset}
           depth={group.attachments.length + index}
           count={index === reversed.length - 1 && group.members.length > 1 ? group.members.length : undefined}
+          onTop={index === reversed.length - 1}
         />
       ))}
     </div>
@@ -125,9 +126,11 @@ interface PlacedCardProps extends PermanentStackProps {
   top: number;
   depth: number;
   count?: number;
+  /** the card on top of its pile (or alone): the one that shows the pile's mana */
+  onTop?: boolean;
 }
 
-function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, attacking, blocking, forward, targeting, onClick, onTap, onBlockDrop, left, top, depth, count }: PlacedCardProps) {
+function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, attacking, blocking, forward, targeting, onClick, onTap, onBlockDrop, left, top, depth, count, onTop = false }: PlacedCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const id = permanent.id!;
   const tapped = !!permanent.tapped;
@@ -183,6 +186,7 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
   }
 
   const damage = permanent.damage ?? 0;
+  const bonus = (permanent as BoardPermanent).manaBonus ?? 0;
   const counters = (permanent.counters ?? []).filter((counter) => (counter.count ?? 0) > 0);
   const isCreature = (permanent.cardTypes ?? []).includes('CREATURE');
   const loyalty = permanent.loyalty || permanent.defense;
@@ -289,14 +293,16 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
       )}
       {!isCreature && loyalty && <span className={[styles.pt, styles.loyalty].join(' ')}>{loyalty}</span>}
       {count !== undefined && <span className={styles.count}>×{count}</span>}
-      {/* visual cues: how much mana this source makes right now (Sol Ring 2, an imprinted Ugin's Labyrinth 2) */}
-      {!tapped && (permanent.manaAmount ?? 0) > 0 && (
+      {/* visual cues: in the corner, how much mana this source makes now (Sol Ring 2, an imprinted Ugin's Labyrinth 2),
+          and beside it what other cards add when it taps (+1 from Forsaken Monument or Kinnan) */}
+      {onTop && !tapped && (permanent.manaAmount ?? 0) > 0 && (
         <span
-          className={[styles.manaWorth, (permanent.manaAmount ?? 0) > 1 ? styles.manaWorthMore : ''].join(' ')}
-          title={`Makes ${permanent.manaAmount} mana`}
+          className={[styles.manaWorth, isCreature ? styles.manaWorthAbovePt : ''].join(' ')}
+          title={`Makes ${permanent.manaAmount} mana${bonus > 0 ? `, and ${bonus} more from other cards` : ''}`}
           aria-hidden="true"
         >
-          {permanent.manaAmount}
+          {bonus > 0 && <span className={styles.manaBonus}>+{bonus}</span>}
+          <span className={[styles.manaBase, (permanent.manaAmount ?? 0) > 1 ? styles.manaBaseMore : ''].join(' ')}>{permanent.manaAmount}</span>
         </span>
       )}
     </div>

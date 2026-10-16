@@ -34,6 +34,9 @@ public class GameSessionPlayer extends GameSessionWatcher {
     private String playableKey;
     private PlayableObjectsList playable;
     private ManaAvailableView manaAvailable;
+    /** the last mana bonus worked out (see ManaBonus), and the board it was for */
+    private String manaBonusKey;
+    private Map<String, Integer> manaBonus;
     private final UUID playerId;
 
     private final ExecutorService callExecutor;
@@ -266,6 +269,22 @@ public class GameSessionPlayer extends GameSessionWatcher {
                     session.playableKey = key;
                     session.playable = playable;
                     session.manaAvailable = manaAvailable;
+                }
+            }
+        }
+
+        // your sources' extra mana from Forsaken Monument, Kinnan and the like (a copy of the game each time the board
+        // changes, as for what's playable)
+        if (player != null) {
+            String bonusKey = session == null ? null : GameChangeKey.of(sourceGame) + "|bonus|" + playerId;
+            if (bonusKey != null && bonusKey.equals(session.manaBonusKey)) {
+                gameView.setManaBonus(session.manaBonus);
+            } else {
+                Map<String, Integer> bonus = ManaBonus.of(sourceGame, playerId);
+                gameView.setManaBonus(bonus);
+                if (session != null) {
+                    session.manaBonusKey = bonusKey;
+                    session.manaBonus = bonus;
                 }
             }
         }

@@ -1012,6 +1012,7 @@ export interface GameView extends Serializable {
     exiles?: { [index: string]: CardView }[];
     gameCycle?: number;
     lookedAt?: LookedAtView[];
+    manaBonus?: { [index: string]: number };
     manaAvailable?: ManaAvailableView;
     myHand?: { [index: string]: CardView };
     myHelperEmblems?: { [index: string]: CardView };
