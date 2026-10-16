@@ -14,7 +14,7 @@ import { DEVICE_PICTURES } from '../nativePictures';
 import { AiSettingsDialog } from './AiSettingsDialog';
 import { useImportDrop, useImportPaste } from '../decks/import/useImportShortcuts';
 import { openImport, useImportSheet } from '../stores/importSheet';
-import { describeAi } from './aiSetup';
+import { aiDeckName, describeAi } from './aiSetup';
 import { slotsFull, useGameSlots, useServerInfo } from '../queries';
 import { UnfinishedGames } from './UnfinishedGames';
 import styles from './HomeScreen.module.css';
@@ -201,7 +201,11 @@ export function HomeScreen() {
     }
   }
 
-  const opponentDeck = roster.find((deck) => deck.id === play.aiOptions.opponentDeckId && deck.kind === kind);
+  // the AI seats' decks, by name (one of the other kind plays a random starter)
+  const aiDeckNames = play.aiOptions.opponentDeckIds.map((id) => {
+    const onShelf = roster.find((deck) => deck.id === id);
+    return onShelf ? (onShelf.kind === kind ? onShelf.name : null) : kind === 'commander' ? aiDeckName(id, roster, decks.precons) : null;
+  });
 
   return (
     <div className={styles.home}>
@@ -394,7 +398,7 @@ export function HomeScreen() {
           {mode === 'ai' && (
             <button type="button" className={styles.aiSetup} onClick={() => setAiOpen(true)} disabled={busy}>
               <SlidersHorizontal size={16} aria-hidden="true" />
-              <span>{describeAi(t, play.aiOptions, opponentDeck?.name ?? null, kind)}</span>
+              <span>{describeAi(t, play.aiOptions, aiDeckNames, kind)}</span>
               <span className={styles.aiSetupAction}>{t('home.change')}</span>
             </button>
           )}

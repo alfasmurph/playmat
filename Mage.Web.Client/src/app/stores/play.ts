@@ -5,7 +5,6 @@ import { useEvents } from './events';
 import { warmCards } from '../ui/imageCache';
 import { useSession } from './session';
 import { readJson, writeJson } from './persist';
-import { deckStorage } from '../../core/decks/DeckStorageService';
 import { toWire } from '../decks/deckModel';
 import type { GameTypeView, ServerState } from '../../protocol/generated/views';
 import { queryClient } from '../queries';
@@ -27,8 +26,11 @@ export type AiType = 'COMPUTER_MAD' | 'COMPUTER_MONTE_CARLO';
 export interface AiOptions {
   /** server AI strength, 1-10 */
   skill: number;
-  /** the AI's deck: a deck id from the roster (saved or starter:<file>), or null for a random starter */
-  opponentDeckId: string | null;
+  /**
+   * the AI seats' decks, seat by seat (the first is a duel's): a deck id from the roster (saved, starter:<file> or
+   * precon:<file>), or null for a random starter
+   */
+  opponentDeckIds: (string | null)[];
   aiType: AiType;
   /** games needed to win the match: 1 (best of one) or 2 (best of three) */
   winsNeeded: 1 | 2;
@@ -47,7 +49,7 @@ const AI_OPTIONS_KEY = 'playmat.aiOptions';
 
 export const DEFAULT_AI_OPTIONS: AiOptions = {
   skill: 4,
-  opponentDeckId: null,
+  opponentDeckIds: [],
   aiType: 'COMPUTER_MAD',
   winsNeeded: 1,
   startingLife: null,
@@ -89,39 +91,10 @@ interface PlayState {
   cancel(): Promise<void>;
 }
 
-async function starterDeck(file: string, name: string): Promise<DeckCardLists> {
-  const response = await fetch(`/starter-decks/${encodeURIComponent(file)}`);
-  const text = response.ok ? await response.text() : '';
-  if (!text || /^\s*</.test(text)) throw new Error(`Couldn't load the AI's deck (${name}).`);
-  const { DeckSerializer } = await import('../../core/decks/DeckSerializer');
-  const deck = DeckSerializer.importDeck(text);
-  deck.name = name;
-  return deck;
-}
-
-/**
- * Decks for the AI seats: the one picked in the AI settings for the first seat, random starter decks of the same kind
- * (commander or not) for the others, never the same starter twice while there are others.
- */
-export async function aiDecks(chosenId: string | null, count: number, commander: boolean): Promise<DeckCardLists[]> {
-  const decks: DeckCardLists[] = [];
-  if (chosenId && !chosenId.startsWith(STARTER_PREFIX)) {
-    const saved = await deckStorage.loadDeck(chosenId);
-    if (saved && isCommanderFormat(saved.format) === commander) decks.push(saved);
-  }
-  const { starters } = useDecks.getState();
-  const fitting = starters.filter((starter) => isCommanderFormat(starter.format) === commander);
-  const chosenFile = chosenId?.startsWith(STARTER_PREFIX) ? chosenId.slice(STARTER_PREFIX.length) : null;
-  const chosen = fitting.find((starter) => starter.file === chosenFile);
-  if (decks.length === 0 && chosen) decks.push(await starterDeck(chosen.file, chosen.name));
-  const pool = fitting.filter((starter) => starter !== chosen);
-  while (decks.length < count) {
-    const candidates = pool.length > 0 ? pool : fitting;
-    if (candidates.length === 0) throw new Error(commander ? 'No commander deck is available for the AI.' : 'No deck available for the AI.');
-    const starter = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
-    decks.push(await starterDeck(starter.file, starter.name));
-  }
-  return decks;
+/** The saved AI setup; before pods had a deck per seat it kept only the first seat's ("opponentDeckId"). */
+function loadAiOptions(): AiOptions {
+  const { opponentDeckId, ...saved } = readJson<Partial<AiOptions> & { opponentDeckId?: string | null }>(AI_OPTIONS_KEY, {});
+  return { ...DEFAULT_AI_OPTIONS, ...(opponentDeckId ? { opponentDeckIds: [opponentDeckId] } : {}), ...saved };
 }
 
 /** The game type for a format and a number of seats, among the server's. */
@@ -143,7 +116,7 @@ export const usePlay = create<PlayState>((set, get) => ({
   deckId: null,
   lastOptions: {},
   returnPath: null,
-  aiOptions: { ...DEFAULT_AI_OPTIONS, ...readJson<Partial<AiOptions>>(AI_OPTIONS_KEY, {}) },
+  aiOptions: loadAiOptions(),
 
   setAiOptions(patch) {
     const aiOptions = { ...get().aiOptions, ...patch };
@@ -169,7 +142,7 @@ export const usePlay = create<PlayState>((set, get) => ({
     const { practice = false, guided = false, ...picked } = overrides;
     // the guided first game: the easiest AI with a random starter deck, one game, nothing unusual
     const options: AiOptions = practice || guided
-      ? { ...get().aiOptions, rules: 'casual', opponents: 1, aiType: 'COMPUTER_MAD', skill: 1, winsNeeded: 1, startingLife: null, opponentDeckId: null }
+      ? { ...get().aiOptions, rules: 'casual', opponents: 1, aiType: 'COMPUTER_MAD', skill: 1, winsNeeded: 1, startingLife: null, opponentDeckIds: [] }
       : { ...get().aiOptions, ...picked };
     useCoach.getState().setGuided(guided);
     set({ phase: 'starting', error: null, deckId, returnPath: null, lastOptions: practice ? { practice } : picked });
@@ -198,7 +171,9 @@ export const usePlay = create<PlayState>((set, get) => ({
       const seats = opponents + 1;
       const gameType = gameTypeFor(deckType, seats, await api.getGameTypes());
       const playerDeck = toWire(deck);
-      const rivalDecks = practice ? [goldfishDeck(commander)] : await aiDecks(options.opponentDeckId, opponents, commander);
+      // the AI seats' code is only needed here; keep it out of the entry chunk
+      const { aiDecks, botName } = await import('./aiSeats');
+      const rivalDecks = practice ? [goldfishDeck(commander)] : await aiDecks(options.opponentDeckIds, opponents, commander, deck.name);
       const rivals = await Promise.all(rivalDecks.map(async (rival) => {
         const wire = toWire(rival);
         if (options.rules !== 'deck') return wire;
@@ -221,7 +196,8 @@ export const usePlay = create<PlayState>((set, get) => ({
         deckType,
         winsNeeded: options.winsNeeded,
         playerTypes: ['HUMAN', ...rivals.map(() => seatableAiType(options.aiType, queryClient.getQueryData<ServerState>(['serverState'])?.playerTypes))],
-        advanced: { startingLife: options.startingLife },
+        // casual games give everyone a free first mulligan: a new seven, nothing put on the bottom
+        advanced: { startingLife: options.startingLife, freeMulligans: options.rules === 'casual' ? 1 : 0 },
       }));
       // no table: the server doesn't know us any more (the session store sends us to sign in)
       const tableId = table?.tableId;
@@ -230,8 +206,10 @@ export const usePlay = create<PlayState>((set, get) => ({
       if (!await api.roomJoinTable(roomId, tableId, userName, 'HUMAN', 1, playerDeck)) {
         throw new Error(options.rules === 'deck' ? `Your deck isn't legal in ${rules.label}. Fix it in the deck builder, or play casual.` : 'Your deck was not accepted for this table.');
       }
-      for (const [index, rival] of rivals.entries()) {
-        const name = practice ? 'Goldfish' : rivals.length === 1 ? 'AI Opponent' : `AI ${index + 1}`;
+      const names = [userName ?? ''];
+      for (const rival of rivals) {
+        const name = practice ? 'Goldfish' : botName(rival, commander, names);
+        names.push(name);
         if (!await api.roomJoinTable(roomId, tableId, name, options.aiType, options.skill, rival)) {
           throw new Error('The AI could not take its seat.');
         }

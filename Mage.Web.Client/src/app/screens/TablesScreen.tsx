@@ -15,7 +15,7 @@ import { Field } from '../ui/Field';
 import { Zone } from '../ui/Zone';
 import { formatMenu, formatRules, gameTypesFor, isCommanderFormat } from '../../core/decks/formats';
 import { DEFAULT_ADVANCED, matchOptions, type TableAdvanced } from '../../core/game/tableSetup';
-import { aiDecks } from '../stores/play';
+import { aiDecks, botName } from '../stores/aiSeats';
 import { inviteLink } from '../../core/social/chatLine';
 import { ChatPanel } from '../social/ChatPanel';
 import { useChatRoom } from '../social/useChatRoom';
@@ -309,11 +309,14 @@ function HostDialog({ open, onOpenChange, deckId }: { open: boolean; onOpenChang
       }
       if (aiSeats > 0) {
         // the AI brings starter decks of the right kind; a format they don't fit gets a copy of yours
-        const rivals = await aiDecks(null, aiSeats, commander).catch(() => []);
+        const rivals = await aiDecks([], aiSeats, commander, deck.name).catch(() => []);
+        const names = [userName ?? ''];
         for (let seat = 1; seat <= aiSeats; seat++) {
           const rival = rivals[seat - 1] ? toWire(rivals[seat - 1]) : wire;
-          const joined = await api.roomJoinTable(roomId, table.tableId, `AI ${seat}`, 'COMPUTER_MAD', 4, rival, password);
-          if (!joined && rival !== wire) await api.roomJoinTable(roomId, table.tableId, `AI ${seat}`, 'COMPUTER_MAD', 4, wire, password);
+          const name = botName(rivals[seat - 1] ?? deck, commander, names);
+          names.push(name);
+          const joined = await api.roomJoinTable(roomId, table.tableId, name, 'COMPUTER_MAD', 4, rival, password);
+          if (!joined && rival !== wire) await api.roomJoinTable(roomId, table.tableId, name, 'COMPUTER_MAD', 4, wire, password);
         }
       }
       refreshTables();

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useContext, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Layers, Swords } from 'lucide-react';
 import { COMMANDER_DAMAGE_LETHAL } from '../../core/game/commander';
 import { describeManaReadout, type ManaReadout } from '../../core/game/manaReadout';
@@ -10,6 +10,8 @@ import './matchMessages';
 import { ManaCost } from '../ui/ManaCost';
 import { sigilOf } from '../../core/social/identity';
 import { PhaseRing, type PhaseRingProps } from './PhaseRing';
+import { PortraitContext } from './portraits';
+import { useCardImage } from '../../core/images/useCardImage';
 import { usePresence } from './presence';
 import styles from './PlayerPlate.module.css';
 
@@ -114,8 +116,9 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
   const pool = POOL_MANA.filter(({ key }) => (player.manaPool?.[key] ?? 0) > 0);
   const timeLeft = useRopeSeconds(player);
   const ticking = ropeVisible(player.timerActive, player.hasPriority, timeLeft);
-  // the player's sigil from their profile, or their initial
+  // the player's sigil from their profile, or their initial; an AI is pictured by its commander's art
   const initial = sigilOf(player.userData?.avatarId) ?? (player.name ?? '?').slice(0, 1).toUpperCase();
+  const portrait = useCardImage(useContext(PortraitContext).get(player.playerId ?? '') ?? null, 'front', 'art_crop');
 
   const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0 || !!onViewHand || !!mana;
   const extras = hasExtras && (
@@ -231,7 +234,7 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
       data-object-id={player.playerId}
     >
       <div className={styles.avatar}>
-        <span aria-hidden="true">{initial}</span>
+        {portrait ? <img className={styles.portrait} src={portrait} alt="" draggable={false} /> : <span aria-hidden="true">{initial}</span>}
         {ticking && (
           <svg className={styles.rope} viewBox="0 0 100 100" role="img" aria-label={`${Math.ceil(timeLeft)} seconds left`}>
             <circle cx="50" cy="50" r="47" pathLength={ROPE_SECONDS} strokeDasharray={`${timeLeft} ${ROPE_SECONDS}`} />

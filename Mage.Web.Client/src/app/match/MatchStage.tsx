@@ -50,6 +50,7 @@ import { GameLog } from './GameLog';
 import { Hand } from './Hand';
 import './matchMessages';
 import { useMatchUi } from './matchUi';
+import { PortraitContext, usePortraits } from './portraits';
 import { useGameCues } from './useGameCues';
 import { useWarmImages } from './useWarmImages';
 import { useAutoPay } from './useAutoPay';
@@ -78,6 +79,7 @@ import styles from './MatchStage.module.css';
 
 const EMPTY: ReadonlySet<string> = new Set();
 const ignore = () => undefined;
+const NO_PLAYERS: PlayerView[] = [];
 const NO_CARDS: readonly CardView[] = [];
 const NO_COMMANDERS: readonly CommanderStatus[] = [];
 /** a hand bigger than this is offered as a list too: the fan's cards get too thin to pick out */
@@ -260,6 +262,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
 
   const myId = board.me?.player.playerId ?? null;
   const commanders = useMemo(() => commandersByPlayer(view), [view]);
+  const portraits = usePortraits(view?.players ?? NO_PLAYERS, commanders);
   const damageTaken = useCallback(
     (player: PlayerView) => commanderDamageTo(player, commanders).map((hit) => ({ name: hit.commander.name, amount: hit.amount })),
     [commanders],
@@ -424,6 +427,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
 
   return (
     <SleevedContext.Provider value={sleeves.chosen}>
+      <PortraitContext.Provider value={portraits}>
       <Stage style={matStyle}>
         {(stage) => {
           // the stage widens with the window and the field takes the extra width; a portrait window gets the tall layout
@@ -669,6 +673,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
           );
         }}
       </Stage>
+      </PortraitContext.Provider>
     </SleevedContext.Provider>
   );
 }

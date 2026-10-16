@@ -47,6 +47,33 @@
 .handCard:nth-child(6) { animation-delay: 200ms; }
 .handCard:nth-child(7) { animation-delay: 240ms; }
 
+.seatRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seat,
+.seatLit {
+  min-width: 160px;
+  padding: 14px 22px;
+  border: 2px solid rgb(var(--ink-rgb) / 0.25);
+  border-radius: var(--radius-control);
+  font-size: 26px;
+  color: var(--ink-soft);
+  transition: border-color 80ms, color 80ms, box-shadow 80ms;
+}
+
+.seatLit {
+  border-color: var(--ink-strong);
+  color: var(--ink-strong);
+  box-shadow: 0 0 24px rgb(var(--cue-rgb) / 0.55);
+}
+
 .buttons {
   display: flex;
   align-items: center;

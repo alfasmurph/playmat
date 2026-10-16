@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import type { Command, Interaction } from '../../core/game/interaction';
 import { parsePrompt } from '../../core/game/prompt';
@@ -240,6 +240,23 @@ describe('StartingPlayerOverlay', () => {
     fireEvent.click(button('Draw first'));
     fireEvent.click(button('Play first'));
     expect(onChoose.mock.calls).toEqual([['ai'], ['me']]);
+  });
+
+  test('a random pick lands on a player and shows the turn order from them', () => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const onChoose = vi.fn();
+    render(<StartingPlayerOverlay me={{ id: 'me', name: 'Me' }} opponents={[{ id: 'a', name: 'Ulalek' }, { id: 'b', name: 'Krenko' }, { id: 'c', name: 'Atraxa' }]} onChoose={onChoose} />);
+    fireEvent.click(button('Random'));
+    expect(dialog('Picking at random…')).toBeTruthy();
+    act(() => vi.advanceTimersByTime(5000));
+    expect(dialog('Krenko goes first')).toBeTruthy();
+    expect(screen.getByText('Turn order: Krenko → Atraxa → You → Ulalek')).toBeTruthy();
+    expect(onChoose).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(3200));
+    expect(onChoose.mock.calls).toEqual([['b']]);
+    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 });
 

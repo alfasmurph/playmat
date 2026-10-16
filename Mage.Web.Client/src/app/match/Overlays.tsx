@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Command, Interaction } from '../../core/game/interaction';
 import type { Prompt } from '../../core/game/prompt';
 import { abilityChooserSource, stripMarkup } from '../../core/game/prompt';
@@ -333,12 +333,87 @@ function MultiAmountChooser({ prompt, onCommand }: { prompt: Extract<Prompt, { k
   );
 }
 
-/** You won the roll: choose who takes the first turn. */
+/** How long the landed pick and the turn order stay up before the game goes on. */
+const ROLL_SHOWN_MS = 3200;
+
+/** The highlight's steps around the table before it lands on the pick: two laps, slowing down. */
+function rollDelays(seats: number, pick: number): number[] {
+  const steps = seats * 2 + pick + 1;
+  return Array.from({ length: steps }, (_, step) => 60 + Math.round(260 * (step / steps) ** 2));
+}
+
+/**
+ * You won the roll: choose who takes the first turn, or leave it to chance. A random pick lights each seat in turn,
+ * lands on one, and shows the turn order from there (play goes around the table in seat order) before it's sent.
+ */
 export function StartingPlayerOverlay({ me, opponents, onChoose }: {
   me: { id: string; name: string };
+  /** in seat order after you: the order turns pass in */
   opponents: { id: string; name: string }[];
   onChoose(playerId: string): void;
 }) {
+  const seats = [{ ...me, name: 'You' }, ...opponents];
+  const [pick, setPick] = useState<number | null>(null);
+  const [lit, setLit] = useState(0);
+  const [landed, setLanded] = useState(false);
+  const seatCount = seats.length;
+
+  useEffect(() => {
+    if (pick === null) return undefined;
+    const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const delays = reduced ? [] : rollDelays(seatCount, pick);
+    const timers: number[] = [];
+    let at = 0;
+    delays.forEach((delay, step) => {
+      at += delay;
+      timers.push(window.setTimeout(() => setLit((step + 1) % seatCount), at));
+    });
+    timers.push(window.setTimeout(() => {
+      setLit(pick);
+      setLanded(true);
+    }, at + 120));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [pick, seatCount]);
+
+  // the board re-renders while this is up: the latest handler, without restarting the countdown
+  const choose = useRef(onChoose);
+  useEffect(() => {
+    choose.current = onChoose;
+  });
+  const landedId = landed && pick !== null ? seats[pick].id : null;
+  useEffect(() => {
+    if (!landedId) return undefined;
+    const timer = window.setTimeout(() => choose.current(landedId), ROLL_SHOWN_MS);
+    return () => window.clearTimeout(timer);
+  }, [landedId]);
+
+  if (pick !== null) {
+    const order = landed ? [...seats.slice(pick), ...seats.slice(0, pick)] : null;
+    const picked = seats[pick];
+    return (
+      <div className={styles.scrim} role="dialog" aria-modal="true" aria-labelledby="start-title">
+        <div className={styles.center}>
+          <h2 id="start-title" className={styles.bigTitle}>{landed ? (pick === 0 ? 'You go first' : `${picked.name} goes first`) : 'Picking at random…'}</h2>
+          <ol className={styles.seatRow} aria-label="Players">
+            {seats.map((seat, index) => (
+              <li key={seat.id} className={index === lit ? styles.seatLit : styles.seat} aria-current={landed && index === pick ? 'true' : undefined}>{seat.name}</li>
+            ))}
+          </ol>
+          {order && (
+            <>
+              <p className={styles.subtitle} aria-live="polite">
+                Turn order: {order.map((seat) => seat.name).join(' → ')}
+              </p>
+              <div className={styles.buttons}>
+                <Button variant="decision" size="lg" onClick={() => onChoose(picked.id)} autoFocus>Start</Button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.scrim} role="dialog" aria-modal="true" aria-labelledby="start-title">
       <div className={styles.center}>
@@ -350,6 +425,7 @@ export function StartingPlayerOverlay({ me, opponents, onChoose }: {
               {opponents.length === 1 ? 'Draw first' : `${opponent.name} starts`}
             </Button>
           ))}
+          <Button variant="print" size="lg" onClick={() => setPick(Math.floor(Math.random() * seats.length))}>Random</Button>
           <Button variant="decision" size="xl" onClick={() => onChoose(me.id)} autoFocus>Play first</Button>
         </div>
       </div>
