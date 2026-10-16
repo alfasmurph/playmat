@@ -29,6 +29,11 @@
   font-size: 36px;
 }
 
+.art {
+  background-position: center;
+  background-size: cover;
+}
+
 .sigil {
   background: var(--mat-600);
 }

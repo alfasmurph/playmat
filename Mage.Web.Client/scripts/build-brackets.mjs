@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 /**
  * Builds public/data/brackets.json: the card lists Commander brackets are judged by, from Scryfall: the official Game
- * Changers (is:gamechanger), mass land denial (otag:mass-land-denial) and extra turns (otag:extra-turn). Run it again
- * when Wizards updates the Game Changers.
+ * Changers (is:gamechanger), mass land denial (otag:mass-land-denial) and extra turns (otag:extra-turn); and the
+ * two-card infinite combos the server's engine knows (Mage/src/main/resources/brackets/infinite-combos.txt, from
+ * Commander Spellbook). Run it again when Wizards updates the Game Changers.
  *
  *   node scripts/build-brackets.mjs
  */
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), '../public/data/brackets.json');
+const here = dirname(fileURLToPath(import.meta.url));
+const OUT = join(here, '../public/data/brackets.json');
+const COMBOS = join(here, '../../Mage/src/main/resources/brackets/infinite-combos.txt');
 const QUERIES = { gameChangers: 'is:gamechanger', massLandDenial: 'otag:mass-land-denial', extraTurns: 'otag:extra-turn' };
 
 async function names(query) {
@@ -30,5 +33,12 @@ async function names(query) {
 
 const lists = { updated: new Date().toISOString().slice(0, 10) };
 for (const [key, query] of Object.entries(QUERIES)) lists[key] = await names(query);
+// "name1@name2" lines; a pair of the same card is no combo for a singleton deck
+const pairs = new Set();
+for (const line of readFileSync(COMBOS, 'utf8').split('\n')) {
+  const [a, b] = line.trim().startsWith('#') ? [] : line.trim().split('@');
+  if (a && b && a !== b) pairs.add([a, b].sort().join('@'));
+}
+lists.combos = [...pairs].sort().map((pair) => pair.split('@'));
 writeFileSync(OUT, `${JSON.stringify(lists, null, 2)}\n`);
-console.log(Object.entries(QUERIES).map(([key]) => `${lists[key].length} ${key}`).join(', '), '→ public/data/brackets.json');
+console.log([...Object.keys(QUERIES), 'combos'].map((key) => `${lists[key].length} ${key}`).join(', '), '→ public/data/brackets.json');

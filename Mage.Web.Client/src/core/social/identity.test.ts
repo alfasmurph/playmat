@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { flagChoices, flagCode, flagGlyph, sigilOf } from './identity';
+import { avatarCardValue, flagChoices, flagCode, flagGlyph, parseAvatarCard, sigilOf } from './identity';
 
 describe('identity', () => {
   it('reads the server flag file name', () => {
@@ -25,5 +25,13 @@ describe('identity', () => {
     expect(choices[0].code).toBe('world');
     expect(choices.some((choice) => choice.code === 'jp')).toBe(true);
     expect(new Set(choices.map((choice) => choice.code)).size).toBe(choices.length);
+  });
+});
+
+describe('avatar cards', () => {
+  it('round-trips the server\'s "name|SET|number" and refuses anything else', () => {
+    const card = { name: 'Krenko, Mob Boss', setCode: 'M13', cardNumber: '141' };
+    expect(parseAvatarCard(avatarCardValue(card))).toEqual(card);
+    for (const bad of ['', null, undefined, 'Krenko', 'a|b', 'a|b|c|d']) expect(parseAvatarCard(bad)).toBeNull();
   });
 });

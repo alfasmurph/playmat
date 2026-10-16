@@ -23,18 +23,21 @@ public class UsersView implements Serializable {
     private final int constructedRating;
     private final int limitedRating;
     private final int avatarId;
+    /** the card whose art pictures the player, "name|SET|number", or "" (see UserData) */
+    private final String avatarCard;
 
     public UsersView(String flagName, String userName, String matchHistory, int matchQuitRatio,
             String tourneyHistory, int tourneyQuitRatio, String infoGames, String infoPing,
             int generalRating, int constructedRating, int limitedRating) {
         this(flagName, userName, matchHistory, matchQuitRatio, tourneyHistory, tourneyQuitRatio, infoGames, infoPing,
-                generalRating, constructedRating, limitedRating, 0);
+                generalRating, constructedRating, limitedRating, 0, "");
     }
 
     public UsersView(String flagName, String userName, String matchHistory, int matchQuitRatio,
             String tourneyHistory, int tourneyQuitRatio, String infoGames, String infoPing,
-            int generalRating, int constructedRating, int limitedRating, int avatarId) {
+            int generalRating, int constructedRating, int limitedRating, int avatarId, String avatarCard) {
         this.avatarId = avatarId;
+        this.avatarCard = avatarCard == null ? "" : avatarCard;
         this.flagName = flagName;
         this.matchHistory = matchHistory;
         this.matchQuitRatio = matchQuitRatio;
@@ -50,6 +53,10 @@ public class UsersView implements Serializable {
 
     public int getAvatarId() {
         return avatarId;
+    }
+
+    public String getAvatarCard() {
+        return avatarCard;
     }
 
     public String getFlagName() {

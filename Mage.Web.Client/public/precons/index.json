@@ -558,7 +558,7 @@
           "setCode": "C19",
           "cardNumber": "49"
         },
-        "bracket": 2,
+        "bracket": 3,
         "changes": [
           "Dockside Extortionist is banned in Commander: a Mountain plays in its place."
         ]
@@ -743,7 +743,7 @@
           "setCode": "AFC",
           "cardNumber": "328"
         },
-        "bracket": 2
+        "bracket": 3
       },
       {
         "file": "adventures-in-the-forgotten-realms-2021/dungeons-of-death.dck",
@@ -1195,7 +1195,7 @@
           "setCode": "DRC",
           "cardNumber": "3"
         },
-        "bracket": 2
+        "bracket": 3
       }
     ]
   },
@@ -1230,7 +1230,7 @@
           "setCode": "EOC",
           "cardNumber": "1"
         },
-        "bracket": 2
+        "bracket": 3
       }
     ]
   },
@@ -1391,7 +1391,7 @@
           "setCode": "ECC",
           "cardNumber": "2"
         },
-        "bracket": 2
+        "bracket": 3
       }
     ]
   }

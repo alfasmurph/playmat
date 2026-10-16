@@ -91,6 +91,7 @@ export function AppShell() {
   const connection = useSession((state) => state.connection);
   const signOut = useSession((state) => state.signOut);
   const avatarId = useSettings((state) => state.settings.avatarId);
+  const avatarCard = useSettings((state) => state.settings.avatarCard);
   const navigate = useNavigate();
   const settingsOpen = useShellUi((state) => state.settingsOpen);
   const setSettingsOpen = useShellUi((state) => state.setSettingsOpen);
@@ -132,7 +133,7 @@ export function AppShell() {
             <IconButton className={styles.settings} label={t('shell.settings')} icon={<Settings size={18} />} onClick={() => setSettingsOpen(true)} />
             <DropdownMenu.Root>
               <DropdownMenu.Trigger className={styles.user} aria-label={t('shell.account', { name: userName })}>
-                <Avatar name={userName} avatarId={avatarId} size="sm" />
+                <Avatar name={userName} avatarId={avatarId} avatarCard={avatarCard} size="sm" />
                 <span>{userName}</span>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>

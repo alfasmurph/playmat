@@ -98,6 +98,22 @@ public class SignedInElsewhereTest {
     }
 
     @Test
+    void aSecondTabRestoringTheSameSessionTellsTheFirstToStop() throws Exception {
+        Session firstTab = webSession("first-tab");
+        assertThat(firstTab.connectUser("alice", PASSWORD, "")).isNull();
+        String restore = users.get("alice").getRestoreSessionId();
+        assertThat(restore).isNotEmpty();
+
+        // the second tab of the same browser comes back with the session the first one saved
+        Session secondTab = webSession("second-tab");
+        assertThat(secondTab.connectUser("alice", PASSWORD, restore)).isNull();
+
+        // a normal close made the first tab reconnect the same way, pushing the second out: every second, for ever
+        assertThat(closes.get("first-tab")).containsExactly(WebSocketCallbackHandler.CLOSE_SIGNED_IN_ELSEWHERE, "Signed in elsewhere");
+        assertThat(closes.get("second-tab")).isNull();
+    }
+
+    @Test
     void signingInAgainOnTheSameConnectionNeverClosesIt() throws Exception {
         Session phone = webSession("phone");
         assertThat(phone.connectUser("alice", PASSWORD, "")).isNull();

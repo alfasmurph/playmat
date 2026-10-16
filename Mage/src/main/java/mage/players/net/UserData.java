@@ -2,6 +2,7 @@ package mage.players.net;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * User data that is passed during connection to the server.
@@ -10,12 +11,20 @@ import java.util.*;
  */
 public class UserData implements Serializable {
 
+    // pinned to the id the class had before avatarCard: saved games hold their players' UserData
+    private static final long serialVersionUID = 7635686598380413484L;
+
+    /** "name|SET|number": a card picked in the web client, whose art is the player's picture */
+    private static final Pattern AVATAR_CARD = Pattern.compile("[^|\\p{Cntrl}]{1,141}\\|[A-Za-z0-9_-]{1,10}\\|[A-Za-z0-9_\\u2605-]{1,12}");
+
     protected int groupId;
     protected int avatarId;
     protected boolean allowRequestShowHandCards;
     protected boolean confirmEmptyManaPool;
     protected UserSkipPrioritySteps userSkipPrioritySteps;
     protected String flagName;
+    /** the card whose art pictures the player ("" for none: their sigil shows); see AVATAR_CARD */
+    protected String avatarCard = "";
     protected boolean askMoveToGraveOrder;
     protected boolean manaPoolAutomatic;
     protected boolean manaPoolAutomaticRestricted;
@@ -100,6 +109,7 @@ public class UserData implements Serializable {
         this.autoTargetLevel = userData.autoTargetLevel;
         this.useSameSettingsForReplacementEffects = userData.useSameSettingsForReplacementEffects;
         this.useFirstManaAbility = userData.useFirstManaAbility;
+        this.avatarCard = cleanAvatarCard(userData.avatarCard);
         this.userIdStr = userData.userIdStr;
         // todo: why we don't update user stats here? => can't be updated from client side
     }
@@ -123,6 +133,19 @@ public class UserData implements Serializable {
                 false,
                 ""
         );
+    }
+
+    /** The card a player pictures themselves with, or "" (also for a value that isn't one, and old saved data). */
+    public String getAvatarCard() {
+        return avatarCard == null ? "" : avatarCard;
+    }
+
+    public void setAvatarCard(String avatarCard) {
+        this.avatarCard = cleanAvatarCard(avatarCard);
+    }
+
+    static String cleanAvatarCard(String value) {
+        return value != null && AVATAR_CARD.matcher(value).matches() ? value : "";
     }
 
     public void setGroupId(int groupId) {

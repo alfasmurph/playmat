@@ -113,15 +113,17 @@ public class Session {
     /**
      * The connection this login replaces is about to lose its session (the user's messages come here now). Close a web
      * connection first, saying why: its client then waits, instead of finding its session gone on its next call and
-     * signing straight back in, which pushed this login out in turn, over and over.
+     * signing straight back in, which pushed this login out in turn, over and over. That goes for a restored session
+     * too: two tabs of one browser share it, and each one's reconnect pushed the other out, every second. A client that
+     * is the one reconnecting has already let its old connection go and never hears this.
      */
-    private void closeReplacedConnection(String replacedSessionId, boolean signedInElsewhere) {
+    private void closeReplacedConnection(String replacedSessionId) {
         if (replacedSessionId == null || replacedSessionId.isEmpty() || replacedSessionId.equals(sessionId)) {
             return;
         }
         managerFactory.sessionManager().getSession(replacedSessionId).ifPresent(replaced -> {
             if (replaced.callbackHandler instanceof WebSocketCallbackHandler) {
-                ((WebSocketCallbackHandler) replaced.callbackHandler).closeReplaced(signedInElsewhere);
+                ((WebSocketCallbackHandler) replaced.callbackHandler).closeReplaced();
             }
         });
     }
@@ -494,7 +496,7 @@ public class Session {
                             reason = DisconnectReason.AnotherUserInstanceSilent;
                         }
 
-                        closeReplacedConnection(anotherUser.getSessionId(), canDisconnectAuthDueAnotherInstance && !canDisconnectAnyDueSessionRestore);
+                        closeReplacedConnection(anotherUser.getSessionId());
                         managerFactory.userManager().disconnect(anotherUser.getId(), reason);
                     }
                     isReconnection = true;

@@ -1550,6 +1550,7 @@ export interface UserData extends Serializable {
     askMoveToGraveOrder?: boolean;
     autoOrderTrigger?: boolean;
     autoTargetLevel?: number;
+    avatarCard?: string;
     avatarId?: number;
     confirmEmptyManaPool?: boolean;
     constructedRating?: number;
@@ -1617,6 +1618,7 @@ export interface UserView extends Serializable {
 }
 
 export interface UsersView extends Serializable {
+    avatarCard?: string;
     avatarId?: number;
     constructedRating?: number;
     flagName?: string;

@@ -1,9 +1,14 @@
-import { flagCode, flagGlyph, flagLabel, sigilOf } from '../../core/social/identity';
+import { flagCode, flagGlyph, flagLabel, parseAvatarCard, sigilOf } from '../../core/social/identity';
+import { useCardImage } from '../../core/images/useCardImage';
 import styles from './Avatar.module.css';
 
-/** A player's disc: their sigil, or their initial. */
-export function Avatar({ name, avatarId, size = 'md' }: { name: string; avatarId?: number | null; size?: 'sm' | 'md' | 'lg' }) {
+/** A player's disc: the art of the card they picked, their sigil, or their initial. */
+export function Avatar({ name, avatarId, avatarCard, size = 'md' }: { name: string; avatarId?: number | null; avatarCard?: string | null; size?: 'sm' | 'md' | 'lg' }) {
   const sigil = sigilOf(avatarId);
+  const art = useCardImage(parseAvatarCard(avatarCard), 'front', 'art_crop');
+  if (typeof art === 'string') {
+    return <span className={[styles.avatar, styles[size], styles.art].join(' ')} style={{ backgroundImage: `url("${art}")` }} aria-hidden="true" />;
+  }
   return (
     <span className={[styles.avatar, styles[size], sigil ? styles.sigil : ''].join(' ')} aria-hidden="true">
       {sigil ?? (name.slice(0, 1).toUpperCase() || '?')}

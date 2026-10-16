@@ -29,6 +29,22 @@ export const SIGILS: { id: number; glyph: string; label: string }[] = [
   { id: 32, glyph: '🗡️', label: 'Blade' },
 ];
 
+/** A card whose art pictures a player instead of a sigil; the server keeps it as "name|SET|number". */
+export interface AvatarCard {
+  name: string;
+  setCode: string;
+  cardNumber: string;
+}
+
+export function parseAvatarCard(value: string | null | undefined): AvatarCard | null {
+  const [name, setCode, cardNumber, extra] = (value ?? '').split('|');
+  return name && setCode && cardNumber && extra === undefined ? { name, setCode, cardNumber } : null;
+}
+
+export function avatarCardValue(card: AvatarCard): string {
+  return `${card.name}|${card.setCode}|${card.cardNumber}`;
+}
+
 const SIGIL_BY_ID = new Map(SIGILS.map((sigil) => [sigil.id, sigil]));
 
 /** The sigil glyph for an avatar id, or null for the default (and desktop avatars, which have no web artwork). */

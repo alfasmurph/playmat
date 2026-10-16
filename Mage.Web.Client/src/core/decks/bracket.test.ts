@@ -5,6 +5,7 @@ const LISTS: BracketLists = {
   gameChangers: ['Cyclonic Rift', 'Rhystic Study', 'Smothering Tithe', 'Demonic Tutor', "Tergrid, God of Fright // Tergrid's Lantern"],
   massLandDenial: ['Armageddon'],
   extraTurns: ['Time Warp', 'Temporal Manipulation', 'Capture of Jingzhou'],
+  combos: [['Kiki-Jiki, Mirror Breaker', 'Zealous Conscripts'], ['Dramatic Reversal', 'Isochron Scepter']],
 };
 
 describe('estimateBracket', () => {
@@ -16,6 +17,11 @@ describe('estimateBracket', () => {
   test('one to three Game Changers, or two extra turns, is Upgraded', () => {
     expect(estimateBracket(['Cyclonic Rift', 'Forest'], LISTS)).toMatchObject({ bracket: 3, gameChangers: ['Cyclonic Rift'] });
     expect(estimateBracket(['Time Warp', 'Temporal Manipulation'], LISTS).bracket).toBe(3);
+  });
+
+  test('a two-card combo with both halves in the deck is Upgraded', () => {
+    expect(estimateBracket(['Kiki-Jiki, Mirror Breaker', 'Zealous Conscripts'], LISTS)).toMatchObject({ bracket: 3, combos: ['Kiki-Jiki, Mirror Breaker + Zealous Conscripts'] });
+    expect(estimateBracket(['Kiki-Jiki, Mirror Breaker', 'Isochron Scepter'], LISTS)).toMatchObject({ bracket: 2, combos: [] });
   });
 
   test('four Game Changers, mass land denial or three extra turns is Optimized', () => {

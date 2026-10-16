@@ -70,13 +70,9 @@ public class WebSocketCallbackHandler implements AsynchInvokerCallbackHandler {
     /** The close code for a connection whose user signed in on another connection (the client stops reconnecting). */
     public static final int CLOSE_SIGNED_IN_ELSEWHERE = 4001;
 
-    /** A newer login of this user took over: close, saying why when it was another device or tab. */
-    public void closeReplaced(boolean signedInElsewhere) {
-        if (signedInElsewhere) {
-            conn.close(CLOSE_SIGNED_IN_ELSEWHERE, "Signed in elsewhere");
-        } else {
-            conn.close(1000, "Reconnected");
-        }
+    /** A newer login of this user took over (another device or tab): close, saying why, so this one stops reconnecting. */
+    public void closeReplaced() {
+        conn.close(CLOSE_SIGNED_IN_ELSEWHERE, "Signed in elsewhere");
     }
 
     public WebSocketCallbackHandler(WebSocket conn) {

@@ -6,7 +6,7 @@ import type { RosterDeck } from './decks';
 const deck = (patch: Partial<RosterDeck> = {}): RosterDeck => ({
   id: 'd1', name: 'Atraxa', note: '', cardCount: 100, kind: 'commander', updatedAt: 5, cover: null, colors: [], starter: null, ...patch,
 });
-const ESTIMATE: BracketEstimate = { bracket: 4, gameChangers: ['Mana Vault', 'Mox Diamond', 'Chrome Mox', 'Ancient Tomb'], massLandDenial: [], extraTurns: [] };
+const ESTIMATE: BracketEstimate = { bracket: 4, gameChangers: ['Mana Vault', 'Mox Diamond', 'Chrome Mox', 'Ancient Tomb'], massLandDenial: [], extraTurns: [], combos: [] };
 
 describe('bracketOf', () => {
   test('the bracket the owner set wins over the estimate', () => {

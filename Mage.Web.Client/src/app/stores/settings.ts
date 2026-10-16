@@ -52,6 +52,8 @@ export interface PlaySettings {
   notifications: boolean;
   /** profile: the sigil shown for the player (server avatar ids 10 to 32; 10 shows the initial) */
   avatarId: number;
+  /** profile: a card whose art is the player's picture, over the sigil ("name|SET|number", "" for none) */
+  avatarCard: string;
   /** profile: a country code ("de") or "world" */
   flag: string;
   /** the interface language, or "auto" for the browser's (local only) */
@@ -121,6 +123,7 @@ export const DEFAULT_SETTINGS: PlaySettings = {
   importantCuesOnly: false,
   notifications: false,
   avatarId: 10,
+  avatarCard: '',
   flag: 'world',
   locale: 'auto',
   matCloth: 'green',
@@ -167,6 +170,7 @@ export function toUserData(settings: PlaySettings, fullControl = false): UserDat
   return {
     groupId: 0,
     avatarId: settings.avatarId,
+    avatarCard: settings.avatarCard,
     allowRequestShowHandCards: settings.allowHandRequests,
     userSkipPrioritySteps: serverStops(settings.stops, fullControl),
     flagName: `${settings.flag || 'world'}.png`,

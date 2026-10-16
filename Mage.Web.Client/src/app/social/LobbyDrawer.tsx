@@ -162,7 +162,7 @@ function PlayerRow({ user, me, myTables }: { user: UsersView; me: string; myTabl
   return (
     <li className={[styles.player, ignoredUser ? styles.ignored : ''].join(' ')}>
       <button type="button" className={styles.identity} onClick={() => useLobby.getState().openProfile(name)} title={`${name}'s profile`}>
-        <Avatar name={name} avatarId={user.avatarId} size="sm" />
+        <Avatar name={name} avatarId={user.avatarId} avatarCard={user.avatarCard} size="sm" />
         <span className={styles.playerName}>
           {name}{isMe ? ' (you)' : ''} <Flag flagName={user.flagName} />
         </span>

@@ -8,7 +8,7 @@ import type { PlayerView } from '../../protocol/generated/views';
 import { useT } from '../i18n';
 import './matchMessages';
 import { ManaCost } from '../ui/ManaCost';
-import { sigilOf } from '../../core/social/identity';
+import { parseAvatarCard, sigilOf } from '../../core/social/identity';
 import { PhaseRing, type PhaseRingProps } from './PhaseRing';
 import { PortraitContext } from './portraits';
 import { useCardImage } from '../../core/images/useCardImage';
@@ -116,9 +116,10 @@ export function PlayerPlate({ player, isMe, targetable, selected, deciding, slee
   const pool = POOL_MANA.filter(({ key }) => (player.manaPool?.[key] ?? 0) > 0);
   const timeLeft = useRopeSeconds(player);
   const ticking = ropeVisible(player.timerActive, player.hasPriority, timeLeft);
-  // the player's sigil from their profile, or their initial; an AI is pictured by its commander's art
+  // the card art the player picked, else their sigil or initial; an AI is pictured by its commander's art
   const initial = sigilOf(player.userData?.avatarId) ?? (player.name ?? '?').slice(0, 1).toUpperCase();
-  const portrait = useCardImage(useContext(PortraitContext).get(player.playerId ?? '') ?? null, 'front', 'art_crop');
+  const commanderArt = useContext(PortraitContext).get(player.playerId ?? '');
+  const portrait = useCardImage(parseAvatarCard(player.userData?.avatarCard) ?? commanderArt ?? null, 'front', 'art_crop');
 
   const hasExtras = commanderDamage.length > 0 || !!toPay || pool.length > 0 || !!onViewHand || !!mana;
   const extras = hasExtras && (
