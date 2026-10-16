@@ -683,6 +683,27 @@ public interface Game extends MageItem, Serializable, Copyable<Game> {
     boolean executingRollback();
 
     /**
+     * Keeps the game as it is now as a point to undo to: called just before a player takes an action (casts, plays a
+     * land, activates). Only the current turn's last few are kept.
+     */
+    default void saveActionUndoState(GameState before) {
+    }
+
+    /** the game as it is now, to pass to saveActionUndoState once the action went through */
+    default GameState copyForActionUndo() {
+        return null;
+    }
+
+    /** how many of the current turn's actions can be undone */
+    default int actionUndoCount() {
+        return 0;
+    }
+
+    /** goes back to just before the player's last action ({@code actionsBack} 1) or an earlier one */
+    default void rollbackActions(int actionsBack) {
+    }
+
+    /**
      * Add counters to permanent before ETB. Use it before put real permanent to battlefield.
      */
     void setEnterWithCounters(UUID sourceId, Counters counters);

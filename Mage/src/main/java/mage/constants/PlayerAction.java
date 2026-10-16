@@ -64,5 +64,6 @@ public enum PlayerAction {
     UNHOLD_PRIORITY,
     VIEW_LIMITED_DECK,
     VIEW_SIDEBOARD,
-    TOGGLE_RECORD_MACRO
+    TOGGLE_RECORD_MACRO,
+    UNDO_LAST_ACTION // back to just before the player's last action this turn (games against the AI)
 }

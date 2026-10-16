@@ -74,6 +74,8 @@ public class GameView implements Serializable {
     private final int turn;
     private boolean special = false;
     private final boolean rollbackTurnsAllowed;
+    /** how many of this turn's actions can be undone (UNDO_LAST_ACTION) */
+    private final int actionsToUndo;
     private final MultiplayerAttackOption attackOption;
     private final RangeOfInfluence rangeOfInfluence;
 
@@ -237,6 +239,7 @@ public class GameView implements Serializable {
             this.special = false;
         }
         this.rollbackTurnsAllowed = game.getOptions().rollbackTurnsAllowed;
+        this.actionsToUndo = game.actionUndoCount();
         this.attackOption = game.getAttackOption();
         this.rangeOfInfluence = game.getRangeOfInfluence();
         this.totalErrorsCount = game.getTotalErrorsCount();
@@ -380,6 +383,10 @@ public class GameView implements Serializable {
 
     public boolean isRollbackTurnsAllowed() {
         return rollbackTurnsAllowed;
+    }
+
+    public int getActionsToUndo() {
+        return actionsToUndo;
     }
 
     public MultiplayerAttackOption getAttackOption() {

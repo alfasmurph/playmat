@@ -294,7 +294,8 @@ final class CareerApi {
                 gameType, pod);
         options.setDeckType(deckType);
         options.setWinsNeeded(Math.max(1, winsNeeded));
-        options.setRollbackTurnsAllowed(false);
+        // undo (back to the start of a turn) is for blunders the screen caused; nothing in Career pays for using it or not
+        options.setRollbackTurnsAllowed(true);
         options.setSpectatorsAllowed(true);
         if (pod) {
             // a free-for-all: anyone may attack anyone

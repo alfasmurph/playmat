@@ -625,6 +625,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                     ready: interaction.mode === 'priority' && !awaitingServer,
                     previousTurnsBack: previousTurnsBack(view?.turn ?? 0, !!myId && activeId === myId, myTurns, board.opponents.length + 1),
                     request: (turns) => onCommand({ type: 'action', action: 'ROLLBACK_TURNS', data: turns }),
+                    lastAction: vsAi && (view?.actionsToUndo ?? 0) > 0 ? () => onCommand({ type: 'action', action: 'UNDO_LAST_ACTION' }) : null,
                   }
                   : null}
                 undoTap={mode === 'play' && canAct && interaction.mode === 'payMana' && !awaitingServer
@@ -833,6 +834,8 @@ interface RollbackOption {
   previousTurnsBack: number | null;
   /** 0: the start of this turn; n: n turns back */
   request(turns: number): void;
+  /** back to just before your last action this turn (a game against the computer that has one to undo) */
+  lastAction: (() => void) | null;
 }
 
 
@@ -849,7 +852,7 @@ const CONFIRM = {
   },
   rollback: {
     title: 'Undo: go back how far?',
-    description: 'The game goes back to the start of a turn: this one, or your last one if it has already ended. Every other player must agree; a game against the computer goes back at once.',
+    description: 'Just before your last action this turn, or the start of a turn: this one, or your last one if it has already ended. Against people every other player must agree; a game against the computer goes back at once.',
     action: 'Start of this turn',
   },
 } as const;
@@ -865,6 +868,7 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
   /** while paying: take the last mana tap back (and with it the spell, once nothing is paid) */
   undoTap?: (() => void) | null;
 }) {
+  const lastAction = rollback?.ready ? rollback.lastAction : null;
   // conceding gives up this game; leaving a game in progress gives up the whole match
   const [confirming, setConfirming] = useState<keyof typeof CONFIRM | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -873,14 +877,17 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
   return (
     <div className={styles.menu}>
       {(undoTap || rollback) && (
-        // Undo, always in reach: a mana tap while paying, otherwise the turn (the engine can't take back one spell)
+        // Undo, always in reach: a mana tap while paying, else your last action this turn at once, else a choice of turns
         <button
           type="button"
           className={[styles.menuButton, styles.undoButton].join(' ')}
-          aria-label={undoTap ? 'Undo the last mana tap' : 'Undo: go back to the start of a turn'}
-          title={undoTap ? 'Undo the last mana tap (Ctrl+Z)' : rollback?.ready ? 'Go back to the start of this turn or your last one' : 'Undo works while you have priority'}
+          aria-label={undoTap ? 'Undo the last mana tap' : lastAction ? 'Undo your last action' : 'Undo: go back to the start of a turn'}
+          title={undoTap
+            ? 'Undo the last mana tap (Ctrl+Z)'
+            : !rollback?.ready ? 'Undo works while you have priority'
+              : lastAction ? 'Undo your last action (the menu goes back further)' : 'Go back to the start of this turn or your last one'}
           disabled={!undoTap && !rollback?.ready}
-          onClick={() => (undoTap ? undoTap() : setConfirming('rollback'))}
+          onClick={() => (undoTap ? undoTap() : lastAction ? lastAction() : setConfirming('rollback'))}
         >
           <Undo2 size={22} />
         </button>
@@ -902,7 +909,7 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
                 title={rollback.ready ? undefined : 'Available while you have priority'}
                 onSelect={() => setConfirming('rollback')}
               >
-                Undo: go back to the start of a turn
+                Undo: go back further
               </DropdownMenu.Item>
             )}
             {canConcede && (
@@ -926,6 +933,17 @@ function GameMenu({ gameId, practice, canConcede, onConcede, onLeave, rollback, 
         footer={(
           <>
             <Button variant="quiet" onClick={() => setConfirming(null)}>Keep playing</Button>
+            {confirming === 'rollback' && lastAction && (
+              <Button
+                variant="print"
+                onClick={() => {
+                  setConfirming(null);
+                  lastAction();
+                }}
+              >
+                My last action
+              </Button>
+            )}
             {confirming === 'rollback' && rollback?.previousTurnsBack && (
               <Button
                 variant="print"

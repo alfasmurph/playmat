@@ -178,6 +178,10 @@ public class Turn implements Serializable {
             currentPhase = nextPhase;
             game.fireEvent(new PhaseChangedEvent(activePlayerId, null));
             if (nextPhase.resumePlay(game, needStepType, wasPaused)) {
+                // undone again while playing on: the game loop starts over from the point undone to
+                if (game.executingRollback()) {
+                    return;
+                }
                 //20091005 - 500.4/703.4n
                 game.emptyManaPools(null);
                 //20091005 - 500.8
@@ -202,6 +206,9 @@ public class Turn implements Serializable {
                 currentPhase = nextPhase;
                 game.fireEvent(new PhaseChangedEvent(activePlayerId, null));
                 if (nextPhase.play(game, activePlayerId)) {
+                    if (game.executingRollback()) {
+                        return;
+                    }
                     //20091005 - 500.4/703.4n
                     game.emptyManaPools(null);
                     //20091005 - 500.8

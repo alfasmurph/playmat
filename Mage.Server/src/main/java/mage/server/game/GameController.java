@@ -616,6 +616,25 @@ public class GameController implements GameCallback {
             case UNDO:
                 game.undo(getPlayerId(userId));
                 break;
+            case UNDO_LAST_ACTION: { // back to just before the player's last action: only when no other person plays
+                UUID playerId = getPlayerId(userId);
+                Player player = playerId == null ? null : game.getPlayer(playerId);
+                if (player == null) {
+                    break;
+                }
+                boolean othersAreAi = game.getPlayers().values().stream()
+                        .allMatch(other -> other.getId().equals(playerId) || !other.isHuman());
+                if (!othersAreAi) {
+                    game.informPlayer(player, "Undoing an action works in games against the AI.");
+                } else if (!playerId.equals(game.getPriorityPlayerId())) {
+                    game.informPlayer(player, "You can undo an action while you have priority.");
+                } else if (game.actionUndoCount() == 0) {
+                    game.informPlayer(player, "There's no action to undo this turn.");
+                } else {
+                    game.rollbackActions(1);
+                }
+                break;
+            }
             case ROLLBACK_TURNS: // basic request of a player to rollback
                 if (data instanceof Integer) {
                     turnsToRollback = (Integer) data;

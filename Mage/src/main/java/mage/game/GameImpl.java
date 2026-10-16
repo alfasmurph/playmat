@@ -95,10 +95,17 @@ import java.util.stream.Collectors;
  */
 public abstract class GameImpl implements Game {
 
+    /**
+     * Pinned: saved games are this class serialized, and the computed id changes with any new field or method, which
+     * would make every save unreadable ("local class incompatible"). This is the id the saves so far were written with.
+     */
+    private static final long serialVersionUID = -4983620448472554188L;
+
     private final static AtomicInteger GLOBAL_INDEX = new AtomicInteger();
     public final static AtomicInteger COPIED_COUNT = new AtomicInteger();
 
     private static final int ROLLBACK_TURNS_MAX = 4;
+    private static final int ACTION_UNDO_MAX = 5;
     private static final String UNIT_TESTS_ERROR_TEXT = "Error in unit tests";
     private static final Logger logger = Logger.getLogger(GameImpl.class);
 
@@ -145,6 +152,12 @@ public abstract class GameImpl implements Game {
     /** loaded from a saved game: it plays on from its turn instead of starting (see resumeAtTurnStart) */
     private transient boolean loadedFromSave;
     protected transient int turnToGoToForRollback;
+    /** the current turn's points to undo to, oldest first: the game just before each of a player's last actions */
+    protected transient LinkedList<GameState> actionUndoStates = new LinkedList<>();
+    /** which of actionUndoStates the rollback in progress goes back to; -1 for a turn rollback */
+    protected transient int actionToGoToForRollback = -1;
+    /** set by a rollback to an action: the turn plays on from the restored step instead of starting again */
+    protected transient boolean resumeInTurnAfterRollback;
 
     protected Date startTime;
     protected Date endTime;
@@ -1241,9 +1254,12 @@ public abstract class GameImpl implements Game {
     private boolean playTurn(Player player) {
         boolean skipTurn = false;
         do {
+            boolean resumeInTurn = false;
             if (executingRollback) {
                 rollbackTurnsExecution(turnToGoToForRollback);
                 player = getPlayer(state.getActivePlayerId());
+                resumeInTurn = resumeInTurnAfterRollback;
+                resumeInTurnAfterRollback = false;
             } else {
                 state.setActivePlayerId(player.getId());
                 saveRollBackGameState();
@@ -1254,7 +1270,13 @@ public abstract class GameImpl implements Game {
             if (checkStopOnTurnOption()) {
                 return false;
             }
-            skipTurn = state.getTurn().play(this, player);
+            if (resumeInTurn) {
+                // back to just before an action: the turn plays on from the step it was taken in
+                state.getTurn().resumePlay(this, false);
+                skipTurn = false;
+            } else {
+                skipTurn = state.getTurn().play(this, player);
+            }
         } while (executingRollback);
 
         if (isPaused() || checkIfGameIsOver()) {
@@ -3787,6 +3809,8 @@ public abstract class GameImpl implements Game {
         gameStates = new GameStates();
         // a saved game that plays on (not only a replay) needs these too
         gameStatesRollBack = new HashMap<>();
+        actionUndoStates = new LinkedList<>();
+        actionToGoToForRollback = -1;
         stackObjectsCheck = new LinkedList<>();
     }
 
@@ -4223,6 +4247,8 @@ public abstract class GameImpl implements Game {
 
     @Override
     public void saveRollBackGameState() {
+        // undoing an action stays within its turn
+        actionUndoStates.clear();
         if (gameOptions.rollbackTurnsAllowed) {
             int toDelete = getTurnNum() - ROLLBACK_TURNS_MAX;
             if (toDelete > 0) {
@@ -4239,7 +4265,12 @@ public abstract class GameImpl implements Game {
     }
 
     private void rollbackTurnsExecution(int turnToGoToForRollback) {
+        if (actionToGoToForRollback >= 0) {
+            rollbackActionExecution(actionToGoToForRollback);
+            return;
+        }
         GameState restore = gameStatesRollBack.get(turnToGoToForRollback);
+        actionUndoStates.clear();
         if (restore != null) {
             informPlayers(GameLog.getPlayerRequestColoredText("Player request: Rolling back to start of turn " + restore.getTurnNum()));
             state.restoreForRollBack(restore);
@@ -4255,6 +4286,83 @@ public abstract class GameImpl implements Game {
                     playerObject.abortReset();
                 }
             }
+        }
+        executingRollback = false;
+    }
+
+    @Override
+    public GameState copyForActionUndo() {
+        if (!gameOptions.rollbackTurnsAllowed || isSimulation() || executingRollback) {
+            return null;
+        }
+        return state.copy();
+    }
+
+    @Override
+    public void saveActionUndoState(GameState before) {
+        if (before == null || !gameOptions.rollbackTurnsAllowed || isSimulation() || executingRollback) {
+            return;
+        }
+        // a point from another turn (taken as it began) isn't kept: undo stays within the turn
+        if (before.getTurnNum() != state.getTurnNum()) {
+            return;
+        }
+        actionUndoStates.addLast(before);
+        while (actionUndoStates.size() > ACTION_UNDO_MAX) {
+            actionUndoStates.removeFirst();
+        }
+    }
+
+    @Override
+    public int actionUndoCount() {
+        return actionUndoStates.size();
+    }
+
+    @Override
+    public synchronized void rollbackActions(int actionsBack) {
+        if (!gameOptions.rollbackTurnsAllowed || executingRollback) {
+            return;
+        }
+        int index = actionUndoStates.size() - actionsBack;
+        if (actionsBack < 1 || index < 0) {
+            informPlayers(GameLog.getPlayerRequestColoredText("Player request: there's no action to undo"));
+            return;
+        }
+        executingRollback = true;
+        actionToGoToForRollback = index;
+        for (Player playerObject : getPlayers().values()) {
+            if (playerObject.isHuman() && playerObject.canRespond()) {
+                playerObject.resetStoredBookmark(this);
+                playerObject.resetPlayerPassedActions();
+                playerObject.abort();
+            }
+        }
+        fireUpdatePlayersEvent();
+        if (gameOptions.testMode && gameStopped) {
+            rollbackTurnsExecution(turnToGoToForRollback);
+        }
+    }
+
+    /** Puts the game back as it was just before an action, to play on from inside its turn (see playTurn). */
+    private void rollbackActionExecution(int index) {
+        GameState restore = index < actionUndoStates.size() ? actionUndoStates.get(index) : null;
+        actionToGoToForRollback = -1;
+        if (restore != null) {
+            // the restored state uses the kept objects themselves: it and everything after it are used up
+            while (actionUndoStates.size() > index) {
+                actionUndoStates.removeLast();
+            }
+            informPlayers(GameLog.getPlayerRequestColoredText("Player request: undoing the last action"));
+            state.restoreForRollBack(restore);
+            playerList.setCurrent(state.getPlayerByOrderId());
+            savedStates.clear();
+            gameStates.clear();
+            for (Player playerObject : getPlayers().values()) {
+                if (playerObject.isInGame()) {
+                    playerObject.abortReset();
+                }
+            }
+            resumeInTurnAfterRollback = true;
         }
         executingRollback = false;
     }

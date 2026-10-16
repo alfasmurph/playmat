@@ -140,6 +140,9 @@ public abstract class Phase implements Serializable {
             currentStep = step;
         } while (step.getType() != stepType);
         resumeStep(game, wasPaused);
+        if (game.executingRollback()) {
+            return true;
+        }
         while (it.hasNext()) {
             step = it.next();
             if (game.isPaused() || game.checkIfGameIsOver()) {

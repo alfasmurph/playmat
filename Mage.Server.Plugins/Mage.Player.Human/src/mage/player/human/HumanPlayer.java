@@ -2392,7 +2392,14 @@ public class HumanPlayer extends PlayerImpl {
     @Override
     public boolean activateAbility(ActivatedAbility ability, Game game) {
         getManaPool().setStock(); // needed for the "mana already in the pool has to be used manually" option
-        return super.activateAbility(ability, game);
+        // the game just before the action, kept as a point to undo to once the action went through (a land tapped
+        // while paying is part of that payment, not an action of its own)
+        mage.game.GameState before = payManaMode ? null : game.copyForActionUndo();
+        boolean done = super.activateAbility(ability, game);
+        if (done && before != null) {
+            game.saveActionUndoState(before);
+        }
+        return done;
     }
 
     protected void activateAbility(Map<UUID, ? extends ActivatedAbility> abilities, MageObject object, Game game) {
