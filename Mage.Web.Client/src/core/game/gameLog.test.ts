@@ -205,6 +205,7 @@ describe('endReason', () => {
     ['Najeela lost the game due to having 0 or less life', 'life'],
     ['Najeela lost the game due to having 10 or more poison counters', 'poison'],
     ['Najeela has conceded.', 'conceded'],
+    ['Najeela wants to concede', 'conceded'],
     ['Najeela has run out of time, losing the match.', 'timeout'],
   ])('reads "%s"', (text, kind) => {
     expect(endReason([line(text)], 'Bob')).toMatchObject({ kind, player: 'Najeela', mine: false });

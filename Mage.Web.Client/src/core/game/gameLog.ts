@@ -358,6 +358,8 @@ const LOSS_REASONS: [RegExp, EndReasonKind][] = [
   [/^(.+?) lost the game due (?:to )?drawing from an empty library\b/i, 'library'],
   [/^(.+?) lost the game due to having \d+ or more poison counters?\b/i, 'poison'],
   [/^(.+?) has conceded\b/i, 'conceded'],
+  // the server's own line when a player concedes from the game menu (GameController)
+  [/^(.+?) wants to concede\b/i, 'conceded'],
   [/^(.+?) has run out of time\b/i, 'timeout'],
 ];
 const GENERIC_LOSS = /^(.+?) has lost the game\b/i;
