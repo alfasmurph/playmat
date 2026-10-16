@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import type { CareerCampaign, CareerNode, CareerPoolCard } from '../../protocol/generated/views';
 import {
   graduated, graduationOf, requirementLines, schoolsOf, storiesOf,
-  PATH_STEP, buildDeck, buildFrom, buildProblems, buildSize, changeBasic, changePick, chapterPath, countNames, crestArt, crestSpec, emptyBasics,
+  PATH_CELL, buildDeck, buildFrom, buildProblems, buildSize, changeBasic, changePick, chapterPath, countNames, crestArt, crestSpec, emptyBasics,
   focusChapter, focusNode, hashName, mergeByName, legCurve, nodeState, poolEntries, portraitArt, portraitSpec, puzzleZones, rewardLines, runOver, runReward,
   starCount, starSlots, suggestBasics, toggleChoice, twistLines, type LimitedBuild,
 } from './careerModesModel';
@@ -42,13 +42,44 @@ describe('the academy', () => {
 });
 
 describe('campaign path', () => {
-  test('a chain of nodes winds one step at a time, up and down', () => {
-    const path = chapterPath([node('a', [], 'done'), node('b', ['a'], 'done'), node('c', ['b'], 'open'), node('d', ['c'])]);
+  test('a chain runs left to right when it fits, swinging from side to side', () => {
+    const path = chapterPath([node('a', [], 'done'), node('b', ['a'], 'done'), node('c', ['b'], 'open'), node('d', ['c'])], 900);
+    expect(path.axis).toBe('across');
     expect(path.stops.map((stop) => stop.node.id)).toEqual(['a', 'b', 'c', 'd']);
-    expect(path.stops.map((stop) => stop.x)).toEqual([0, 1, 2, 3].map((step) => PATH_STEP / 2 + step * PATH_STEP));
+    const xs = path.stops.map((stop) => stop.x);
+    expect(xs).toEqual([...xs].sort((a, b) => a - b));
     expect(path.stops[0].y).toBeLessThan(path.stops[1].y);
     expect(path.stops[2].y).toBe(path.stops[0].y);
-    expect(path.width).toBe(4 * PATH_STEP);
+    expect(path.width).toBeLessThanOrEqual(900);
+  });
+
+  // the Conquest shape: five duels open at once, two pods, a finale
+  const conquest = [
+    ...['d1', 'd2', 'd3', 'd4', 'd5'].map((id) => node(id, [], 'open')),
+    node('pod1', ['d1', 'd2', 'd3', 'd4', 'd5']), node('pod2', ['pod1']), node('boss', ['pod2'], 'locked', { boss: true }),
+  ];
+  const inside = (path: ReturnType<typeof chapterPath>) => path.stops.every((stop) =>
+    stop.x - PATH_CELL / 2 >= 0 && stop.x + PATH_CELL / 2 <= path.width && stop.y - 40 >= 0 && stop.y + 56 <= path.height);
+
+  test('nothing is cut off: a crowded step wraps into lines and the box holds every stop with its name and crown', () => {
+    const wide = chapterPath(conquest, 900);
+    expect(wide.axis).toBe('across');
+    expect(inside(wide)).toBe(true);
+    // five duels: a line of three and a line of two
+    expect(new Set(wide.stops.slice(0, 5).map((stop) => stop.x)).size).toBe(2);
+  });
+
+  test('on a phone the trail runs top to bottom inside the screen\'s width', () => {
+    const phone = chapterPath(conquest, 343);
+    expect(phone.axis).toBe('down');
+    expect(phone.width).toBe(343);
+    expect(inside(phone)).toBe(true);
+    const duelRows = new Set(phone.stops.slice(0, 5).map((stop) => stop.y));
+    expect(duelRows.size).toBe(2);
+    const [pod1, pod2, boss] = phone.stops.slice(5);
+    expect(pod1.y).toBeLessThan(pod2.y);
+    expect(pod2.y).toBeLessThan(boss.y);
+    expect(legCurve({ from: pod1, to: pod2 }, 'down')).toMatch(/^M[\d.]+ [\d.]+ C/);
   });
 
   test('legs follow requirements, a choice requirement counts as its node, and take the state of where they lead', () => {

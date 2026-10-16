@@ -1,5 +1,7 @@
 package mage.server;
 
+import mage.server.savedgame.SavedGames;
+
 import mage.cards.decks.Deck;
 import mage.constants.ManaType;
 import mage.constants.TableState;
@@ -558,6 +560,11 @@ public class User {
         logger.trace("REMOVE " + userName + " Game sessions: " + gameSessions.size());
         for (GameSessionPlayer gameSessionPlayer : gameSessions.values()) {
             logger.debug("-- kill game session of gameId: " + gameSessionPlayer.getGameId());
+            // gone quiet, not gone: a game against the AI keeps its save to play on from, and isn't lost
+            if (reason == DisconnectReason.SessionExpired
+                    && SavedGames.get().keepForAway(gameSessionPlayer.getGameId().toString())) {
+                logger.info(userName + " is away: game " + gameSessionPlayer.getGameId() + " is saved to play on");
+            }
             managerFactory.gameManager().quitMatch(gameSessionPlayer.getGameId(), userId);
             gameSessionPlayer.quitGame();
         }

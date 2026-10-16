@@ -175,7 +175,9 @@ export function toUserData(settings: PlaySettings, fullControl = false): UserDat
     userSkipPrioritySteps: serverStops(settings.stops, fullControl),
     flagName: `${settings.flag || 'world'}.png`,
     askMoveToGraveOrder: false,
-    manaPoolAutomatic: settings.autoPayMana,
+    // mana from a source the player taps while paying is spent on the cost, whether or not auto-pay taps for them:
+    // with this off the server floats it and waits for a click on the pool, and the payment looks stuck
+    manaPoolAutomatic: true,
     manaPoolAutomaticRestricted: settings.autoPayRestricted,
     passPriorityCast: settings.passAfterCasting && !fullControl,
     passPriorityActivation: settings.passAfterCasting && !fullControl,

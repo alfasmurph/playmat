@@ -67,7 +67,7 @@ function requiredNode(requirement: string): string {
 export interface PathStop {
   node: CareerNode;
   state: NodeState;
-  /** centre, in the map's own units (see PATH_STEP / PATH_HEIGHT) */
+  /** centre, in CSS pixels from the map's top left */
   x: number;
   y: number;
 }
@@ -79,22 +79,32 @@ export interface PathLeg {
   state: NodeState;
 }
 
+export type PathAxis = 'across' | 'down';
+
 export interface ChapterPath {
   stops: PathStop[];
   legs: PathLeg[];
+  /** the map's size in CSS pixels: every stop, its label and its badges fit inside */
   width: number;
   height: number;
+  /** across: steps run left to right (a wide screen); down: top to bottom (a phone) */
+  axis: PathAxis;
 }
 
-export const PATH_STEP = 120;
-export const PATH_HEIGHT = 170;
-const PATH_ROW = 54;
+/** the room one stop takes: its face (up to 68px for a boss) with a two-line name under it */
+export const PATH_CELL = 112;
+/** the space between steps along the trail, and how far the trail swings either side of its middle */
+export const PATH_STEP = 132;
+const SWING = 28;
+/** room around the outermost stops: a crown above, a name below, a face's half-width either side */
+const PAD_SIDE = PATH_CELL / 2;
+const PAD_TOP = 52;
+const PAD_BOTTOM = 66;
+/** stops on one step side by side, at most, before they wrap onto another line */
+const MAX_ACROSS_ONE_STEP = 3;
 
-/**
- * A chapter as a winding trail: each node one step further than the furthest node it requires, rising and falling
- * from step to step; nodes on the same step stack. Requirements outside the chapter don't count.
- */
-export function chapterPath(nodes: readonly CareerNode[]): ChapterPath {
+/** Each node's step: one further than the furthest node it requires (requirements outside the chapter don't count). */
+function pathSteps(nodes: readonly CareerNode[]): CareerNode[][] {
   const byId = new Map(nodes.map((node) => [node.id ?? '', node]));
   const depth = new Map<string, number>();
   const visiting = new Set<string>();
@@ -113,37 +123,105 @@ export function chapterPath(nodes: readonly CareerNode[]): ChapterPath {
     depth.set(id, value);
     return value;
   };
-  const columns = new Map<number, CareerNode[]>();
+  const steps = new Map<number, CareerNode[]>();
   for (const node of nodes) {
-    const column = depthOf(node);
-    columns.set(column, [...(columns.get(column) ?? []), node]);
+    const step = depthOf(node);
+    steps.set(step, [...(steps.get(step) ?? []), node]);
   }
-  const stops = new Map<string, PathStop>();
-  const ordered: PathStop[] = [];
-  for (const column of [...columns.keys()].sort((a, b) => a - b)) {
-    const group = columns.get(column)!;
-    const centre = column % 2 === 0 ? PATH_HEIGHT * 0.36 : PATH_HEIGHT * 0.64;
-    group.forEach((node, row) => {
-      const offset = (row - (group.length - 1) / 2) * PATH_ROW;
-      const stop: PathStop = { node, state: nodeState(node), x: PATH_STEP / 2 + column * PATH_STEP, y: centre + offset };
-      stops.set(node.id ?? '', stop);
-      ordered.push(stop);
+  return [...steps.keys()].sort((a, b) => a - b).map((step) => steps.get(step)!);
+}
+
+/** a step's stops in lines of at most `perLine` */
+function lines<T>(group: T[], perLine: number): T[][] {
+  const out: T[][] = [];
+  for (let at = 0; at < group.length; at += perLine) out.push(group.slice(at, at + perLine));
+  return out;
+}
+
+/**
+ * A chapter as a winding trail that fits the room it has (`room`, the map's width in CSS pixels): steps run left to
+ * right while they fit, else top to bottom, as on a phone. Stops on one step sit side by side across the trail, a few
+ * to a line; the trail swings from side to side between steps. Nothing is cut off: the size includes every stop's
+ * face, name and badge.
+ */
+export function chapterPath(nodes: readonly CareerNode[], room = 960): ChapterPath {
+  const steps = pathSteps(nodes);
+  const acrossLines = steps.map((group) => lines(group, MAX_ACROSS_ONE_STEP));
+  // left to right: each line of a crowded step is its own column, so the steps' widths add up
+  const columns = acrossLines.reduce((sum, group) => sum + group.length, 0);
+  const tallest = Math.max(1, ...steps.map((group) => Math.min(group.length, MAX_ACROSS_ONE_STEP)));
+  const acrossWidth = (step: number) => PAD_SIDE * 2 + (columns - 1) * step;
+  const axis: PathAxis = acrossWidth(PATH_CELL) <= room ? 'across' : 'down';
+  const placed: PathStop[] = [];
+
+  if (axis === 'across') {
+    // spread the steps over the room there is, within reason
+    const step = Math.max(PATH_CELL, Math.min(PATH_STEP * 1.5, columns > 1 ? (room - PAD_SIDE * 2) / (columns - 1) : PATH_STEP));
+    const middle = PAD_TOP + ((tallest - 1) * PATH_CELL) / 2 + SWING;
+    let column = 0;
+    acrossLines.forEach((group, index) => {
+      const swing = steps.length > 1 ? (index % 2 === 0 ? -SWING : SWING) : 0;
+      group.forEach((line, lineIndex) => {
+        line.forEach((node, row) => {
+          const offset = (row - (line.length - 1) / 2) * PATH_CELL;
+          // a wrapped step's second line sits half a row lower, so the faces don't line up like a grid
+          const stagger = lineIndex % 2 === 1 ? PATH_CELL / 2 : 0;
+          placed.push({ node, state: nodeState(node), x: PAD_SIDE + column * step, y: middle + swing + offset + stagger });
+        });
+        column++;
+      });
+    });
+  } else {
+    const perLine = Math.max(1, Math.min(MAX_ACROSS_ONE_STEP, Math.floor((room - PAD_SIDE * 2) / PATH_CELL) + 1));
+    // the wider the screen, the further the trail winds from side to side (a tablet), within the room it has
+    const swingRoom = Math.max(0, Math.min(room * 0.22, (room - PAD_SIDE * 2) / 2));
+    const middle = room / 2;
+    let y = PAD_TOP;
+    steps.forEach((group, index) => {
+      // a lone stop swings to one side; a step of several fills the width, centred
+      const swing = steps.length > 1 && group.length === 1 ? (index % 2 === 0 ? -swingRoom : swingRoom) : 0;
+      lines(group, perLine).forEach((line, lineIndex) => {
+        if (lineIndex > 0) y += PATH_CELL;
+        line.forEach((node, at) => {
+          const offset = (at - (line.length - 1) / 2) * PATH_CELL;
+          placed.push({ node, state: nodeState(node), x: middle + swing + offset, y });
+        });
+      });
+      y += PATH_STEP;
     });
   }
+
+  // fit the box to what was placed
+  const minX = Math.min(...placed.map((stop) => stop.x));
+  const maxX = Math.max(...placed.map((stop) => stop.x));
+  const minY = Math.min(...placed.map((stop) => stop.y));
+  const maxY = Math.max(...placed.map((stop) => stop.y));
+  const shiftX = axis === 'down' ? 0 : PAD_SIDE - minX;
+  for (const stop of placed) {
+    stop.x += shiftX;
+    stop.y += PAD_TOP - minY;
+  }
+  const width = axis === 'down' ? room : maxX - minX + PAD_SIDE * 2;
+  const height = placed.length ? maxY - minY + PAD_TOP + PAD_BOTTOM : PAD_TOP + PAD_BOTTOM;
+
+  const stops = new Map(placed.map((stop) => [stop.node.id ?? '', stop]));
   const legs: PathLeg[] = [];
-  for (const stop of ordered) {
+  for (const stop of placed) {
     for (const requirement of stop.node.requires ?? []) {
       const from = stops.get(requiredNode(requirement));
       if (from) legs.push({ from, to: stop, state: stop.state });
     }
   }
-  const rows = Math.max(1, ...[...columns.values()].map((group) => group.length));
-  return { stops: ordered, legs, width: Math.max(1, columns.size) * PATH_STEP, height: Math.max(PATH_HEIGHT, rows * PATH_ROW + PATH_ROW) };
+  return { stops: placed, legs, width, height, axis };
 }
 
-/** a soft S between two stops */
-export function legCurve(leg: Pick<PathLeg, 'from' | 'to'>): string {
+/** a soft S between two stops, bending along the trail's direction */
+export function legCurve(leg: Pick<PathLeg, 'from' | 'to'>, axis: PathAxis = 'across'): string {
   const { from, to } = leg;
+  if (axis === 'down') {
+    const mid = (from.y + to.y) / 2;
+    return `M${from.x} ${from.y} C${from.x} ${mid} ${to.x} ${mid} ${to.x} ${to.y}`;
+  }
   const mid = (from.x + to.x) / 2;
   return `M${from.x} ${from.y} C${mid} ${from.y} ${mid} ${to.y} ${to.x} ${to.y}`;
 }

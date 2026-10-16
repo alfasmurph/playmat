@@ -374,12 +374,16 @@
 }
 
 .chapterTabText b {
+  /* two lines, so "Commander 2011" and "Commander 2013" don't both end in "Commander 20…" */
+  display: -webkit-box;
   overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   font-family: var(--font-print);
   letter-spacing: var(--tracking-print);
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .chapterTabText small {
@@ -433,24 +437,45 @@
 
 /* the path: a trail drawn in SVG, its stops as buttons over it */
 
-.mapWrap {
-  overflow-x: auto;
-  padding: 4px 0;
+/* the chapter's body: the map, with the chosen stop's details beside it on a wide screen */
+.chapterBody {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
+.chapterBodySide {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  align-items: start;
+}
+
+.sidePanel {
+  position: sticky;
+  top: var(--space-4);
+  max-height: calc(100dvh - 2 * var(--space-4));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* beside the map there is room for one column: the picture above the words */
+.sidePanel .detail,
+.sheet .detail {
+  flex-direction: column;
+}
+
+.mapWrap {
+  min-width: 0;
+}
+
+/* the map's size is the trail's own (see chapterPath): it never needs scrolling sideways */
 .map {
   position: relative;
-  width: 100%;
-  min-width: 560px;
-  max-width: 960px;
   margin: 0 auto;
 }
 
 .mapTrail {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
   overflow: visible;
 }
 
@@ -480,96 +505,339 @@
   list-style: none;
 }
 
+/* each stop is placed by its face's centre */
 .stopItem {
   position: absolute;
-  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
 }
 
 .stop {
-  position: relative;
+  position: absolute;
+  top: -30px;
+  left: -56px;
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: 6px;
+  width: 112px;
   padding: 0;
   border: 0;
   background: none;
   color: var(--ink-strong);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.stopDot {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--mat-800);
-  box-shadow: inset 0 0 0 2px var(--ink-faint), var(--shadow-placed);
+.stopBoss {
+  top: -36px;
+}
+
+.stopFaces {
+  position: relative;
+  display: flex;
+  justify-content: center;
   transition: transform var(--dur-quick) var(--ease-lift);
 }
 
-.stopBoss .stopDot {
+/* one face: the opponent's art in a coin */
+.stopFace {
+  display: block;
+  flex: none;
   width: 60px;
   height: 60px;
-  box-shadow: inset 0 0 0 3px #d6b36a, 0 0 18px rgb(214 179 106 / 0.35), var(--shadow-placed);
-}
-
-.stop_open .stopDot {
-  background: var(--decision);
-  color: var(--decision-ink);
-  box-shadow: 0 0 0 4px var(--decision-glow), var(--shadow-placed);
-}
-
-.stop_done .stopDot {
-  background: var(--mat-600);
-  color: var(--sage);
-}
-
-.stop_locked .stopDot {
-  color: var(--ink-dim);
-}
-
-.stopOn .stopDot {
-  transform: scale(1.12);
-  outline: 2px solid var(--ink-strong);
-  outline-offset: 3px;
-}
-
-.stop:hover .stopDot {
-  transform: scale(1.08);
-}
-
-.stop:focus-visible .stopDot {
-  outline: 2px solid var(--ink-strong);
-  outline-offset: 3px;
-}
-
-.stopName {
-  max-width: 112px;
   overflow: hidden;
+  border-radius: 50%;
+  background: var(--mat-800);
+  box-shadow: 0 0 0 2px var(--ink-faint), var(--shadow-placed);
+}
+
+.stopBoss .stopFace {
+  width: 72px;
+  height: 72px;
+  box-shadow: 0 0 0 3px #d6b36a, 0 0 18px rgb(214 179 106 / 0.35), var(--shadow-placed);
+}
+
+/* a table: smaller faces overlapping, like players around it */
+.stopTable .stopFace {
+  width: 44px;
+  height: 44px;
+}
+
+.stopTable .stopFace + .stopFace {
+  margin-left: -16px;
+}
+
+.stopTable.stopBoss .stopFace {
+  width: 50px;
+  height: 50px;
+}
+
+.stopTable.stopBoss .stopFace + .stopFace {
+  margin-left: -18px;
+}
+
+.stopIcon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--ink-soft);
+}
+
+.stop_open .stopFace {
+  box-shadow: 0 0 0 3px var(--decision), 0 0 0 7px var(--decision-glow), var(--shadow-placed);
+}
+
+.stop_open.stopBoss .stopFace {
+  box-shadow: 0 0 0 3px #d6b36a, 0 0 0 7px var(--decision-glow), var(--shadow-placed);
+}
+
+/* locked: what's ahead is seen, but in shadow */
+.stop_locked .stopFace {
+  filter: grayscale(0.85) brightness(0.55);
+}
+
+.stop_done .stopFace {
+  filter: saturate(0.7);
+}
+
+.stopCrown {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #d6b36a;
+  color: var(--decision-ink);
+  box-shadow: var(--shadow-placed);
+  transform: translateX(-50%);
+}
+
+.stopMark {
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--mat-900);
+}
+
+.stopMark_done {
+  background: var(--sage);
+  color: var(--mat-900);
+}
+
+.stopMark_locked {
+  background: var(--mat-600);
+  color: var(--ink-soft);
+}
+
+.stopOn .stopFaces {
+  transform: scale(1.1);
+}
+
+.stopOn .stopFace {
+  outline: 2px solid var(--ink-strong);
+  outline-offset: 3px;
+}
+
+.stopTable.stopOn .stopFace {
+  outline: none;
+}
+
+.stopTable.stopOn .stopFaces {
+  border-radius: 999px;
+  outline: 2px solid var(--ink-strong);
+  outline-offset: 5px;
+}
+
+@media (hover: hover) {
+  .stop:hover .stopFaces {
+    transform: scale(1.08);
+  }
+}
+
+.stop:focus-visible .stopFaces {
+  border-radius: 999px;
+  outline: 2px solid var(--ink-strong);
+  outline-offset: 5px;
+}
+
+/* two lines at most, on a dark backing so it reads over the art behind the map */
+.stopName {
+  display: -webkit-box;
+  max-width: 108px;
+  overflow: hidden;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgb(var(--mat-rgb) / 0.72);
   color: var(--ink-soft);
   font-size: var(--text-xs);
+  line-height: 1.25;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .stopOn .stopName {
   color: var(--ink-strong);
 }
 
-.bossTag {
-  position: absolute;
-  top: -12px;
-  padding: 0 6px;
-  border-radius: var(--radius-chip);
-  background: #d6b36a;
-  color: var(--decision-ink);
+/* a phone: the chosen stop waits at the bottom, a tap away from its details */
+.peek {
+  position: sticky;
+  bottom: var(--space-3);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 56px;
+  padding: 8px var(--space-3) 8px 8px;
+  border: 0;
+  border-radius: 16px;
+  background: rgb(var(--mat-rgb) / 0.94);
+  box-shadow: inset 0 0 0 1.5px var(--decision), var(--shadow-placed);
+  color: var(--ink-strong);
+  text-align: left;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+.peekFace {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--mat-800);
+}
+
+.peekText {
+  display: grid;
+  min-width: 0;
+}
+
+.peekText b {
+  overflow: hidden;
   font-family: var(--font-print);
-  font-size: var(--text-xs);
-  font-weight: 700;
   letter-spacing: var(--tracking-print);
+  text-overflow: ellipsis;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.peekText small {
+  color: var(--ink-dim);
+  font-size: var(--text-sm);
+}
+
+.peekMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--decision);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sheetScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(0 0 0 / 0.55);
+}
+
+.sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 51;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--space-3) calc(var(--space-4) + env(safe-area-inset-bottom));
+  border-radius: 20px 20px 0 0;
+  background: var(--mat-900);
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 0.5), inset 0 1.5px 0 var(--ink-faint);
+  animation: sheetUp var(--dur-quick, 180ms) var(--ease-lift, ease-out);
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
+
+.sheetBar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  justify-items: end;
+  align-items: center;
+  padding: 18px 0 8px;
+  background: var(--mat-900);
+}
+
+.sheetHandle {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-faint);
+  transform: translateX(-50%);
+}
+
+/* the details below say the name: the title is for screen readers */
+.sheetTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sheetClose {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--ink-rgb) / 0.08);
+  color: var(--ink-strong);
+  cursor: pointer;
+}
+
+/* the sheet gives the details the whole width: no frame of its own */
+.sheet .detail {
+  padding: 0;
+  background: none;
+  box-shadow: none;
 }
 
 /* a node's (or a puzzle's, or a challenge's) details */
@@ -1358,6 +1626,28 @@
   box-shadow: none;
 }
 
+/* a phone: the chapter's frame gives its width to the map, and the crest sits small beside the title */
+@media (max-width: 600px) {
+  .chapter {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .chapterHead {
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .chapterHead > :first-child {
+    flex: none;
+    width: 44px;
+    height: 44px;
+  }
+
+  .chapterTitle {
+    font-size: var(--text-xl);
+  }
+}
+
 @media (max-width: 900px) {
   .split,
   .builder {
@@ -1378,7 +1668,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stopDot,
+  .stopFaces,
   .poolTile {
     transition: none;
   }
@@ -1517,4 +1807,29 @@
   display: inline-block;
   min-width: 1.6em;
   color: var(--ink-dim);
+}
+
+/* the deck a Commander campaign is played with: the chapter's own or one of the player's */
+.deckChoice {
+  display: grid;
+  gap: 4px;
+  margin-top: var(--space-2);
+}
+
+.deckChoiceRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.deckChoiceRow select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.seatBracket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }

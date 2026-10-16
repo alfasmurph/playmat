@@ -236,7 +236,10 @@ public final class CareerDeckTool {
                     String deckType = string(node, "deckType") != null ? string(node, "deckType") : campaignType;
                     String where = id.getAsString() + "/" + string(node, "id");
                     String playerDeck = string(node, "deck") != null ? string(node, "deck") : chapterDeck;
-                    uses.add(new DeckUse(id.getAsString(), where + " (yours)", playerDeck, deckType));
+                    // a campaign the player brings their own deck to (Commander Conquest) has none of its own to check
+                    if (playerDeck != null || !campaign.has("ownDeck") || !campaign.get("ownDeck").getAsBoolean()) {
+                        uses.add(new DeckUse(id.getAsString(), where + " (yours)", playerDeck, deckType));
+                    }
                     List<JsonObject> opponents = new ArrayList<>();
                     if (node.has("opponent")) {
                         opponents.add(node.getAsJsonObject("opponent"));

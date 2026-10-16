@@ -438,9 +438,10 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const turnRing = useMemo<PhaseRingProps | null>(() => (activeId ? {
     step: view?.step,
     myTurn: !spectating && !!myId && activeId === myId,
-    turn: view?.turn ?? 0,
+    // the active player's own turn count, not the game's: T3 is their third turn
+    turn: view?.players?.find((player) => player.playerId === activeId)?.turns || (view?.turn ?? 0),
     activeName: spectating ? view?.activePlayerName ?? null : null,
-  } : null), [activeId, view?.step, view?.turn, view?.activePlayerName, spectating, myId]);
+  } : null), [activeId, view?.step, view?.turn, view?.players, view?.activePlayerName, spectating, myId]);
 
   return (
     <SleevedContext.Provider value={sleeves.chosen}>

@@ -343,8 +343,8 @@ export function createApi(rpc: RpcCaller) {
       rpc.call('careerCountAiGames', count),
     careerCampaigns: () =>
       rpc.call('careerCampaigns'),
-    careerCampaignPlay: (campaignId: string, nodeId: string) =>
-      rpc.call('careerCampaignPlay', campaignId, nodeId),
+    careerCampaignPlay: (campaignId: string, nodeId: string, deck?: DeckCardLists | null) =>
+      rpc.call('careerCampaignPlay', campaignId, nodeId, deck),
     careerCampaignDeck: (campaignId: string, nodeId: string) =>
       rpc.call('careerCampaignDeck', campaignId, nodeId),
     careerCampaignChoose: (campaignId: string, nodeId: string, optionId: string) =>

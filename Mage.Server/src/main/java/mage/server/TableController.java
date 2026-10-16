@@ -1013,6 +1013,12 @@ public class TableController {
 
     private void payCareer(Game game) {
         CareerTally tally = CareerTally.take(game.getId());
+        if (SavedGames.get().isKept(game.getId().toString())) {
+            // set aside to play on (the server failed it, or the player went away): neither a win nor a loss yet;
+            // the save registers it again at the table it resumes at
+            CareerService.get().forget(table.getId());
+            return;
+        }
         CareerService career = CareerService.get();
         boolean careerTable = career.isCareerTable(table.getId());
         if (!careerTable && tally == null) {

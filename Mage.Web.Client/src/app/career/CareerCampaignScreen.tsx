@@ -1,5 +1,6 @@
-import { BookOpen, Check, Crown, GraduationCap, Lightbulb, ListChecks, Lock, Puzzle, Signpost, Swords, Users } from 'lucide-react';
-import { useMemo, useState, type ReactNode } from 'react';
+import * as RadixDialog from '@radix-ui/react-dialog';
+import { BookOpen, Check, ChevronUp, Crown, GraduationCap, Lightbulb, ListChecks, Lock, Puzzle, Signpost, Swords, Users, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import type { CareerCampaign, CareerChapter, CareerLesson, CareerNode, CareerOption } from '../../protocol/generated/views';
 import { api } from '../connection';
@@ -17,9 +18,14 @@ import {
 } from './careerModesModel';
 import { CardFace } from '../ui/CardFace';
 import { DeckListDialog } from './DeckListDialog';
+import { CampaignDeckPicker, DeckBracket } from './CampaignDeckPicker';
+import { useCampaignDeck, type CampaignDeckState } from './useCampaignDeck';
+import { campaignDeckOf } from './campaignDeck';
+import { toWire } from '../decks/deckModel';
+import { useDecks } from '../stores/decks';
 import { useSceneArt } from './careerScene';
 import { Crest } from './ModeArt';
-import { PortraitCard } from './Portraits';
+import { CardArt, PortraitCard } from './Portraits';
 import { Versus } from './Versus';
 import { LineList, ModeResult } from './ModeParts';
 import styles from './CareerModes.module.css';
@@ -117,6 +123,8 @@ export function Campaign({ campaign, back, children }: { campaign: CareerCampaig
   const chapters = useMemo(() => campaign.chapters ?? [], [campaign.chapters]);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const chapter = chapters.find((item) => item.id === chosenId) ?? focusChapter(chapters);
+  // a Commander story takes a deck of the player's own instead of the chapter's
+  const deck = useCampaignDeck(campaign);
 
   return (
     <section className={styles.campaign} aria-labelledby={`campaign-${campaign.id}`}>
@@ -153,7 +161,7 @@ export function Campaign({ campaign, back, children }: { campaign: CareerCampaig
         })}
       </div>
 
-      {chapter && <Chapter key={chapter.id} campaignId={campaign.id ?? ''} school={!!campaign.school} chapter={chapter} back={back} />}
+      {chapter && <Chapter key={chapter.id} campaignId={campaign.id ?? ''} school={!!campaign.school} chapter={chapter} back={back} deck={deck} />}
     </section>
   );
 }
@@ -190,12 +198,19 @@ function Prologue() {
   );
 }
 
-function Chapter({ campaignId, school, chapter, back }: { campaignId: string; school: boolean; chapter: CareerChapter; back: string }) {
+function Chapter({ campaignId, school, chapter, back, deck }: { campaignId: string; school: boolean; chapter: CareerChapter; back: string; deck: CampaignDeckState }) {
   const t = useT();
   const nodes = useMemo(() => chapter.nodes ?? [], [chapter.nodes]);
-  const path = useMemo(() => chapterPath(nodes), [nodes]);
   const [chosenId, setChosenId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const side = useMediaQuery(SIDE_PANEL_QUERY);
+  const [measure, room] = useWidth();
+  const path = useMemo(() => chapterPath(nodes, room || 960), [nodes, room]);
   const node = nodes.find((item) => item.id === chosenId) ?? focusNode(chapter);
+  const select = (id: string | null) => {
+    setChosenId(id);
+    if (!side) setSheetOpen(true);
+  };
   const boss = nodes.find((item) => item.boss);
   useSceneArt(boss?.cover);
 
@@ -207,68 +222,158 @@ function Chapter({ campaignId, school, chapter, back }: { campaignId: string; sc
           <h2 id={`chapter-${chapter.id}`} className={styles.chapterTitle}>{chapter.name}</h2>
           <p className={styles.lead}>{chapter.text}</p>
           <p className={styles.chapterMeta}>
-            {chapter.deckName && <span>{t('career.campaign.deck', { deck: chapter.deckName })}</span>}
+            {chapter.deckName && !deck.enabled && <span className={styles.seatBracket}>{t('career.campaign.deck', { deck: chapter.deckName })} <DeckBracket value={chapter.deckBracket} /></span>}
             {chapter.unlockSet && (
               <span>{t(chapter.done ? 'career.campaign.setOpened' : 'career.campaign.opensSet', { set: chapter.unlockSet, boss: boss?.name ?? '' })}</span>
             )}
           </p>
+          {deck.enabled && <CampaignDeckPicker chapter={chapter} state={deck} forks={nodes.some((item) => item.options?.some((option) => option.upgrade))} />}
         </div>
       </header>
 
-      <div className={styles.mapWrap}>
-        <div className={styles.map} style={{ aspectRatio: `${path.width} / ${path.height}` }}>
-          <svg className={styles.mapTrail} viewBox={`0 0 ${path.width} ${path.height}`} aria-hidden="true" focusable="false">
-            {path.legs.map((leg, index) => (
-              <path key={index} d={legCurve(leg)} className={[styles.leg, styles[`leg_${leg.state}`]].join(' ')} />
-            ))}
-          </svg>
-          <ol className={styles.stops} aria-label={t('career.campaign.path')}>
-            {path.stops.map((stop) => (
-              <li
-                key={stop.node.id}
-                className={styles.stopItem}
-                style={{ left: `${(stop.x / path.width) * 100}%`, top: `${(stop.y / path.height) * 100}%` }}
-              >
-                <Stop stop={stop} selected={stop.node.id === node?.id} onSelect={() => setChosenId(stop.node.id ?? null)} />
-              </li>
-            ))}
-          </ol>
+      <div className={[styles.chapterBody, side ? styles.chapterBodySide : ''].join(' ')}>
+        <div className={styles.mapWrap} ref={measure}>
+          {room > 0 && (
+            <div className={[styles.map, styles[`map_${path.axis}`]].join(' ')} style={{ width: path.width, height: path.height }}>
+              <svg className={styles.mapTrail} width={path.width} height={path.height} viewBox={`0 0 ${path.width} ${path.height}`} aria-hidden="true" focusable="false">
+                {path.legs.map((leg, index) => (
+                  <path key={index} d={legCurve(leg, path.axis)} className={[styles.leg, styles[`leg_${leg.state}`]].join(' ')} />
+                ))}
+              </svg>
+              <ol className={styles.stops} aria-label={t('career.campaign.path')}>
+                {path.stops.map((stop) => (
+                  <li key={stop.node.id} className={styles.stopItem} style={{ left: stop.x, top: stop.y }}>
+                    <Stop stop={stop} colors={chapter.color} selected={stop.node.id === node?.id} onSelect={() => select(stop.node.id ?? null)} />
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
+
+        {node && side && (
+          <aside className={styles.sidePanel} aria-label={node.name}>
+            <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} />
+          </aside>
+        )}
       </div>
 
-      {node && <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} />}
+      {node && !side && (
+        <>
+          {/* on a phone the details wait in a sheet: the map stays in view, and the stop chosen is a tap away */}
+          <button type="button" className={styles.peek} onClick={() => setSheetOpen(true)} aria-haspopup="dialog">
+            <span className={styles.peekFace} aria-hidden="true">
+              {node.type === 'choice' ? <Signpost size={18} /> : <CardArt card={node.cover} name={node.name ?? ''} colors={chapter.color} boss={node.boss} />}
+            </span>
+            <span className={styles.peekText}>
+              <b>{node.name}</b>
+              <small>{t(STATE_KEYS[nodeState(node)])}</small>
+            </span>
+            <span className={styles.peekMore}>{t('career.campaign.details')} <ChevronUp size={16} aria-hidden="true" /></span>
+          </button>
+          <RadixDialog.Root open={sheetOpen} onOpenChange={setSheetOpen}>
+            <RadixDialog.Portal>
+              <RadixDialog.Overlay className={styles.sheetScrim} />
+              <RadixDialog.Content className={styles.sheet} aria-describedby={undefined}>
+                <div className={styles.sheetBar}>
+                  <span className={styles.sheetHandle} aria-hidden="true" />
+                  <RadixDialog.Title className={styles.sheetTitle}>{node.name}</RadixDialog.Title>
+                  <RadixDialog.Close className={styles.sheetClose} aria-label={t('career.campaign.closeDetails')}>
+                    <X size={20} aria-hidden="true" />
+                  </RadixDialog.Close>
+                </div>
+                <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} />
+              </RadixDialog.Content>
+            </RadixDialog.Portal>
+          </RadixDialog.Root>
+        </>
+      )}
     </section>
   );
 }
 
+/** wide enough for the map and the details beside it */
+const SIDE_PANEL_QUERY = '(min-width: 1000px)';
+
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback((changed: () => void) => {
+    const list = window.matchMedia(query);
+    list.addEventListener('change', changed);
+    return () => list.removeEventListener('change', changed);
+  }, [query]);
+  return useSyncExternalStore(subscribe, () => window.matchMedia(query).matches, () => false);
+}
+
+/** an element's content width, kept up to date (0 until it is measured) */
+function useWidth(): [(element: HTMLElement | null) => void, number] {
+  const [element, setElement] = useState<HTMLElement | null>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    if (!element) return;
+    const read = () => setWidth(Math.floor(element.clientWidth));
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(read);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element]);
+  return [setElement, width];
+}
+
 const STATE_KEYS = { locked: 'career.node.locked', open: 'career.node.open', done: 'career.node.done' } as const;
 
-function Stop({ stop, selected, onSelect }: { stop: PathStop; selected: boolean; onSelect(): void }) {
+/** the faces at a stop: the opponent of a duel, everyone at a table */
+function stopFaces(node: CareerNode): { name: string; cover?: CareerNode['cover'] }[] {
+  const lead = { name: node.opponentName ?? node.name ?? '', cover: node.cover };
+  return [lead, ...(node.others ?? []).map((seat) => ({ name: seat.name ?? '', cover: seat.cover }))];
+}
+
+/**
+ * A stop on the trail. A duel is its opponent's face with their name under it; a table of several is their faces
+ * side by side, with no words; a fork is a signpost. Locked stops are dimmed, done ones carry a tick, the boss a crown.
+ */
+function Stop({ stop, colors, selected, onSelect }: { stop: PathStop; colors?: string; selected: boolean; onSelect(): void }) {
   const t = useT();
   const { node, state } = stop;
-  const Icon = state === 'done' ? Check : state === 'locked' ? Lock : node.type === 'choice' ? Signpost : node.type === 'trial' ? Puzzle : node.boss ? Crown : Swords;
+  const faces = node.type === 'choice' ? [] : stopFaces(node);
+  const table = faces.length > 1;
   const label = [
-    node.name, t(STATE_KEYS[state]), node.boss ? t('career.node.boss') : null, node.type === 'choice' ? t('career.node.choice') : null,
+    table ? faces.map((face) => face.name).join(', ') : node.name,
+    t(STATE_KEYS[state]), node.boss ? t('career.node.boss') : null, node.type === 'choice' ? t('career.node.choice') : null,
     node.type === 'trial' ? t('career.node.trial') : null,
   ].filter(Boolean).join(', ');
+  const Fallback = node.type === 'choice' ? Signpost : node.type === 'trial' ? Puzzle : Swords;
   return (
     <button
       type="button"
-      className={[styles.stop, styles[`stop_${state}`], node.boss ? styles.stopBoss : '', selected ? styles.stopOn : ''].join(' ')}
+      className={[styles.stop, styles[`stop_${state}`], node.boss ? styles.stopBoss : '', table ? styles.stopTable : '', selected ? styles.stopOn : ''].join(' ')}
       aria-pressed={selected}
       aria-label={label}
       onClick={onSelect}
     >
-      <span className={styles.stopDot} aria-hidden="true">
-        <Icon size={node.boss ? 24 : 18} />
+      <span className={styles.stopFaces} aria-hidden="true">
+        {faces.length === 0
+          ? <span className={styles.stopFace}><span className={styles.stopIcon}><Fallback size={22} /></span></span>
+          : faces.slice(0, 4).map((face, index) => (
+            <span key={index} className={styles.stopFace}>
+              <CardArt card={face.cover} name={face.name} colors={colors} boss={node.boss} />
+            </span>
+          ))}
+        {node.boss && <span className={styles.stopCrown}><Crown size={14} /></span>}
+        {state !== 'open' && (
+          <span className={[styles.stopMark, styles[`stopMark_${state}`]].join(' ')}>
+            {state === 'done' ? <Check size={12} strokeWidth={3} /> : <Lock size={11} strokeWidth={2.5} />}
+          </span>
+        )}
       </span>
-      <span className={styles.stopName} aria-hidden="true">{node.name}</span>
-      {node.boss && <span className={styles.bossTag} aria-hidden="true">{t('career.node.boss')}</span>}
+      {!table && node.type !== 'choice' && <span className={styles.stopName} aria-hidden="true">{node.name}</span>}
     </button>
   );
 }
 
-function NodeDetail({ campaignId, school, chapter, node, back }: { campaignId: string; school: boolean; chapter: CareerChapter; node: CareerNode; back: string }) {
+function NodeDetail({ campaignId, school, chapter, node, back, deck }: {
+  campaignId: string; school: boolean; chapter: CareerChapter; node: CareerNode; back: string; deck: CampaignDeckState;
+}) {
   const t = useT();
   const state: NodeState = nodeState(node);
   const playing = usePlay((play) => play.phase !== 'idle');
@@ -278,14 +383,23 @@ function NodeDetail({ campaignId, school, chapter, node, back }: { campaignId: s
   const reward = rewardLines(node.reward);
   // what they say: the challenge before the duel, the parting word once it's won
   const line = state === 'done' ? node.after ?? node.before : node.before;
-  const deckName = node.deckName ?? chapter.deckName ?? '';
+  const choice = deck.enabled ? campaignDeckOf({ ownDeck: true }, chapter, deck.chosenId, deck.choices) : null;
+  const own = choice?.kind === 'own' ? choice.deck : null;
+  const needsDeck = choice?.kind === 'none';
+  const deckName = own?.name ?? node.deckName ?? chapter.deckName ?? '';
   const trial = node.type === 'trial';
   const bestOf = (node.winsNeeded ?? 1) * 2 - 1;
   const others = node.others ?? [];
   const opponentName = node.opponentName ?? node.name ?? '';
   // a Five Paths chapter is its decks' colour; a school's act colour says nothing about the decks at the table
   const pathColors = school ? undefined : chapter.color;
-  const start = () => playMode('campaign', () => api.careerCampaignPlay(campaignId, node.id!), trial ? null : { intro: node.before, lose: node.after, speaker: others.length > 0 ? opponentName : undefined }, {
+  // the player's own deck goes with the call; without one the server deals the chapter's
+  const play = async () => {
+    if (!own) return api.careerCampaignPlay(campaignId, node.id!);
+    const { deck: list } = await useDecks.getState().loadForPlay(own.id);
+    return api.careerCampaignPlay(campaignId, node.id!, toWire(list));
+  };
+  const start = () => playMode('campaign', play, trial ? null : { intro: node.before, lose: node.after, speaker: others.length > 0 ? opponentName : undefined }, {
     back,
     lessons: node.tips?.length || node.sideboard ? { tips: node.tips ?? [], sideboard: node.sideboard ?? null } : null,
   });
@@ -314,7 +428,7 @@ function NodeDetail({ campaignId, school, chapter, node, back }: { campaignId: s
         {node.lesson && <LessonCard lesson={node.lesson} />}
 
         {node.type === 'choice' ? (
-          <Choice campaignId={campaignId} node={node} state={state} />
+          <Choice campaignId={campaignId} node={node} state={state} ownDeck={!!own} />
         ) : trial ? (
           <Trial node={node} state={state} reward={reward.map((item) => t(item.key, item.vars))} playing={playing} onStart={start} />
         ) : (
@@ -328,12 +442,14 @@ function NodeDetail({ campaignId, school, chapter, node, back }: { campaignId: s
                 <h4 className={styles.subhead}>{t(others.length > 0 ? 'career.node.pod' : 'career.node.opponent')}</h4>
                 {others.length > 0 ? (
                   <ul className={styles.seats}>
-                    {[{ name: opponentName, skill: node.skill }, ...others].map((seat) => (
-                      <li key={seat.name}><Users size={14} aria-hidden="true" /> {seat.name} · {t('career.node.skill', { skill: seat.skill ?? 1 })}</li>
+                    {[{ name: opponentName, skill: node.skill, bracket: node.bracket }, ...others].map((seat) => (
+                      <li key={seat.name}>
+                        <Users size={14} aria-hidden="true" /> {seat.name} · {t('career.node.skill', { skill: seat.skill ?? 1 })} <DeckBracket value={seat.bracket} />
+                      </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className={styles.small}>{t('career.node.skill', { skill: node.skill ?? 1 })}</p>
+                  <p className={styles.small}>{t('career.node.skill', { skill: node.skill ?? 1 })} <DeckBracket value={node.bracket} /></p>
                 )}
                 {bestOf > 1 && <p className={styles.small}><b>{t('career.node.bestOf', { count: bestOf })}</b></p>}
                 {twists.length > 0 && (
@@ -348,14 +464,18 @@ function NodeDetail({ campaignId, school, chapter, node, back }: { campaignId: s
               {state === 'locked' ? (
                 <p className={styles.small}><Lock size={14} aria-hidden="true" /> {t('career.node.lockedHint')}</p>
               ) : (
-                <Button variant={state === 'open' ? 'decision' : 'print'} icon={<Swords size={16} />} disabled={playing} onClick={() => setVersus(true)} data-nav>
+                <Button variant={state === 'open' ? 'decision' : 'print'} icon={<Swords size={16} />} disabled={playing || needsDeck} onClick={() => setVersus(true)} data-nav>
                   {t(state === 'done' ? 'career.node.playAgain' : 'career.node.play')}
                 </Button>
               )}
               <small className={styles.small}>
-                {t(node.deckName ? 'career.node.youPlay' : 'career.campaign.youPlay', { deck: deckName })}
+                {needsDeck ? t('career.campaign.needDeck')
+                  : own ? t('career.campaign.youPlayOwn', { deck: deckName })
+                    : t(node.deckName ? 'career.node.youPlay' : 'career.campaign.youPlay', { deck: deckName })}
               </small>
-              <Button variant="quiet" size="sm" icon={<ListChecks size={16} />} onClick={() => setList(true)}>{t('career.node.deckList')}</Button>
+              {!own && !needsDeck && (
+                <Button variant="quiet" size="sm" icon={<ListChecks size={16} />} onClick={() => setList(true)}>{t('career.node.deckList')}</Button>
+              )}
             </div>
           </>
         )}
@@ -435,7 +555,7 @@ function Trial({ node, state, reward, playing, onStart }: { node: CareerNode; st
   );
 }
 
-function Choice({ campaignId, node, state }: { campaignId: string; node: CareerNode; state: NodeState }) {
+function Choice({ campaignId, node, state, ownDeck }: { campaignId: string; node: CareerNode; state: NodeState; ownDeck: boolean }) {
   const t = useT();
   const [busy, setBusy] = useState<string | null>(null);
   const [paid, setPaid] = useState<string[] | null>(null);
@@ -470,6 +590,7 @@ function Choice({ campaignId, node, state }: { campaignId: string; node: CareerN
   return (
     <div className={styles.options} role="group" aria-label={t('career.choice.pick')}>
       {state === 'locked' && <p className={styles.small}><Lock size={14} aria-hidden="true" /> {t('career.node.lockedHint')}</p>}
+      {ownDeck && options.some((option) => option.upgrade) && <p className={styles.small}>{t('career.campaign.ownDeckForks')}</p>}
       {options.map((option) => (
         <button
           key={option.id}

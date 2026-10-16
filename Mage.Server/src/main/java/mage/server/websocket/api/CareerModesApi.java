@@ -24,6 +24,7 @@ import static mage.server.websocket.rpc.RpcParam.Type.INT;
 import static mage.server.websocket.rpc.RpcParam.Type.STRING;
 import static mage.server.websocket.rpc.RpcParam.object;
 import static mage.server.websocket.rpc.RpcParam.of;
+import static mage.server.websocket.rpc.RpcParam.optionalObject;
 
 /**
  * Web client bridge: Career's single-player modes beyond the roster. Campaigns, the puzzle book, the weekly
@@ -46,16 +47,18 @@ final class CareerModesApi {
                             return CareerApi.store(() -> CareerCampaigns.get().campaigns(user));
                         }),
                 RpcMethod.named("careerCampaignPlay")
-                        .params(of("campaignId", STRING), of("nodeId", STRING))
+                        .params(of("campaignId", STRING), of("nodeId", STRING), optionalObject("deck", "DeckCardLists"))
                         .returns("CareerMatch")
                         .doc("Play a campaign duel or trial that's open (or done, to play it again), with the node's deck or the "
                                 + "chapter's, under the school's format: a pod seats every AI, a final is a best of three. A first "
-                                + "win pays the node's reward.")
+                                + "win pays the node's reward. A campaign that allows it takes a deck of your own instead "
+                                + "(its chapter's upgrade packs don't change it); a chapter without a deck needs one.")
                         .handler(call -> {
                             String user = profiled(ctx, call);
                             String campaignId = call.string(0);
                             String nodeId = call.string(1);
-                            CareerCampaigns.DuelPlan plan = plan(() -> CareerCampaigns.get().plan(user, campaignId, nodeId));
+                            DeckCardLists own = call.has(2) ? call.object(2, DeckCardLists.class) : null;
+                            CareerCampaigns.DuelPlan plan = plan(() -> CareerCampaigns.get().plan(user, campaignId, nodeId, own));
                             String tableId = CareerApi.startMatch(ctx, call, user, plan.gameType, plan.deckType, plan.winsNeeded,
                                     plan.playerDeck, plan.seats,
                                     id -> CareerService.get().register(id, user, plan.kind, plan.key, plan.setup));

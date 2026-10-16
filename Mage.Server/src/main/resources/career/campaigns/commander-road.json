@@ -25,7 +25,8 @@
           "opponent": {
             "name": "Captain Ysolde Varr",
             "deck": "commander-road/forged-in-stone.dck",
-            "skill": 3
+            "skill": 3,
+            "bracket": 2
           },
           "requires": [],
           "reward": {
@@ -43,7 +44,8 @@
           "opponent": {
             "name": "Elder Fennick Rootsong",
             "deck": "commander-road/guided-by-nature.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "requires": [
             "ghave-1"
@@ -129,13 +131,15 @@
           "opponent": {
             "name": "Brannoch Thistlewood",
             "deck": "commander-road/nature-of-the-beast.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Sister Elowen Grey",
               "deck": "commander-road/call-the-spirits.dck",
-              "skill": 4
+              "skill": 4,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -157,13 +161,15 @@
           "opponent": {
             "name": "Gravewarden Tamsin Hollow",
             "deck": "commander-road/plunder-the-graves.dck",
-            "skill": 5
+            "skill": 5,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Warden Hollis Crane",
               "deck": "commander-road/wade-into-battle.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -256,18 +262,21 @@
             "twists": {
               "startingLife": 50,
               "extraCards": 1
-            }
+            },
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Professor Ignatz Fell",
               "deck": "commander-road/seize-control.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             },
             {
               "name": "The Twin Mayors of Saltmere",
               "deck": "commander-road/stalwart-unity.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -283,7 +292,8 @@
           "before": "Counters, poison and patience. Sit, dear; this will take a while.",
           "after": "So many little spores. I never counted them until it was too late."
         }
-      ]
+      ],
+      "deckBracket": 3
     },
     {
       "id": "mimeoplasm",
@@ -302,7 +312,8 @@
           "opponent": {
             "name": "Chronist Aldo Mere",
             "deck": "commander-road/peer-through-time.dck",
-            "skill": 3
+            "skill": 3,
+            "bracket": 3
           },
           "requires": [],
           "reward": {
@@ -320,7 +331,8 @@
           "opponent": {
             "name": "Lady Morvenna Black",
             "deck": "commander-road/sworn-to-darkness.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "requires": [
             "mimeoplasm-1"
@@ -406,13 +418,15 @@
           "opponent": {
             "name": "Brood-Tender Kesh",
             "deck": "commander-road/swell-the-host.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Tinker Maglo Rust",
               "deck": "commander-road/built-from-scratch.dck",
-              "skill": 4
+              "skill": 4,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -434,13 +448,15 @@
           "opponent": {
             "name": "Sable Quill",
             "deck": "commander-road/mind-seize.dck",
-            "skill": 5
+            "skill": 5,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Warlord Dagny Strand",
               "deck": "commander-road/open-hostility.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -533,18 +549,21 @@
             "twists": {
               "startingLife": 50,
               "extraCards": 1
-            }
+            },
+            "bracket": 4
           },
           "opponents": [
             {
               "name": "Wingmaster Teodric",
               "deck": "commander-road/evasive-maneuvers.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             },
             {
               "name": "Sister Elowen Grey",
               "deck": "commander-road/call-the-spirits.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -560,7 +579,8 @@
           "before": "Every spell I cast brings another for free. Can your dead keep up?",
           "after": "I unravelled the table, and you rebuilt yourself from the scraps."
         }
-      ]
+      ],
+      "deckBracket": 2
     },
     {
       "id": "kaalia",
@@ -579,7 +599,8 @@
           "opponent": {
             "name": "Tinker Maglo Rust",
             "deck": "commander-road/built-from-scratch.dck",
-            "skill": 3
+            "skill": 3,
+            "bracket": 2
           },
           "requires": [],
           "reward": {
@@ -597,7 +618,8 @@
           "opponent": {
             "name": "Wingmaster Teodric",
             "deck": "commander-road/evasive-maneuvers.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "requires": [
             "kaalia-1"
@@ -683,13 +705,15 @@
           "opponent": {
             "name": "Lady Morvenna Black",
             "deck": "commander-road/sworn-to-darkness.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Elder Fennick Rootsong",
               "deck": "commander-road/guided-by-nature.dck",
-              "skill": 4
+              "skill": 4,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -711,13 +735,15 @@
           "opponent": {
             "name": "Warden Hollis Crane",
             "deck": "commander-road/wade-into-battle.dck",
-            "skill": 5
+            "skill": 5,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Chronist Aldo Mere",
               "deck": "commander-road/peer-through-time.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 3
             }
           ],
           "requires": [
@@ -810,18 +836,21 @@
             "twists": {
               "startingLife": 50,
               "extraCards": 1
-            }
+            },
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Gravewarden Tamsin Hollow",
               "deck": "commander-road/plunder-the-graves.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             },
             {
               "name": "Brood-Tender Kesh",
               "deck": "commander-road/swell-the-host.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -837,7 +866,8 @@
           "before": "Everything burns. Insects first, then you.",
           "after": "Your angels put out the fire. I'll find another."
         }
-      ]
+      ],
+      "deckBracket": 2
     },
     {
       "id": "riku",
@@ -856,7 +886,8 @@
           "opponent": {
             "name": "Sister Elowen Grey",
             "deck": "commander-road/call-the-spirits.dck",
-            "skill": 3
+            "skill": 3,
+            "bracket": 2
           },
           "requires": [],
           "reward": {
@@ -874,7 +905,8 @@
           "opponent": {
             "name": "Professor Ignatz Fell",
             "deck": "commander-road/seize-control.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "requires": [
             "riku-1"
@@ -960,13 +992,15 @@
           "opponent": {
             "name": "Captain Ysolde Varr",
             "deck": "commander-road/forged-in-stone.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Sable Quill",
               "deck": "commander-road/mind-seize.dck",
-              "skill": 4
+              "skill": 4,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -988,13 +1022,15 @@
           "opponent": {
             "name": "The Twin Mayors of Saltmere",
             "deck": "commander-road/stalwart-unity.dck",
-            "skill": 5
+            "skill": 5,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Lady Morvenna Black",
               "deck": "commander-road/sworn-to-darkness.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -1087,18 +1123,21 @@
             "twists": {
               "startingLife": 50,
               "extraCards": 1
-            }
+            },
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Warlord Dagny Strand",
               "deck": "commander-road/open-hostility.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             },
             {
               "name": "Brannoch Thistlewood",
               "deck": "commander-road/nature-of-the-beast.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -1114,7 +1153,8 @@
           "before": "I gain, you drain. Let's see who tires first.",
           "after": "You doubled everything, even my losses. Well played."
         }
-      ]
+      ],
+      "deckBracket": 4
     },
     {
       "id": "zedruu",
@@ -1133,7 +1173,8 @@
           "opponent": {
             "name": "Elder Fennick Rootsong",
             "deck": "commander-road/guided-by-nature.dck",
-            "skill": 3
+            "skill": 3,
+            "bracket": 2
           },
           "requires": [],
           "reward": {
@@ -1151,7 +1192,8 @@
           "opponent": {
             "name": "Warden Hollis Crane",
             "deck": "commander-road/wade-into-battle.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "requires": [
             "zedruu-1"
@@ -1237,13 +1279,15 @@
           "opponent": {
             "name": "Grisk the Kindler",
             "deck": "commander-road/power-hungry.dck",
-            "skill": 4
+            "skill": 4,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Captain Ysolde Varr",
               "deck": "commander-road/forged-in-stone.dck",
-              "skill": 4
+              "skill": 4,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -1265,13 +1309,15 @@
           "opponent": {
             "name": "Abbess Corvina Hale",
             "deck": "commander-road/eternal-bargain.dck",
-            "skill": 5
+            "skill": 5,
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Brannoch Thistlewood",
               "deck": "commander-road/nature-of-the-beast.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             }
           ],
           "requires": [
@@ -1364,18 +1410,21 @@
             "twists": {
               "startingLife": 50,
               "extraCards": 1
-            }
+            },
+            "bracket": 2
           },
           "opponents": [
             {
               "name": "Matriarch Seraphine Vole",
               "deck": "commander-road/breed-lethality.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 2
             },
             {
               "name": "Orrin Vey the Unraveller",
               "deck": "commander-road/entropic-uprising.dck",
-              "skill": 5
+              "skill": 5,
+              "bracket": 4
             }
           ],
           "requires": [
@@ -1391,7 +1440,9 @@
           "before": "Thopters, cannons, a little nudge here and there. Shall we begin?",
           "after": "You gave my machines away one by one. Generous to the last."
         }
-      ]
+      ],
+      "deckBracket": 2
     }
-  ]
+  ],
+  "ownDeck": true
 }

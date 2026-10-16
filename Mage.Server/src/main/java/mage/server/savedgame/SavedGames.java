@@ -204,6 +204,26 @@ public final class SavedGames {
         crashed.add(gameId);
     }
 
+    /**
+     * The player went quiet long enough for the server to let them go (a phone put away, a closed laptop): a game with
+     * a save is set aside rather than lost, to play on from the start of its turn. Games without one (against other
+     * people) end as before.
+     *
+     * @return whether the game has a save and is kept
+     */
+    public boolean keepForAway(String gameId) {
+        if (gameId == null || !GAME_ID.matcher(gameId).matches() || !Files.isRegularFile(file(gameId))) {
+            return false;
+        }
+        crashed.add(gameId);
+        return true;
+    }
+
+    /** Whether this game's save stays when it ends (keepAfterCrash, keepForAway): it isn't over, so nothing pays for it. */
+    public boolean isKept(String gameId) {
+        return crashed.contains(gameId);
+    }
+
     /** A game ended: its save goes, unless it ended because the server failed it (keepAfterCrash). */
     public boolean ended(String gameId) {
         return !crashed.remove(gameId) && remove(gameId);

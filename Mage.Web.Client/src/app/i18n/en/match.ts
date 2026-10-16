@@ -57,7 +57,7 @@ export default {
   'match.end.draw': 'Draw',
   'match.end.over': 'Game over',
   'match.end.saved': 'Game saved',
-  'match.end.savedLine': 'The server stopped during this game, but it was saved at the start of turn {turn}.',
+  'match.end.savedLine': 'This game was put on hold while you were away or the server restarted. Play on from the start of turn {turn}.',
   'match.end.playOn': 'Play on',
   'match.end.wonGame': 'You won the game.',
   'match.end.lostGame': 'You lost the game.',

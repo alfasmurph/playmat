@@ -150,6 +150,10 @@ public class CareerModesTest {
                 school(campaigns, campaign);
                 continue;
             }
+            if (campaign.chapters.stream().allMatch(chapter -> chapter.deck == null)) {
+                conquest(campaign);
+                continue;
+            }
             assertEquals(5, campaign.chapters.size(), campaign.id + " has five chapters");
             Set<String> ids = new HashSet<>();
             for (CareerCampaigns.Chapter chapter : campaign.chapters) {
@@ -214,7 +218,106 @@ public class CareerModesTest {
         // card names are checked against every card in Mage.Tests: CareerContentCardsTest
     }
 
+    /**
+     * Commander Conquest's shape: the player brings their own deck to every chapter; a duel with each of the chapter's
+     * decks, then three-player pods, then a four-player finale.
+     */
+    private void conquest(CareerCampaigns.Campaign campaign) throws Exception {
+        assertTrue(campaign.ownDeck, campaign.id + " takes the player's own deck");
+        assertTrue(campaign.chapters.size() >= 10, campaign.id + " has a chapter per precon set");
+        Set<String> ids = new HashSet<>();
+        for (CareerCampaigns.Chapter chapter : campaign.chapters) {
+            assertNull(chapter.deckName, chapter.id);
+            int duels = 0;
+            int pods = 0;
+            CareerCampaigns.Node last = chapter.nodes.get(chapter.nodes.size() - 1);
+            for (CareerCampaigns.Node node : chapter.nodes) {
+                assertTrue(ids.add(node.id), "node ids are unique: " + node.id);
+                assertEquals("duel", node.type, node.id);
+                assertNotNull(node.reward, node.id + " pays something");
+                assertTrue(node.opponent.bracket >= 1 && node.opponent.bracket <= 5, node.id + " shows a bracket");
+                deck(node.opponent.deck);
+                int seats = 1 + (node.opponents == null ? 0 : node.opponents.size());
+                if (node.opponents != null) {
+                    for (CareerCampaigns.NodeOpponent other : node.opponents) {
+                        assertTrue(other.bracket >= 1 && other.bracket <= 5, node.id + " shows every seat's bracket");
+                        deck(other.deck);
+                    }
+                    assertEquals("Commander Free For All", node.gameType, node.id);
+                }
+                if (node == last) {
+                    assertTrue(node.boss, chapter.id + " ends with its finale");
+                    assertEquals(3, seats, node.id + " seats three decks against the player");
+                } else if (seats == 2) {
+                    pods++;
+                } else {
+                    assertEquals(1, seats, node.id);
+                    assertTrue(node.requires.isEmpty(), node.id + " duels open with the chapter");
+                    duels++;
+                }
+            }
+            assertTrue(duels >= 3, chapter.id + " has a duel with each deck");
+            assertTrue(pods >= 1 && pods <= 2, chapter.id + " has one or two pods");
+        }
+    }
+
     // ---- campaigns
+
+    @Test
+    public void ownDecksPlayWhereTheCampaignAllowsThem() throws Exception {
+        CareerCampaigns campaigns = CareerCampaigns.get();
+        DeckCardLists own = campaigns.deck("commander-road/mirror-mastery.dck");
+
+        // The Commander's Road: the chapter's deck by default, the player's own when they bring one
+        CareerCampaigns.DuelPlan road = campaigns.plan("Ana", "commander-road", "ghave-1");
+        assertFalse(road.ownDeck);
+        assertTrue(road.playerDeck.getSideboard().stream().anyMatch(card -> card.getCardName().equals("Ghave, Guru of Spores")));
+        CareerCampaigns.DuelPlan mine = campaigns.plan("Ana", "commander-road", "ghave-1", own);
+        assertTrue(mine.ownDeck);
+        assertTrue(mine.playerDeck == own, "the player's deck as sent");
+        assertEquals("Variant Magic - Commander", mine.deckType);
+
+        // a fork's pack never changes the player's own deck
+        store.finishCampaignNode("Ana", "commander-road", "ghave-1", null, 1L);
+        store.finishCampaignNode("Ana", "commander-road", "ghave-2", null, 1L);
+        campaigns.choose("Ana", "commander-road", "ghave-fork-1", "tokens");
+        CareerCampaigns.DuelPlan pod = campaigns.plan("Ana", "commander-road", "ghave-pod-1", campaigns.deck("commander-road/mirror-mastery.dck"));
+        assertTrue(pod.playerDeck.getCards().stream().noneMatch(card -> card.getCardName().equals("Doubling Season")), "no pack in your own deck");
+        assertTrue(campaigns.plan("Ana", "commander-road", "ghave-pod-1").playerDeck.getCards().stream()
+                .anyMatch(card -> card.getCardName().equals("Doubling Season")), "the chapter's deck has the pack");
+
+        // Commander Conquest has no deck of its own: one must be brought
+        CareerCampaigns.Chapter first = campaigns.campaigns().get("commander-conquest").chapters.get(0);
+        String duel = first.nodes.get(0).id;
+        assertThrows(CareerService.CareerException.class, () -> campaigns.plan("Ana", "commander-conquest", duel));
+        CareerCampaigns.DuelPlan conquest = campaigns.plan("Ana", "commander-conquest", duel, own);
+        assertTrue(conquest.ownDeck);
+        assertEquals("Commander Two Player Duel", conquest.gameType);
+        assertEquals(1, conquest.seats.size());
+
+        // the finale seats three of the chapter's decks
+        CareerCampaigns.Node finale = first.nodes.get(first.nodes.size() - 1);
+        for (CareerCampaigns.Node node : first.nodes) {
+            if (node != finale) {
+                store.finishCampaignNode("Ana", "commander-conquest", node.id, null, 1L);
+            }
+        }
+        CareerCampaigns.DuelPlan table = campaigns.plan("Ana", "commander-conquest", finale.id, own);
+        assertEquals(3, table.seats.size());
+        assertEquals("Commander Free For All", table.gameType);
+
+        // a campaign with decks of its own takes no other
+        assertThrows(CareerService.CareerException.class, () -> campaigns.plan("Ana", "five-paths", "white-1", own));
+
+        // the view: which campaigns take your deck, and every Commander seat's bracket
+        CareerCampaigns.CareerCampaign roadView = view("commander-road");
+        assertTrue(roadView.ownDeck);
+        assertEquals(3, roadView.chapters.get(0).deckBracket, "Counterpunch is a bracket 3 precon");
+        assertTrue(roadView.chapters.get(0).nodes.get(0).bracket >= 2);
+        CareerCampaigns.CareerNode pod1 = roadView.chapters.get(0).nodes.stream().filter(node -> node.id.equals("ghave-pod-1")).findFirst().get();
+        assertTrue(pod1.others.get(0).bracket >= 2);
+        assertFalse(view("five-paths").ownDeck);
+    }
 
     @Test
     public void aCampaignOpensInOrderAndPaysTheFirstWinOnly() throws Exception {

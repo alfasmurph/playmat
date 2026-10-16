@@ -290,6 +290,7 @@ export interface CareerCampaign {
     name?: string;
     open?: boolean;
     order?: number;
+    ownDeck?: boolean;
     prologue?: string;
     requires?: string[];
     school?: boolean;
@@ -335,6 +336,7 @@ export interface CareerChallengeEntry {
 
 export interface CareerChapter {
     color?: string;
+    deckBracket?: number;
     deckName?: string;
     done?: boolean;
     id?: string;
@@ -465,6 +467,7 @@ export interface CareerNode {
     after?: string;
     before?: string;
     boss?: boolean;
+    bracket?: number;
     choice?: string;
     cover?: CareerCover;
     deckName?: string;
@@ -663,6 +666,7 @@ export interface CareerRunReward {
 }
 
 export interface CareerSeat {
+    bracket?: number;
     cover?: CareerCover;
     name?: string;
     skill?: number;
@@ -1252,6 +1256,7 @@ export interface PlayerView extends Serializable {
     sideboard?: { [index: string]: CardView };
     statesSavedSize?: number;
     timerActive?: boolean;
+    turns?: number;
     topCard?: CardView;
     userData?: UserData;
     wins?: number;

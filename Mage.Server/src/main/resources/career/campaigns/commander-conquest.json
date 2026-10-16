@@ -1,0 +1,3525 @@
+{
+  "id": "commander-conquest",
+  "name": "Commander Conquest",
+  "format": "Commander",
+  "colors": "WUBRG",
+  "summary": "Every Commander precon set, one chapter each: beat its decks one by one, then three at a table, then all at once.",
+  "text": "Bring a Commander deck of your own and take on the precons, set by set: a duel with each deck, a three-player pod or two, and a four-player finale against the set's strongest. Start with any chapter.",
+  "deckType": "Variant Magic - Commander",
+  "gameType": "Commander Two Player Duel",
+  "ownDeck": true,
+  "chapters": [
+    {
+      "id": "cmd",
+      "name": "Commander 2011",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2011. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "cmd-1",
+          "type": "duel",
+          "name": "Counterpunch",
+          "text": "Counterpunch, from Commander 2011, led by Ghave, Guru of Spores. One on one.",
+          "opponent": {
+            "name": "Ghave, Guru of Spores",
+            "deck": "commander-conquest/commander-2011/counterpunch.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "cmd-2",
+          "type": "duel",
+          "name": "Devour for Power",
+          "text": "Devour for Power, from Commander 2011, led by The Mimeoplasm. One on one.",
+          "opponent": {
+            "name": "The Mimeoplasm",
+            "deck": "commander-conquest/commander-2011/devour-for-power.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "cmd-3",
+          "type": "duel",
+          "name": "Heavenly Inferno",
+          "text": "Heavenly Inferno, from Commander 2011, led by Kaalia of the Vast. One on one.",
+          "opponent": {
+            "name": "Kaalia of the Vast",
+            "deck": "commander-conquest/commander-2011/heavenly-inferno.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "cmd-4",
+          "type": "duel",
+          "name": "Mirror Mastery",
+          "text": "Mirror Mastery, from Commander 2011, led by Riku of Two Reflections. One on one.",
+          "opponent": {
+            "name": "Riku of Two Reflections",
+            "deck": "commander-conquest/commander-2011/mirror-mastery.dck",
+            "bracket": 4,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "cmd-5",
+          "type": "duel",
+          "name": "Political Puppets",
+          "text": "Political Puppets, from Commander 2011, led by Zedruu the Greathearted. One on one.",
+          "opponent": {
+            "name": "Zedruu the Greathearted",
+            "deck": "commander-conquest/commander-2011/political-puppets.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "cmd-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Ghave, Guru of Spores and The Mimeoplasm. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Ghave, Guru of Spores",
+            "deck": "commander-conquest/commander-2011/counterpunch.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "The Mimeoplasm",
+              "deck": "commander-conquest/commander-2011/devour-for-power.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "cmd-1",
+            "cmd-2",
+            "cmd-3",
+            "cmd-4",
+            "cmd-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "cmd-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Kaalia of the Vast and Riku of Two Reflections. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Kaalia of the Vast",
+            "deck": "commander-conquest/commander-2011/heavenly-inferno.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Riku of Two Reflections",
+              "deck": "commander-conquest/commander-2011/mirror-mastery.dck",
+              "bracket": 4,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "cmd-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "cmd-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Riku of Two Reflections, Ghave, Guru of Spores & The Mimeoplasm, and you. Win it and Commander 2011 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Riku of Two Reflections",
+            "deck": "commander-conquest/commander-2011/mirror-mastery.dck",
+            "bracket": 4,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Ghave, Guru of Spores",
+              "deck": "commander-conquest/commander-2011/counterpunch.dck",
+              "bracket": 3,
+              "skill": 5
+            },
+            {
+              "name": "The Mimeoplasm",
+              "deck": "commander-conquest/commander-2011/devour-for-power.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "cmd-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c13",
+      "name": "Commander 2013",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2013. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c13-1",
+          "type": "duel",
+          "name": "Eternal Bargain",
+          "text": "Eternal Bargain, from Commander 2013, led by Oloro, Ageless Ascetic. One on one.",
+          "opponent": {
+            "name": "Oloro, Ageless Ascetic",
+            "deck": "commander-conquest/commander-2013/eternal-bargain.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c13-2",
+          "type": "duel",
+          "name": "Evasive Maneuvers",
+          "text": "Evasive Maneuvers, from Commander 2013, led by Derevi, Empyrial Tactician. One on one.",
+          "opponent": {
+            "name": "Derevi, Empyrial Tactician",
+            "deck": "commander-conquest/commander-2013/evasive-maneuvers.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c13-3",
+          "type": "duel",
+          "name": "Mind Seize",
+          "text": "Mind Seize, from Commander 2013, led by Jeleva, Nephalia's Scourge. One on one.",
+          "opponent": {
+            "name": "Jeleva, Nephalia's Scourge",
+            "deck": "commander-conquest/commander-2013/mind-seize.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c13-4",
+          "type": "duel",
+          "name": "Nature of the Beast",
+          "text": "Nature of the Beast, from Commander 2013, led by Marath, Will of the Wild. One on one.",
+          "opponent": {
+            "name": "Marath, Will of the Wild",
+            "deck": "commander-conquest/commander-2013/nature-of-the-beast.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c13-5",
+          "type": "duel",
+          "name": "Power Hungry",
+          "text": "Power Hungry, from Commander 2013, led by Prossh, Skyraider of Kher. One on one.",
+          "opponent": {
+            "name": "Prossh, Skyraider of Kher",
+            "deck": "commander-conquest/commander-2013/power-hungry.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c13-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Oloro, Ageless Ascetic and Derevi, Empyrial Tactician. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Oloro, Ageless Ascetic",
+            "deck": "commander-conquest/commander-2013/eternal-bargain.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Derevi, Empyrial Tactician",
+              "deck": "commander-conquest/commander-2013/evasive-maneuvers.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c13-1",
+            "c13-2",
+            "c13-3",
+            "c13-4",
+            "c13-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c13-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Jeleva, Nephalia's Scourge and Marath, Will of the Wild. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Jeleva, Nephalia's Scourge",
+            "deck": "commander-conquest/commander-2013/mind-seize.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Marath, Will of the Wild",
+              "deck": "commander-conquest/commander-2013/nature-of-the-beast.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c13-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c13-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Oloro, Ageless Ascetic, Derevi, Empyrial Tactician & Jeleva, Nephalia's Scourge, and you. Win it and Commander 2013 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Oloro, Ageless Ascetic",
+            "deck": "commander-conquest/commander-2013/eternal-bargain.dck",
+            "bracket": 2,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Derevi, Empyrial Tactician",
+              "deck": "commander-conquest/commander-2013/evasive-maneuvers.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Jeleva, Nephalia's Scourge",
+              "deck": "commander-conquest/commander-2013/mind-seize.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c13-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c14",
+      "name": "Commander 2014",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2014. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c14-1",
+          "type": "duel",
+          "name": "Built from Scratch",
+          "text": "Built from Scratch, from Commander 2014, led by Daretti, Scrap Savant. One on one.",
+          "opponent": {
+            "name": "Daretti, Scrap Savant",
+            "deck": "commander-conquest/commander-2014/built-from-scratch.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c14-2",
+          "type": "duel",
+          "name": "Forged in Stone",
+          "text": "Forged in Stone, from Commander 2014, led by Nahiri, the Lithomancer. One on one.",
+          "opponent": {
+            "name": "Nahiri, the Lithomancer",
+            "deck": "commander-conquest/commander-2014/forged-in-stone.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c14-3",
+          "type": "duel",
+          "name": "Guided by Nature",
+          "text": "Guided by Nature, from Commander 2014, led by Freyalise, Llanowar's Fury. One on one.",
+          "opponent": {
+            "name": "Freyalise, Llanowar's Fury",
+            "deck": "commander-conquest/commander-2014/guided-by-nature.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c14-4",
+          "type": "duel",
+          "name": "Peer Through Time",
+          "text": "Peer Through Time, from Commander 2014, led by Teferi, Temporal Archmage. One on one.",
+          "opponent": {
+            "name": "Teferi, Temporal Archmage",
+            "deck": "commander-conquest/commander-2014/peer-through-time.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c14-5",
+          "type": "duel",
+          "name": "Sworn to Darkness",
+          "text": "Sworn to Darkness, from Commander 2014, led by Ob Nixilis of the Black Oath. One on one.",
+          "opponent": {
+            "name": "Ob Nixilis of the Black Oath",
+            "deck": "commander-conquest/commander-2014/sworn-to-darkness.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c14-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Daretti, Scrap Savant and Nahiri, the Lithomancer. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Daretti, Scrap Savant",
+            "deck": "commander-conquest/commander-2014/built-from-scratch.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Nahiri, the Lithomancer",
+              "deck": "commander-conquest/commander-2014/forged-in-stone.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c14-1",
+            "c14-2",
+            "c14-3",
+            "c14-4",
+            "c14-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c14-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Freyalise, Llanowar's Fury and Teferi, Temporal Archmage. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Freyalise, Llanowar's Fury",
+            "deck": "commander-conquest/commander-2014/guided-by-nature.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Teferi, Temporal Archmage",
+              "deck": "commander-conquest/commander-2014/peer-through-time.dck",
+              "bracket": 3,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c14-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c14-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Teferi, Temporal Archmage, Daretti, Scrap Savant & Nahiri, the Lithomancer, and you. Win it and Commander 2014 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Teferi, Temporal Archmage",
+            "deck": "commander-conquest/commander-2014/peer-through-time.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Daretti, Scrap Savant",
+              "deck": "commander-conquest/commander-2014/built-from-scratch.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Nahiri, the Lithomancer",
+              "deck": "commander-conquest/commander-2014/forged-in-stone.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c14-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c15",
+      "name": "Commander 2015",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2015. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c15-1",
+          "type": "duel",
+          "name": "Call the Spirits",
+          "text": "Call the Spirits, from Commander 2015, led by Daxos the Returned. One on one.",
+          "opponent": {
+            "name": "Daxos the Returned",
+            "deck": "commander-conquest/commander-2015/call-the-spirits.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c15-2",
+          "type": "duel",
+          "name": "Plunder the Graves",
+          "text": "Plunder the Graves, from Commander 2015, led by Meren of Clan Nel Toth. One on one.",
+          "opponent": {
+            "name": "Meren of Clan Nel Toth",
+            "deck": "commander-conquest/commander-2015/plunder-the-graves.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c15-3",
+          "type": "duel",
+          "name": "Seize Control",
+          "text": "Seize Control, from Commander 2015, led by Mizzix of the Izmagnus. One on one.",
+          "opponent": {
+            "name": "Mizzix of the Izmagnus",
+            "deck": "commander-conquest/commander-2015/seize-control.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c15-4",
+          "type": "duel",
+          "name": "Swell the Host",
+          "text": "Swell the Host, from Commander 2015, led by Ezuri, Claw of Progress. One on one.",
+          "opponent": {
+            "name": "Ezuri, Claw of Progress",
+            "deck": "commander-conquest/commander-2015/swell-the-host.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c15-5",
+          "type": "duel",
+          "name": "Wade into Battle",
+          "text": "Wade into Battle, from Commander 2015, led by Kalemne, Disciple of Iroas. One on one.",
+          "opponent": {
+            "name": "Kalemne, Disciple of Iroas",
+            "deck": "commander-conquest/commander-2015/wade-into-battle.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c15-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Daxos the Returned and Meren of Clan Nel Toth. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Daxos the Returned",
+            "deck": "commander-conquest/commander-2015/call-the-spirits.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Meren of Clan Nel Toth",
+              "deck": "commander-conquest/commander-2015/plunder-the-graves.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c15-1",
+            "c15-2",
+            "c15-3",
+            "c15-4",
+            "c15-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c15-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Mizzix of the Izmagnus and Ezuri, Claw of Progress. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Mizzix of the Izmagnus",
+            "deck": "commander-conquest/commander-2015/seize-control.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Ezuri, Claw of Progress",
+              "deck": "commander-conquest/commander-2015/swell-the-host.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c15-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c15-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Daxos the Returned, Meren of Clan Nel Toth & Mizzix of the Izmagnus, and you. Win it and Commander 2015 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Daxos the Returned",
+            "deck": "commander-conquest/commander-2015/call-the-spirits.dck",
+            "bracket": 2,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Meren of Clan Nel Toth",
+              "deck": "commander-conquest/commander-2015/plunder-the-graves.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Mizzix of the Izmagnus",
+              "deck": "commander-conquest/commander-2015/seize-control.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c15-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c16",
+      "name": "Commander 2016",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2016. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c16-1",
+          "type": "duel",
+          "name": "Breed Lethality",
+          "text": "Breed Lethality, from Commander 2016, led by Atraxa, Praetors' Voice. One on one.",
+          "opponent": {
+            "name": "Atraxa, Praetors' Voice",
+            "deck": "commander-conquest/commander-2016/breed-lethality.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c16-2",
+          "type": "duel",
+          "name": "Entropic Uprising",
+          "text": "Entropic Uprising, from Commander 2016, led by Yidris, Maelstrom Wielder. One on one.",
+          "opponent": {
+            "name": "Yidris, Maelstrom Wielder",
+            "deck": "commander-conquest/commander-2016/entropic-uprising.dck",
+            "bracket": 4,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c16-3",
+          "type": "duel",
+          "name": "Invent Superiority",
+          "text": "Invent Superiority, from Commander 2016, led by Breya, Etherium Shaper. One on one.",
+          "opponent": {
+            "name": "Breya, Etherium Shaper",
+            "deck": "commander-conquest/commander-2016/invent-superiority.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c16-4",
+          "type": "duel",
+          "name": "Open Hostility",
+          "text": "Open Hostility, from Commander 2016, led by Saskia the Unyielding. One on one.",
+          "opponent": {
+            "name": "Saskia the Unyielding",
+            "deck": "commander-conquest/commander-2016/open-hostility.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c16-5",
+          "type": "duel",
+          "name": "Stalwart Unity",
+          "text": "Stalwart Unity, from Commander 2016, led by Kynaios and Tiro of Meletis. One on one.",
+          "opponent": {
+            "name": "Kynaios and Tiro of Meletis",
+            "deck": "commander-conquest/commander-2016/stalwart-unity.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c16-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Atraxa, Praetors' Voice and Yidris, Maelstrom Wielder. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Atraxa, Praetors' Voice",
+            "deck": "commander-conquest/commander-2016/breed-lethality.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Yidris, Maelstrom Wielder",
+              "deck": "commander-conquest/commander-2016/entropic-uprising.dck",
+              "bracket": 4,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c16-1",
+            "c16-2",
+            "c16-3",
+            "c16-4",
+            "c16-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c16-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Breya, Etherium Shaper and Saskia the Unyielding. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Breya, Etherium Shaper",
+            "deck": "commander-conquest/commander-2016/invent-superiority.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Saskia the Unyielding",
+              "deck": "commander-conquest/commander-2016/open-hostility.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c16-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c16-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Yidris, Maelstrom Wielder, Atraxa, Praetors' Voice & Breya, Etherium Shaper, and you. Win it and Commander 2016 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Yidris, Maelstrom Wielder",
+            "deck": "commander-conquest/commander-2016/entropic-uprising.dck",
+            "bracket": 4,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Atraxa, Praetors' Voice",
+              "deck": "commander-conquest/commander-2016/breed-lethality.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Breya, Etherium Shaper",
+              "deck": "commander-conquest/commander-2016/invent-superiority.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c16-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c17",
+      "name": "Commander 2017",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Commander 2017. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c17-1",
+          "type": "duel",
+          "name": "Arcane Wizardry",
+          "text": "Arcane Wizardry, from Commander 2017, led by Inalla, Archmage Ritualist. One on one.",
+          "opponent": {
+            "name": "Inalla, Archmage Ritualist",
+            "deck": "commander-conquest/commander-2017/arcane-wizardry.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c17-2",
+          "type": "duel",
+          "name": "Draconic Domination",
+          "text": "Draconic Domination, from Commander 2017, led by The Ur-Dragon. One on one.",
+          "opponent": {
+            "name": "The Ur-Dragon",
+            "deck": "commander-conquest/commander-2017/draconic-domination.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c17-3",
+          "type": "duel",
+          "name": "Feline Ferocity",
+          "text": "Feline Ferocity, from Commander 2017, led by Arahbo, Roar of the World. One on one.",
+          "opponent": {
+            "name": "Arahbo, Roar of the World",
+            "deck": "commander-conquest/commander-2017/feline-ferocity.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c17-4",
+          "type": "duel",
+          "name": "Vampiric Bloodlust",
+          "text": "Vampiric Bloodlust, from Commander 2017, led by Edgar Markov. One on one.",
+          "opponent": {
+            "name": "Edgar Markov",
+            "deck": "commander-conquest/commander-2017/vampiric-bloodlust.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c17-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Inalla, Archmage Ritualist and The Ur-Dragon. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Inalla, Archmage Ritualist",
+            "deck": "commander-conquest/commander-2017/arcane-wizardry.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "The Ur-Dragon",
+              "deck": "commander-conquest/commander-2017/draconic-domination.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c17-1",
+            "c17-2",
+            "c17-3",
+            "c17-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c17-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Arahbo, Roar of the World and Edgar Markov. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Arahbo, Roar of the World",
+            "deck": "commander-conquest/commander-2017/feline-ferocity.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Edgar Markov",
+              "deck": "commander-conquest/commander-2017/vampiric-bloodlust.dck",
+              "bracket": 3,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c17-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c17-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Edgar Markov, Inalla, Archmage Ritualist & The Ur-Dragon, and you. Win it and Commander 2017 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Edgar Markov",
+            "deck": "commander-conquest/commander-2017/vampiric-bloodlust.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Inalla, Archmage Ritualist",
+              "deck": "commander-conquest/commander-2017/arcane-wizardry.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "The Ur-Dragon",
+              "deck": "commander-conquest/commander-2017/draconic-domination.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c17-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c18",
+      "name": "Commander 2018",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Commander 2018. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c18-1",
+          "type": "duel",
+          "name": "Adaptive Enchantment",
+          "text": "Adaptive Enchantment, from Commander 2018, led by Estrid, the Masked. One on one.",
+          "opponent": {
+            "name": "Estrid, the Masked",
+            "deck": "commander-conquest/commander-2018/adaptive-enchantment.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c18-2",
+          "type": "duel",
+          "name": "Exquisite Invention",
+          "text": "Exquisite Invention, from Commander 2018, led by Saheeli, the Gifted. One on one.",
+          "opponent": {
+            "name": "Saheeli, the Gifted",
+            "deck": "commander-conquest/commander-2018/exquisite-invention.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c18-3",
+          "type": "duel",
+          "name": "Nature's Vengeance",
+          "text": "Nature's Vengeance, from Commander 2018, led by Lord Windgrace. One on one.",
+          "opponent": {
+            "name": "Lord Windgrace",
+            "deck": "commander-conquest/commander-2018/nature-s-vengeance.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c18-4",
+          "type": "duel",
+          "name": "Subjective Reality",
+          "text": "Subjective Reality, from Commander 2018, led by Aminatou, the Fateshifter. One on one.",
+          "opponent": {
+            "name": "Aminatou, the Fateshifter",
+            "deck": "commander-conquest/commander-2018/subjective-reality.dck",
+            "bracket": 4,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c18-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Estrid, the Masked and Saheeli, the Gifted. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Estrid, the Masked",
+            "deck": "commander-conquest/commander-2018/adaptive-enchantment.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Saheeli, the Gifted",
+              "deck": "commander-conquest/commander-2018/exquisite-invention.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c18-1",
+            "c18-2",
+            "c18-3",
+            "c18-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c18-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Lord Windgrace and Aminatou, the Fateshifter. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Lord Windgrace",
+            "deck": "commander-conquest/commander-2018/nature-s-vengeance.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Aminatou, the Fateshifter",
+              "deck": "commander-conquest/commander-2018/subjective-reality.dck",
+              "bracket": 4,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c18-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c18-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Aminatou, the Fateshifter, Estrid, the Masked & Saheeli, the Gifted, and you. Win it and Commander 2018 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Aminatou, the Fateshifter",
+            "deck": "commander-conquest/commander-2018/subjective-reality.dck",
+            "bracket": 4,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Estrid, the Masked",
+              "deck": "commander-conquest/commander-2018/adaptive-enchantment.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Saheeli, the Gifted",
+              "deck": "commander-conquest/commander-2018/exquisite-invention.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c18-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c19",
+      "name": "Commander 2019",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Commander 2019. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c19-1",
+          "type": "duel",
+          "name": "Faceless Menace",
+          "text": "Faceless Menace, from Commander 2019, led by Kadena, Slinking Sorcerer. One on one.",
+          "opponent": {
+            "name": "Kadena, Slinking Sorcerer",
+            "deck": "commander-conquest/commander-2019/faceless-menace.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c19-2",
+          "type": "duel",
+          "name": "Merciless Rage",
+          "text": "Merciless Rage, from Commander 2019, led by Anje Falkenrath. One on one.",
+          "opponent": {
+            "name": "Anje Falkenrath",
+            "deck": "commander-conquest/commander-2019/merciless-rage.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c19-3",
+          "type": "duel",
+          "name": "Mystic Intellect",
+          "text": "Mystic Intellect, from Commander 2019, led by Sevinne, the Chronoclasm. One on one.",
+          "opponent": {
+            "name": "Sevinne, the Chronoclasm",
+            "deck": "commander-conquest/commander-2019/mystic-intellect.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c19-4",
+          "type": "duel",
+          "name": "Primal Genesis",
+          "text": "Primal Genesis, from Commander 2019, led by Ghired, Conclave Exile. One on one.",
+          "opponent": {
+            "name": "Ghired, Conclave Exile",
+            "deck": "commander-conquest/commander-2019/primal-genesis.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c19-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Kadena, Slinking Sorcerer and Anje Falkenrath. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Kadena, Slinking Sorcerer",
+            "deck": "commander-conquest/commander-2019/faceless-menace.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Anje Falkenrath",
+              "deck": "commander-conquest/commander-2019/merciless-rage.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c19-1",
+            "c19-2",
+            "c19-3",
+            "c19-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c19-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Sevinne, the Chronoclasm and Ghired, Conclave Exile. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Sevinne, the Chronoclasm",
+            "deck": "commander-conquest/commander-2019/mystic-intellect.dck",
+            "bracket": 3,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Ghired, Conclave Exile",
+              "deck": "commander-conquest/commander-2019/primal-genesis.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c19-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c19-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Kadena, Slinking Sorcerer, Sevinne, the Chronoclasm & Anje Falkenrath, and you. Win it and Commander 2019 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Kadena, Slinking Sorcerer",
+            "deck": "commander-conquest/commander-2019/faceless-menace.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Sevinne, the Chronoclasm",
+              "deck": "commander-conquest/commander-2019/mystic-intellect.dck",
+              "bracket": 3,
+              "skill": 5
+            },
+            {
+              "name": "Anje Falkenrath",
+              "deck": "commander-conquest/commander-2019/merciless-rage.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c19-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c20",
+      "name": "Commander 2020",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Commander 2020. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c20-1",
+          "type": "duel",
+          "name": "Arcane Maelstrom",
+          "text": "Arcane Maelstrom, from Commander 2020, led by Kalamax, the Stormsire. One on one.",
+          "opponent": {
+            "name": "Kalamax, the Stormsire",
+            "deck": "commander-conquest/commander-2020/arcane-maelstrom.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c20-2",
+          "type": "duel",
+          "name": "Ruthless Regiment",
+          "text": "Ruthless Regiment, from Commander 2020, led by Jirina Kudro. One on one.",
+          "opponent": {
+            "name": "Jirina Kudro",
+            "deck": "commander-conquest/commander-2020/ruthless-regiment.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c20-3",
+          "type": "duel",
+          "name": "Symbiotic Swarm",
+          "text": "Symbiotic Swarm, from Commander 2020, led by Kathril, Aspect Warper. One on one.",
+          "opponent": {
+            "name": "Kathril, Aspect Warper",
+            "deck": "commander-conquest/commander-2020/symbiotic-swarm.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c20-4",
+          "type": "duel",
+          "name": "Timeless Wisdom",
+          "text": "Timeless Wisdom, from Commander 2020, led by Gavi, Nest Warden. One on one.",
+          "opponent": {
+            "name": "Gavi, Nest Warden",
+            "deck": "commander-conquest/commander-2020/timeless-wisdom.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c20-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Kalamax, the Stormsire and Jirina Kudro. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Kalamax, the Stormsire",
+            "deck": "commander-conquest/commander-2020/arcane-maelstrom.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Jirina Kudro",
+              "deck": "commander-conquest/commander-2020/ruthless-regiment.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c20-1",
+            "c20-2",
+            "c20-3",
+            "c20-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c20-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Kathril, Aspect Warper and Gavi, Nest Warden. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Kathril, Aspect Warper",
+            "deck": "commander-conquest/commander-2020/symbiotic-swarm.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Gavi, Nest Warden",
+              "deck": "commander-conquest/commander-2020/timeless-wisdom.dck",
+              "bracket": 3,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c20-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c20-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Kalamax, the Stormsire, Gavi, Nest Warden & Jirina Kudro, and you. Win it and Commander 2020 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Kalamax, the Stormsire",
+            "deck": "commander-conquest/commander-2020/arcane-maelstrom.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Gavi, Nest Warden",
+              "deck": "commander-conquest/commander-2020/timeless-wisdom.dck",
+              "bracket": 3,
+              "skill": 5
+            },
+            {
+              "name": "Jirina Kudro",
+              "deck": "commander-conquest/commander-2020/ruthless-regiment.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c20-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cmr-znc",
+      "name": "Commander Legends & Zendikar Rising",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Commander Legends & Zendikar Rising. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "cmr-znc-1",
+          "type": "duel",
+          "name": "Arm for Battle",
+          "text": "Arm for Battle, from Commander Legends, led by Wyleth, Soul of Steel. One on one.",
+          "opponent": {
+            "name": "Wyleth, Soul of Steel",
+            "deck": "commander-conquest/commander-legends/arm-for-battle.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "cmr-znc-2",
+          "type": "duel",
+          "name": "Reap the Tides",
+          "text": "Reap the Tides, from Commander Legends, led by Aesi, Tyrant of Gyre Strait. One on one.",
+          "opponent": {
+            "name": "Aesi, Tyrant of Gyre Strait",
+            "deck": "commander-conquest/commander-legends/reap-the-tides.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "cmr-znc-3",
+          "type": "duel",
+          "name": "Land's Wrath",
+          "text": "Land's Wrath, from Zendikar Rising, led by Obuun, Mul Daya Ancestor. One on one.",
+          "opponent": {
+            "name": "Obuun, Mul Daya Ancestor",
+            "deck": "commander-conquest/zendikar-rising/land-s-wrath.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "cmr-znc-4",
+          "type": "duel",
+          "name": "Sneak Attack",
+          "text": "Sneak Attack, from Zendikar Rising, led by Anowon, the Ruin Thief. One on one.",
+          "opponent": {
+            "name": "Anowon, the Ruin Thief",
+            "deck": "commander-conquest/zendikar-rising/sneak-attack.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "cmr-znc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Wyleth, Soul of Steel and Aesi, Tyrant of Gyre Strait. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Wyleth, Soul of Steel",
+            "deck": "commander-conquest/commander-legends/arm-for-battle.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Aesi, Tyrant of Gyre Strait",
+              "deck": "commander-conquest/commander-legends/reap-the-tides.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "cmr-znc-1",
+            "cmr-znc-2",
+            "cmr-znc-3",
+            "cmr-znc-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "cmr-znc-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Obuun, Mul Daya Ancestor and Anowon, the Ruin Thief. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Obuun, Mul Daya Ancestor",
+            "deck": "commander-conquest/zendikar-rising/land-s-wrath.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Anowon, the Ruin Thief",
+              "deck": "commander-conquest/zendikar-rising/sneak-attack.dck",
+              "bracket": 3,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "cmr-znc-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "cmr-znc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Anowon, the Ruin Thief, Wyleth, Soul of Steel & Aesi, Tyrant of Gyre Strait, and you. Win it and Commander Legends & Zendikar Rising is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Anowon, the Ruin Thief",
+            "deck": "commander-conquest/zendikar-rising/sneak-attack.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Wyleth, Soul of Steel",
+              "deck": "commander-conquest/commander-legends/arm-for-battle.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Aesi, Tyrant of Gyre Strait",
+              "deck": "commander-conquest/commander-legends/reap-the-tides.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "cmr-znc-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "afc",
+      "name": "Adventures in the Forgotten Realms",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Adventures in the Forgotten Realms. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "afc-1",
+          "type": "duel",
+          "name": "Aura of Courage",
+          "text": "Aura of Courage, from Adventures in the Forgotten Realms, led by Galea, Kindler of Hope. One on one.",
+          "opponent": {
+            "name": "Galea, Kindler of Hope",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/aura-of-courage.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "afc-2",
+          "type": "duel",
+          "name": "Draconic Rage",
+          "text": "Draconic Rage, from Adventures in the Forgotten Realms, led by Vrondiss, Rage of Ancients. One on one.",
+          "opponent": {
+            "name": "Vrondiss, Rage of Ancients",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/draconic-rage.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "afc-3",
+          "type": "duel",
+          "name": "Dungeons of Death",
+          "text": "Dungeons of Death, from Adventures in the Forgotten Realms, led by Sefris of the Hidden Ways. One on one.",
+          "opponent": {
+            "name": "Sefris of the Hidden Ways",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/dungeons-of-death.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "afc-4",
+          "type": "duel",
+          "name": "Planar Portal",
+          "text": "Planar Portal, from Adventures in the Forgotten Realms, led by Prosper, Tome-Bound. One on one.",
+          "opponent": {
+            "name": "Prosper, Tome-Bound",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/planar-portal.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "afc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Galea, Kindler of Hope and Vrondiss, Rage of Ancients. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Galea, Kindler of Hope",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/aura-of-courage.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Vrondiss, Rage of Ancients",
+              "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/draconic-rage.dck",
+              "bracket": 3,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "afc-1",
+            "afc-2",
+            "afc-3",
+            "afc-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "afc-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Sefris of the Hidden Ways and Prosper, Tome-Bound. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Sefris of the Hidden Ways",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/dungeons-of-death.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Prosper, Tome-Bound",
+              "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/planar-portal.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "afc-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "afc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Vrondiss, Rage of Ancients, Galea, Kindler of Hope & Sefris of the Hidden Ways, and you. Win it and Adventures in the Forgotten Realms is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Vrondiss, Rage of Ancients",
+            "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/draconic-rage.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Galea, Kindler of Hope",
+              "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/aura-of-courage.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Sefris of the Hidden Ways",
+              "deck": "commander-conquest/adventures-in-the-forgotten-realms-2021/dungeons-of-death.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "afc-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c21",
+      "name": "Commander 2021",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Commander 2021. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "c21-1",
+          "type": "duel",
+          "name": "Lorehold Legacies",
+          "text": "Lorehold Legacies, from Commander 2021, led by Osgir, the Reconstructor. One on one.",
+          "opponent": {
+            "name": "Osgir, the Reconstructor",
+            "deck": "commander-conquest/commander-2021/lorehold-legacies.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c21-2",
+          "type": "duel",
+          "name": "Prismari Performance",
+          "text": "Prismari Performance, from Commander 2021, led by Zaffai, Thunder Conductor. One on one.",
+          "opponent": {
+            "name": "Zaffai, Thunder Conductor",
+            "deck": "commander-conquest/commander-2021/prismari-performance.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c21-3",
+          "type": "duel",
+          "name": "Quantum Quandrix",
+          "text": "Quantum Quandrix, from Commander 2021, led by Adrix and Nev, Twincasters. One on one.",
+          "opponent": {
+            "name": "Adrix and Nev, Twincasters",
+            "deck": "commander-conquest/commander-2021/quantum-quandrix.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "c21-4",
+          "type": "duel",
+          "name": "Silverquill Statement",
+          "text": "Silverquill Statement, from Commander 2021, led by Breena, the Demagogue. One on one.",
+          "opponent": {
+            "name": "Breena, the Demagogue",
+            "deck": "commander-conquest/commander-2021/silverquill-statement.dck",
+            "bracket": 4,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c21-5",
+          "type": "duel",
+          "name": "Witherbloom Witchcraft",
+          "text": "Witherbloom Witchcraft, from Commander 2021, led by Willowdusk, Essence Seer. One on one.",
+          "opponent": {
+            "name": "Willowdusk, Essence Seer",
+            "deck": "commander-conquest/commander-2021/witherbloom-witchcraft.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "c21-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Osgir, the Reconstructor and Zaffai, Thunder Conductor. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Osgir, the Reconstructor",
+            "deck": "commander-conquest/commander-2021/lorehold-legacies.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Zaffai, Thunder Conductor",
+              "deck": "commander-conquest/commander-2021/prismari-performance.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "c21-1",
+            "c21-2",
+            "c21-3",
+            "c21-4",
+            "c21-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "c21-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Adrix and Nev, Twincasters and Breena, the Demagogue. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Adrix and Nev, Twincasters",
+            "deck": "commander-conquest/commander-2021/quantum-quandrix.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Breena, the Demagogue",
+              "deck": "commander-conquest/commander-2021/silverquill-statement.dck",
+              "bracket": 4,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c21-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "c21-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Breena, the Demagogue, Osgir, the Reconstructor & Zaffai, Thunder Conductor, and you. Win it and Commander 2021 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Breena, the Demagogue",
+            "deck": "commander-conquest/commander-2021/silverquill-statement.dck",
+            "bracket": 4,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Osgir, the Reconstructor",
+              "deck": "commander-conquest/commander-2021/lorehold-legacies.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Zaffai, Thunder Conductor",
+              "deck": "commander-conquest/commander-2021/prismari-performance.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "c21-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "voc-mic",
+      "name": "Innistrad: Crimson Vow & Innistrad: Midnight Hunt",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Innistrad: Crimson Vow & Innistrad: Midnight Hunt. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "voc-mic-1",
+          "type": "duel",
+          "name": "Spirit Squadron",
+          "text": "Spirit Squadron, from Innistrad: Crimson Vow, led by Millicent, Restless Revenant. One on one.",
+          "opponent": {
+            "name": "Millicent, Restless Revenant",
+            "deck": "commander-conquest/innistrad-crimson-vow-2021/spirit-squadron.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "voc-mic-2",
+          "type": "duel",
+          "name": "Vampiric Bloodline",
+          "text": "Vampiric Bloodline, from Innistrad: Crimson Vow, led by Strefan, Maurer Progenitor. One on one.",
+          "opponent": {
+            "name": "Strefan, Maurer Progenitor",
+            "deck": "commander-conquest/innistrad-crimson-vow-2021/vampiric-bloodline.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "voc-mic-3",
+          "type": "duel",
+          "name": "Coven Counters",
+          "text": "Coven Counters, from Innistrad: Midnight Hunt, led by Leinore, Autumn Sovereign. One on one.",
+          "opponent": {
+            "name": "Leinore, Autumn Sovereign",
+            "deck": "commander-conquest/innistrad-midnight-hunt-2021/coven-counters.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "voc-mic-4",
+          "type": "duel",
+          "name": "Undead Unleashed",
+          "text": "Undead Unleashed, from Innistrad: Midnight Hunt, led by Wilhelt, the Rotcleaver. One on one.",
+          "opponent": {
+            "name": "Wilhelt, the Rotcleaver",
+            "deck": "commander-conquest/innistrad-midnight-hunt-2021/undead-unleashed.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "voc-mic-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Millicent, Restless Revenant and Strefan, Maurer Progenitor. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Millicent, Restless Revenant",
+            "deck": "commander-conquest/innistrad-crimson-vow-2021/spirit-squadron.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Strefan, Maurer Progenitor",
+              "deck": "commander-conquest/innistrad-crimson-vow-2021/vampiric-bloodline.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "voc-mic-1",
+            "voc-mic-2",
+            "voc-mic-3",
+            "voc-mic-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "voc-mic-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Leinore, Autumn Sovereign and Wilhelt, the Rotcleaver. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Leinore, Autumn Sovereign",
+            "deck": "commander-conquest/innistrad-midnight-hunt-2021/coven-counters.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Wilhelt, the Rotcleaver",
+              "deck": "commander-conquest/innistrad-midnight-hunt-2021/undead-unleashed.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "voc-mic-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "voc-mic-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Millicent, Restless Revenant, Strefan, Maurer Progenitor & Leinore, Autumn Sovereign, and you. Win it and Innistrad: Crimson Vow & Innistrad: Midnight Hunt is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Millicent, Restless Revenant",
+            "deck": "commander-conquest/innistrad-crimson-vow-2021/spirit-squadron.dck",
+            "bracket": 2,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Strefan, Maurer Progenitor",
+              "deck": "commander-conquest/innistrad-crimson-vow-2021/vampiric-bloodline.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Leinore, Autumn Sovereign",
+              "deck": "commander-conquest/innistrad-midnight-hunt-2021/coven-counters.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "voc-mic-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "khc-sld-nec",
+      "name": "Kaldheim, Secret Lair: Heads I Win, Tails You Lose & Kamigawa: Neon Dynasty",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Kaldheim, Secret Lair: Heads I Win, Tails You Lose & Kamigawa: Neon Dynasty. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "khc-sld-nec-1",
+          "type": "duel",
+          "name": "Elven Empire",
+          "text": "Elven Empire, from Kaldheim, led by Lathril, Blade of the Elves. One on one.",
+          "opponent": {
+            "name": "Lathril, Blade of the Elves",
+            "deck": "commander-conquest/kaldheim/elven-empire.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "khc-sld-nec-2",
+          "type": "duel",
+          "name": "Phantom Premonition",
+          "text": "Phantom Premonition, from Kaldheim, led by Ranar the Ever-Watchful. One on one.",
+          "opponent": {
+            "name": "Ranar the Ever-Watchful",
+            "deck": "commander-conquest/kaldheim/phantom-premonition.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "khc-sld-nec-3",
+          "type": "duel",
+          "name": "Heads I Win, Tails You Lose",
+          "text": "Heads I Win, Tails You Lose, from Secret Lair: Heads I Win, Tails You Lose, led by Okaun, Eye of Chaos & Zndrsplt, Eye of Wisdom. One on one.",
+          "opponent": {
+            "name": "Okaun & Zndrsplt",
+            "deck": "commander-conquest/secret-lair-heads-i-win-tails-you-lose-2021/heads-i-win-tails-you-lose.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "khc-sld-nec-4",
+          "type": "duel",
+          "name": "Buckle Up",
+          "text": "Buckle Up, from Kamigawa: Neon Dynasty, led by Kotori, Pilot Prodigy. One on one.",
+          "opponent": {
+            "name": "Kotori, Pilot Prodigy",
+            "deck": "commander-conquest/kamigawa-neon-dynasty-2022/buckle-up.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "khc-sld-nec-5",
+          "type": "duel",
+          "name": "Upgrades Unleashed",
+          "text": "Upgrades Unleashed, from Kamigawa: Neon Dynasty, led by Chishiro, the Shattered Blade. One on one.",
+          "opponent": {
+            "name": "Chishiro, the Shattered Blade",
+            "deck": "commander-conquest/kamigawa-neon-dynasty-2022/upgrades-unleashed.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "khc-sld-nec-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Lathril, Blade of the Elves and Ranar the Ever-Watchful. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Lathril, Blade of the Elves",
+            "deck": "commander-conquest/kaldheim/elven-empire.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Ranar the Ever-Watchful",
+              "deck": "commander-conquest/kaldheim/phantom-premonition.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "khc-sld-nec-1",
+            "khc-sld-nec-2",
+            "khc-sld-nec-3",
+            "khc-sld-nec-4",
+            "khc-sld-nec-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "khc-sld-nec-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Okaun & Zndrsplt and Kotori, Pilot Prodigy. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Okaun & Zndrsplt",
+            "deck": "commander-conquest/secret-lair-heads-i-win-tails-you-lose-2021/heads-i-win-tails-you-lose.dck",
+            "bracket": 3,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Kotori, Pilot Prodigy",
+              "deck": "commander-conquest/kamigawa-neon-dynasty-2022/buckle-up.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "khc-sld-nec-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "khc-sld-nec-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Okaun & Zndrsplt, Lathril, Blade of the Elves & Ranar the Ever-Watchful, and you. Win it and Kaldheim, Secret Lair: Heads I Win, Tails You Lose & Kamigawa: Neon Dynasty is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Okaun & Zndrsplt",
+            "deck": "commander-conquest/secret-lair-heads-i-win-tails-you-lose-2021/heads-i-win-tails-you-lose.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Lathril, Blade of the Elves",
+              "deck": "commander-conquest/kaldheim/elven-empire.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Ranar the Ever-Watchful",
+              "deck": "commander-conquest/kaldheim/phantom-premonition.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "khc-sld-nec-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ncc",
+      "name": "Streets of New Capenna",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Streets of New Capenna. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "ncc-1",
+          "type": "duel",
+          "name": "Bedecked Brokers",
+          "text": "Bedecked Brokers, from Streets of New Capenna, led by Perrie, the Pulverizer. One on one.",
+          "opponent": {
+            "name": "Perrie, the Pulverizer",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/bedecked-brokers.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "ncc-2",
+          "type": "duel",
+          "name": "Cabaretti Cacophony",
+          "text": "Cabaretti Cacophony, from Streets of New Capenna, led by Kitt Kanto, Mayhem Diva. One on one.",
+          "opponent": {
+            "name": "Kitt Kanto, Mayhem Diva",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/cabaretti-cacophony.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "ncc-3",
+          "type": "duel",
+          "name": "Maestros Massacre",
+          "text": "Maestros Massacre, from Streets of New Capenna, led by Anhelo, the Painter. One on one.",
+          "opponent": {
+            "name": "Anhelo, the Painter",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/maestros-massacre.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "ncc-4",
+          "type": "duel",
+          "name": "Obscura Operation",
+          "text": "Obscura Operation, from Streets of New Capenna, led by Kamiz, Obscura Oculus. One on one.",
+          "opponent": {
+            "name": "Kamiz, Obscura Oculus",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/obscura-operation.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "ncc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Perrie, the Pulverizer and Kitt Kanto, Mayhem Diva. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Perrie, the Pulverizer",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/bedecked-brokers.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Kitt Kanto, Mayhem Diva",
+              "deck": "commander-conquest/streets-of-new-capenna-2022/cabaretti-cacophony.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "ncc-1",
+            "ncc-2",
+            "ncc-3",
+            "ncc-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "ncc-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Anhelo, the Painter and Kamiz, Obscura Oculus. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Anhelo, the Painter",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/maestros-massacre.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Kamiz, Obscura Oculus",
+              "deck": "commander-conquest/streets-of-new-capenna-2022/obscura-operation.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "ncc-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "ncc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Perrie, the Pulverizer, Kitt Kanto, Mayhem Diva & Anhelo, the Painter, and you. Win it and Streets of New Capenna is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Perrie, the Pulverizer",
+            "deck": "commander-conquest/streets-of-new-capenna-2022/bedecked-brokers.dck",
+            "bracket": 2,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Kitt Kanto, Mayhem Diva",
+              "deck": "commander-conquest/streets-of-new-capenna-2022/cabaretti-cacophony.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Anhelo, the Painter",
+              "deck": "commander-conquest/streets-of-new-capenna-2022/maestros-massacre.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "ncc-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "m3c",
+      "name": "Modern Horizons 3",
+      "color": "WUBRG",
+      "text": "The 3 Commander decks of Modern Horizons 3. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "m3c-1",
+          "type": "duel",
+          "name": "Creative Energy",
+          "text": "Creative Energy, from Modern Horizons 3, led by Satya, Aetherflux Genius. One on one.",
+          "opponent": {
+            "name": "Satya, Aetherflux Genius",
+            "deck": "commander-conquest/modern-horizons-3-2024/creative-energy.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "m3c-2",
+          "type": "duel",
+          "name": "Eldrazi Incursion",
+          "text": "Eldrazi Incursion, from Modern Horizons 3, led by Ulalek, Fused Atrocity. One on one.",
+          "opponent": {
+            "name": "Ulalek, Fused Atrocity",
+            "deck": "commander-conquest/modern-horizons-3-2024/eldrazi-incursion.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "m3c-3",
+          "type": "duel",
+          "name": "Graveyard Overdrive",
+          "text": "Graveyard Overdrive, from Modern Horizons 3, led by Disa the Restless. One on one.",
+          "opponent": {
+            "name": "Disa the Restless",
+            "deck": "commander-conquest/modern-horizons-3-2024/graveyard-overdrive.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "m3c-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Satya, Aetherflux Genius and Ulalek, Fused Atrocity. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Satya, Aetherflux Genius",
+            "deck": "commander-conquest/modern-horizons-3-2024/creative-energy.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Ulalek, Fused Atrocity",
+              "deck": "commander-conquest/modern-horizons-3-2024/eldrazi-incursion.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "m3c-1",
+            "m3c-2",
+            "m3c-3"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "m3c-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Satya, Aetherflux Genius, Ulalek, Fused Atrocity & Disa the Restless, and you. Win it and Modern Horizons 3 is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Satya, Aetherflux Genius",
+            "deck": "commander-conquest/modern-horizons-3-2024/creative-energy.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Ulalek, Fused Atrocity",
+              "deck": "commander-conquest/modern-horizons-3-2024/eldrazi-incursion.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Disa the Restless",
+              "deck": "commander-conquest/modern-horizons-3-2024/graveyard-overdrive.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "m3c-pod-1"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dsc-drc",
+      "name": "Duskmourn: House of Horror & Aetherdrift",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Duskmourn: House of Horror & Aetherdrift. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "dsc-drc-1",
+          "type": "duel",
+          "name": "Endless Punishment",
+          "text": "Endless Punishment, from Duskmourn: House of Horror, led by Valgavoth, Harrower of Souls. One on one.",
+          "opponent": {
+            "name": "Valgavoth, Harrower of Souls",
+            "deck": "commander-conquest/duskmourn-house-of-horror-2024/endless-punishment.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "dsc-drc-2",
+          "type": "duel",
+          "name": "Jump Scare",
+          "text": "Jump Scare, from Duskmourn: House of Horror, led by Zimone, Mystery Unraveler. One on one.",
+          "opponent": {
+            "name": "Zimone, Mystery Unraveler",
+            "deck": "commander-conquest/duskmourn-house-of-horror-2024/jump-scare.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "dsc-drc-3",
+          "type": "duel",
+          "name": "Eternal Might",
+          "text": "Eternal Might, from Aetherdrift, led by Temmet, Naktamun's Will. One on one.",
+          "opponent": {
+            "name": "Temmet, Naktamun's Will",
+            "deck": "commander-conquest/aetherdrift-2025/eternal-might.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "dsc-drc-4",
+          "type": "duel",
+          "name": "Living Energy",
+          "text": "Living Energy, from Aetherdrift, led by Saheeli, Radiant Creator. One on one.",
+          "opponent": {
+            "name": "Saheeli, Radiant Creator",
+            "deck": "commander-conquest/aetherdrift-2025/living-energy.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "dsc-drc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Valgavoth, Harrower of Souls and Zimone, Mystery Unraveler. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Valgavoth, Harrower of Souls",
+            "deck": "commander-conquest/duskmourn-house-of-horror-2024/endless-punishment.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Zimone, Mystery Unraveler",
+              "deck": "commander-conquest/duskmourn-house-of-horror-2024/jump-scare.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "dsc-drc-1",
+            "dsc-drc-2",
+            "dsc-drc-3",
+            "dsc-drc-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "dsc-drc-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Temmet, Naktamun's Will and Saheeli, Radiant Creator. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Temmet, Naktamun's Will",
+            "deck": "commander-conquest/aetherdrift-2025/eternal-might.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Saheeli, Radiant Creator",
+              "deck": "commander-conquest/aetherdrift-2025/living-energy.dck",
+              "bracket": 3,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "dsc-drc-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "dsc-drc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Saheeli, Radiant Creator, Valgavoth, Harrower of Souls & Zimone, Mystery Unraveler, and you. Win it and Duskmourn: House of Horror & Aetherdrift is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Saheeli, Radiant Creator",
+            "deck": "commander-conquest/aetherdrift-2025/living-energy.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Valgavoth, Harrower of Souls",
+              "deck": "commander-conquest/duskmourn-house-of-horror-2024/endless-punishment.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Zimone, Mystery Unraveler",
+              "deck": "commander-conquest/duskmourn-house-of-horror-2024/jump-scare.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "dsc-drc-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fic",
+      "name": "Final Fantasy",
+      "color": "WUBRG",
+      "text": "The 4 Commander decks of Final Fantasy. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "fic-1",
+          "type": "duel",
+          "name": "Counter Blitz",
+          "text": "Counter Blitz, from Final Fantasy, led by Tidus, Yuna's Guardian. One on one.",
+          "opponent": {
+            "name": "Tidus, Yuna's Guardian",
+            "deck": "commander-conquest/final-fantasy-2025/counter-blitz.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "fic-2",
+          "type": "duel",
+          "name": "Limit Break",
+          "text": "Limit Break, from Final Fantasy, led by Cloud, Ex-SOLDIER. One on one.",
+          "opponent": {
+            "name": "Cloud, Ex-SOLDIER",
+            "deck": "commander-conquest/final-fantasy-2025/limit-break.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "fic-3",
+          "type": "duel",
+          "name": "Revival Trance",
+          "text": "Revival Trance, from Final Fantasy, led by Terra, Herald of Hope. One on one.",
+          "opponent": {
+            "name": "Terra, Herald of Hope",
+            "deck": "commander-conquest/final-fantasy-2025/revival-trance.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "fic-4",
+          "type": "duel",
+          "name": "Scions & Spellcraft",
+          "text": "Scions & Spellcraft, from Final Fantasy, led by Y'shtola, Night's Blessed. One on one.",
+          "opponent": {
+            "name": "Y'shtola, Night's Blessed",
+            "deck": "commander-conquest/final-fantasy-2025/scions-spellcraft.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "fic-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Tidus, Yuna's Guardian and Cloud, Ex-SOLDIER. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Tidus, Yuna's Guardian",
+            "deck": "commander-conquest/final-fantasy-2025/counter-blitz.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Cloud, Ex-SOLDIER",
+              "deck": "commander-conquest/final-fantasy-2025/limit-break.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "fic-1",
+            "fic-2",
+            "fic-3",
+            "fic-4"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "fic-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Terra, Herald of Hope and Y'shtola, Night's Blessed. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Terra, Herald of Hope",
+            "deck": "commander-conquest/final-fantasy-2025/revival-trance.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Y'shtola, Night's Blessed",
+              "deck": "commander-conquest/final-fantasy-2025/scions-spellcraft.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "fic-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "fic-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Tidus, Yuna's Guardian, Cloud, Ex-SOLDIER & Terra, Herald of Hope, and you. Win it and Final Fantasy is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Tidus, Yuna's Guardian",
+            "deck": "commander-conquest/final-fantasy-2025/counter-blitz.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Cloud, Ex-SOLDIER",
+              "deck": "commander-conquest/final-fantasy-2025/limit-break.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Terra, Herald of Hope",
+              "deck": "commander-conquest/final-fantasy-2025/revival-trance.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "fic-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tdc",
+      "name": "Tarkir Dragonstorm",
+      "color": "WUBRG",
+      "text": "The 5 Commander decks of Tarkir Dragonstorm. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "tdc-1",
+          "type": "duel",
+          "name": "Abzan Armor",
+          "text": "Abzan Armor, from Tarkir Dragonstorm, led by Felothar the Steadfast. One on one.",
+          "opponent": {
+            "name": "Felothar the Steadfast",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/abzan-armor.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "tdc-2",
+          "type": "duel",
+          "name": "Jeskai Striker",
+          "text": "Jeskai Striker, from Tarkir Dragonstorm, led by Shiko and Narset, Unified. One on one.",
+          "opponent": {
+            "name": "Shiko and Narset, Unified",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/jeskai-striker.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "tdc-3",
+          "type": "duel",
+          "name": "Mardu Surge",
+          "text": "Mardu Surge, from Tarkir Dragonstorm, led by Zurgo Stormrender. One on one.",
+          "opponent": {
+            "name": "Zurgo Stormrender",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/mardu-surge.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "tdc-4",
+          "type": "duel",
+          "name": "Sultai Arisen",
+          "text": "Sultai Arisen, from Tarkir Dragonstorm, led by Teval, the Balanced Scale. One on one.",
+          "opponent": {
+            "name": "Teval, the Balanced Scale",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/sultai-arisen.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "tdc-5",
+          "type": "duel",
+          "name": "Temur Roar",
+          "text": "Temur Roar, from Tarkir Dragonstorm, led by Eshki, Temur's Roar. One on one.",
+          "opponent": {
+            "name": "Eshki, Temur's Roar",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/temur-roar.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "tdc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Felothar the Steadfast and Shiko and Narset, Unified. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Felothar the Steadfast",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/abzan-armor.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Shiko and Narset, Unified",
+              "deck": "commander-conquest/tarkir-dragonstorm-2025/jeskai-striker.dck",
+              "bracket": 2,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "tdc-1",
+            "tdc-2",
+            "tdc-3",
+            "tdc-4",
+            "tdc-5"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "tdc-pod-2",
+          "type": "duel",
+          "name": "Three again",
+          "text": "A three-player game against Zurgo Stormrender and Teval, the Balanced Scale. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Zurgo Stormrender",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/mardu-surge.dck",
+            "bracket": 2,
+            "skill": 5
+          },
+          "opponents": [
+            {
+              "name": "Teval, the Balanced Scale",
+              "deck": "commander-conquest/tarkir-dragonstorm-2025/sultai-arisen.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "tdc-pod-1"
+          ],
+          "reward": {
+            "coins": 50,
+            "xp": 250
+          }
+        },
+        {
+          "id": "tdc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Felothar the Steadfast, Shiko and Narset, Unified & Zurgo Stormrender, and you. Win it and Tarkir Dragonstorm is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Felothar the Steadfast",
+            "deck": "commander-conquest/tarkir-dragonstorm-2025/abzan-armor.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Shiko and Narset, Unified",
+              "deck": "commander-conquest/tarkir-dragonstorm-2025/jeskai-striker.dck",
+              "bracket": 2,
+              "skill": 5
+            },
+            {
+              "name": "Zurgo Stormrender",
+              "deck": "commander-conquest/tarkir-dragonstorm-2025/mardu-surge.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "tdc-pod-2"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "eoc-ecc",
+      "name": "Edge of Eternities & Lorwyn Eclipsed",
+      "color": "WUBRG",
+      "text": "The 3 Commander decks of Edge of Eternities & Lorwyn Eclipsed. Beat each one on its own, then at a pod, then all at once.",
+      "nodes": [
+        {
+          "id": "eoc-ecc-1",
+          "type": "duel",
+          "name": "Counter Intelligence",
+          "text": "Counter Intelligence, from Edge of Eternities, led by Inspirit, Flagship Vessel. One on one.",
+          "opponent": {
+            "name": "Inspirit, Flagship Vessel",
+            "deck": "commander-conquest/edge-of-eternities-2025/counter-intelligence.dck",
+            "bracket": 2,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "eoc-ecc-2",
+          "type": "duel",
+          "name": "World Shaper",
+          "text": "World Shaper, from Edge of Eternities, led by Hearthhull, the Worldseed. One on one.",
+          "opponent": {
+            "name": "Hearthhull, the Worldseed",
+            "deck": "commander-conquest/edge-of-eternities-2025/world-shaper.dck",
+            "bracket": 3,
+            "skill": 3
+          },
+          "requires": [],
+          "reward": {
+            "coins": 30,
+            "xp": 150
+          }
+        },
+        {
+          "id": "eoc-ecc-3",
+          "type": "duel",
+          "name": "Blight Curse",
+          "text": "Blight Curse, from Lorwyn Eclipsed, led by Auntie Ool, Cursewretch. One on one.",
+          "opponent": {
+            "name": "Auntie Ool, Cursewretch",
+            "deck": "commander-conquest/lorwyn-eclipsed-2026/blight-curse.dck",
+            "bracket": 3,
+            "skill": 4
+          },
+          "requires": [],
+          "reward": {
+            "coins": 35,
+            "xp": 175
+          }
+        },
+        {
+          "id": "eoc-ecc-pod-1",
+          "type": "duel",
+          "name": "Three at the table",
+          "text": "A three-player game against Inspirit, Flagship Vessel and Hearthhull, the Worldseed. Anyone may attack anyone.",
+          "gameType": "Commander Free For All",
+          "opponent": {
+            "name": "Inspirit, Flagship Vessel",
+            "deck": "commander-conquest/edge-of-eternities-2025/counter-intelligence.dck",
+            "bracket": 2,
+            "skill": 4
+          },
+          "opponents": [
+            {
+              "name": "Hearthhull, the Worldseed",
+              "deck": "commander-conquest/edge-of-eternities-2025/world-shaper.dck",
+              "bracket": 3,
+              "skill": 4
+            }
+          ],
+          "requires": [
+            "eoc-ecc-1",
+            "eoc-ecc-2",
+            "eoc-ecc-3"
+          ],
+          "reward": {
+            "coins": 45,
+            "xp": 225
+          }
+        },
+        {
+          "id": "eoc-ecc-final",
+          "type": "duel",
+          "name": "The conquest",
+          "boss": true,
+          "text": "Four at the table: Hearthhull, the Worldseed, Auntie Ool, Cursewretch & Inspirit, Flagship Vessel, and you. Win it and Edge of Eternities & Lorwyn Eclipsed is conquered.",
+          "gameType": "Commander Free For All",
+          "winsNeeded": 1,
+          "opponent": {
+            "name": "Hearthhull, the Worldseed",
+            "deck": "commander-conquest/edge-of-eternities-2025/world-shaper.dck",
+            "bracket": 3,
+            "skill": 6
+          },
+          "opponents": [
+            {
+              "name": "Auntie Ool, Cursewretch",
+              "deck": "commander-conquest/lorwyn-eclipsed-2026/blight-curse.dck",
+              "bracket": 3,
+              "skill": 5
+            },
+            {
+              "name": "Inspirit, Flagship Vessel",
+              "deck": "commander-conquest/edge-of-eternities-2025/counter-intelligence.dck",
+              "bracket": 2,
+              "skill": 5
+            }
+          ],
+          "requires": [
+            "eoc-ecc-pod-1"
+          ],
+          "reward": {
+            "coins": 120,
+            "xp": 400,
+            "packs": 2,
+            "wildcard": "rare"
+          }
+        }
+      ]
+    }
+  ]
+}

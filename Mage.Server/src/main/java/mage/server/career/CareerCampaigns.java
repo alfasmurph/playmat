@@ -48,6 +48,11 @@ public final class CareerCampaigns {
         public String deckType;
         /** the game type every duel is played as (else "Two Player Duel") */
         public String gameType;
+        /**
+         * the player may bring a deck of their own (of the campaign's deck type) instead of the chapter's; a chapter
+         * without a deck then needs one
+         */
+        public boolean ownDeck;
         /** "campaign@n" (n of its chapters' bosses beaten) or "campaign" (all of it), "a|b" for either; all must hold */
         public List<String> requires;
         public List<Chapter> chapters;
@@ -59,9 +64,11 @@ public final class CareerCampaigns {
         /** WUBRG letters */
         public String color;
         public String text;
-        /** the deck the player plays this chapter's duels with */
+        /** the deck the player plays this chapter's duels with; none when the player brings their own */
         public String deck;
         public String deckName;
+        /** the chapter deck's Commander bracket (1-5), when it's a Commander deck */
+        public int deckBracket;
         /** the shop set the chapter's boss opens */
         public String unlockSet;
         public List<Node> nodes;
@@ -110,6 +117,8 @@ public final class CareerCampaigns {
         public int skill;
         public String aiType;
         public CareerSetup.CareerTwists twists;
+        /** the deck's Commander bracket (1-5), when it's a Commander deck */
+        public int bracket;
     }
 
     /** The card shown before a duel: a title, a few sentences and up to four key cards. */
@@ -186,6 +195,8 @@ public final class CareerCampaigns {
         public String summary;
         public String deckType;
         public String gameType;
+        /** the player may play it with a deck of their own */
+        public boolean ownDeck;
         public List<String> requires;
         /** whether the campaign is open; a school opens by its requirements */
         public boolean open = true;
@@ -203,7 +214,10 @@ public final class CareerCampaigns {
         public String name;
         public String color;
         public String text;
+        /** the chapter's deck; none when the player brings their own */
         public String deckName;
+        /** the chapter deck's Commander bracket, 0 when unknown */
+        public int deckBracket;
         public String unlockSet;
         public boolean done;
         public List<CareerNode> nodes = new ArrayList<>();
@@ -223,6 +237,8 @@ public final class CareerCampaigns {
         public CareerReward reward;
         public List<CareerOption> options;
         public int skill;
+        /** the opponent deck's Commander bracket (the first seat's, in a pod), 0 when unknown */
+        public int bracket;
         public CareerSetup.CareerTwists twists;
         /** the card whose art is the opponent's portrait */
         public CareerContent.CareerCover cover;
@@ -250,6 +266,8 @@ public final class CareerCampaigns {
     public static class CareerSeat {
         public String name;
         public int skill;
+        /** the seat deck's Commander bracket, 0 when unknown */
+        public int bracket;
         public CareerContent.CareerCover cover;
     }
 
@@ -277,6 +295,8 @@ public final class CareerCampaigns {
         public int winsNeeded = 1;
         /** every AI seat, the first being {@link #opponentName}'s */
         public List<DuelSeat> seats = new ArrayList<>();
+        /** the player brought a deck of their own: the chapter's upgrade packs don't touch it */
+        public boolean ownDeck;
     }
 
     private static volatile CareerCampaigns instance;
@@ -553,6 +573,7 @@ public final class CareerCampaigns {
             view.summary = campaign.summary;
             view.deckType = campaign.deckType;
             view.gameType = campaign.gameType;
+            view.ownDeck = campaign.ownDeck;
             view.requires = campaign.requires;
             view.missing = missing(campaign, progress);
             view.open = view.missing.isEmpty();
@@ -564,6 +585,7 @@ public final class CareerCampaigns {
                 chapterView.color = chapter.color;
                 chapterView.text = chapter.text;
                 chapterView.deckName = chapter.deckName;
+                chapterView.deckBracket = chapter.deckBracket;
                 chapterView.unlockSet = chapter.unlockSet;
                 boolean all = true;
                 for (Node node : chapter.nodes) {
@@ -582,6 +604,7 @@ public final class CareerCampaigns {
                     nodeView.hint = node.hint;
                     if (node.opponent != null) {
                         nodeView.skill = node.opponent.skill;
+                        nodeView.bracket = node.opponent.bracket;
                         nodeView.twists = node.opponent.twists;
                         nodeView.cover = CareerContent.coverOf("campaigns/decks/" + node.opponent.deck);
                         nodeView.opponentName = node.opponent.name;
@@ -597,6 +620,7 @@ public final class CareerCampaigns {
                             CareerSeat seat = new CareerSeat();
                             seat.name = other.name;
                             seat.skill = other.skill;
+                            seat.bracket = other.bracket;
                             seat.cover = CareerContent.coverOf("campaigns/decks/" + other.deck);
                             nodeView.others.add(seat);
                         }
@@ -628,8 +652,17 @@ public final class CareerCampaigns {
 
     // ---- playing
 
-    /** a duel or trial the player may start now (open, or done and played again) */
+    /** a duel or trial the player may start now (open, or done and played again), with the chapter's deck */
     public DuelPlan plan(String user, String campaignId, String nodeId) throws SQLException, CareerService.CareerException, IOException {
+        return plan(user, campaignId, nodeId, null);
+    }
+
+    /**
+     * A duel or trial the player may start now; {@code own} is a deck of the player's own to play instead of the
+     * chapter's, where the campaign allows it (null for the chapter's). The table checks it against the deck type as
+     * the player sits down. Upgrade packs taken at the chapter's forks only ever change the chapter's deck.
+     */
+    public DuelPlan plan(String user, String campaignId, String nodeId, DeckCardLists own) throws SQLException, CareerService.CareerException, IOException {
         Campaign campaign = campaign(campaignId);
         Chapter chapter = chapterOf(campaign, nodeId);
         Node node = chapter == null ? null : node(chapter, nodeId);
@@ -665,7 +698,17 @@ public final class CareerCampaigns {
             plan.opponentName = node.opponent.name;
             plan.skill = node.opponent.skill;
             plan.aiType = node.opponent.aiType;
-            plan.playerDeck = upgraded(deck(deckOf(chapter, node)), chapter, done);
+            if (own != null) {
+                if (!campaign.ownDeck) {
+                    throw new CareerService.CareerException(campaign.name + " is played with its own decks.");
+                }
+                plan.playerDeck = own;
+                plan.ownDeck = true;
+            } else if (deckOf(chapter, node) == null) {
+                throw new CareerService.CareerException("Choose a deck of your own to play " + campaign.name + ".");
+            } else {
+                plan.playerDeck = upgraded(deck(deckOf(chapter, node)), chapter, done);
+            }
             plan.opponentDeck = deck(node.opponent.deck);
             plan.setup = CareerSetup.ofTwists(node.opponent.twists);
             plan.deckType = or(node.deckType, campaign.deckType, plan.deckType);
@@ -697,9 +740,12 @@ public final class CareerCampaigns {
         Campaign campaign = campaign(campaignId);
         Chapter chapter = chapterOf(campaign, nodeId);
         Node node = chapter == null ? null : node(chapter, nodeId);
-        String file = node == null ? null : deckOf(chapter, node);
-        if (file == null || !"duel".equals(node.type)) {
+        if (node == null || !"duel".equals(node.type)) {
             throw new CareerService.CareerException("There is no duel " + nodeId + " in " + campaign.name + ".");
+        }
+        String file = deckOf(chapter, node);
+        if (file == null) {
+            throw new CareerService.CareerException("You bring your own deck to " + node.name + ".");
         }
         return upgraded(deck(file), chapter, CareerStore.get().campaignNodes(user, campaignId));
     }
@@ -817,7 +863,8 @@ public final class CareerCampaigns {
             store.addWildcard(user, reward.wildcard, 1);
             mode.lines.add("A " + reward.wildcard + " wildcard.");
         }
-        if (reward.deckCards && chapter != null) {
+        // the chapter's deck, with the packs taken at its forks, even when the player played a deck of their own
+        if (reward.deckCards && chapter != null && chapter.deck != null) {
             try {
                 DeckCardLists deck = upgraded(deck(chapter.deck), chapter, store.campaignNodes(user, campaignIdOf(chapter)));
                 List<CareerCard> cards = new ArrayList<>();

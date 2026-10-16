@@ -21,3 +21,11 @@ describe('the card back setting', () => {
     expect((await freshSettings()).getState().settings.cardBack).toBe('orrery');
   });
 });
+
+describe('the preferences sent to the server', () => {
+  test('with auto-pay off, mana from a land tapped while paying still pays the cost', async () => {
+    const { toUserData, DEFAULT_SETTINGS } = await import('./settings');
+    expect(toUserData({ ...DEFAULT_SETTINGS, autoPayMana: false }).manaPoolAutomatic).toBe(true);
+    expect(toUserData({ ...DEFAULT_SETTINGS, autoPayMana: true }).manaPoolAutomatic).toBe(true);
+  });
+});

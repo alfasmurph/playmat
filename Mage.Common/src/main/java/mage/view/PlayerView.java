@@ -27,6 +27,7 @@ public class PlayerView implements Serializable {
     private final boolean controlled; // gui: player is current user
     private final boolean isHuman; // human or computer
     private final int life;
+    private final int turns;
     private final List<CounterView> counters;
     private final int wins;
     private final int winsNeeded;
@@ -66,6 +67,7 @@ public class PlayerView implements Serializable {
         this.controlled = player.getId().equals(createdForPlayerId);
         this.isHuman = player.isHuman();
         this.life = player.getLife();
+        this.turns = player.getTurns();
         this.wins = player.getMatchPlayer().getWins();
         this.winsNeeded = player.getMatchPlayer().getWinsNeeded();
         this.libraryCount = player.getLibrary().size();
@@ -187,6 +189,11 @@ public class PlayerView implements Serializable {
 
     public int getLife() {
         return this.life;
+    }
+
+    /** the turns this player has taken, extra turns included */
+    public int getTurns() {
+        return this.turns;
     }
 
     public List<CounterView> getCounters() {

@@ -174,7 +174,7 @@ export interface RpcMethods {
   careerSetProgress: { params: []; result: CareerSetProgress[] };
   careerCountAiGames: { params: [count: boolean]; result: CareerProfile };
   careerCampaigns: { params: []; result: CareerCampaign[] };
-  careerCampaignPlay: { params: [campaignId: string, nodeId: string]; result: CareerMatch };
+  careerCampaignPlay: { params: [campaignId: string, nodeId: string, deck?: DeckCardLists | null]; result: CareerMatch };
   careerCampaignDeck: { params: [campaignId: string, nodeId: string]; result: DeckCardLists };
   careerCampaignChoose: { params: [campaignId: string, nodeId: string, optionId: string]; result: CareerGameResult };
   careerPuzzles: { params: []; result: CareerPuzzle[] };

@@ -116,4 +116,19 @@ public class SavedGamesTest {
         assertThat(games.ended(crashed.gameId)).isTrue();
         assertThat(games.list("alice")).isEmpty();
     }
+
+    @Test
+    public void aGameAgainstTheAiOutlastsAPlayerWhoWentAway() throws Exception {
+        SavedGames games = new SavedGames(dir);
+        SavedGames.Info vsAi = info("alice", 20, 1000);
+        save(games, vsAi);
+        // a game with no save (against people) isn't kept: it ends as before
+        assertThat(games.keepForAway(java.util.UUID.randomUUID().toString())).isFalse();
+        assertThat(games.keepForAway(vsAi.gameId)).isTrue();
+        assertThat(games.isKept(vsAi.gameId)).isTrue();
+        // the quit that follows ends the game, but its save stays to play on from
+        assertThat(games.ended(vsAi.gameId)).isFalse();
+        assertThat(games.list("alice")).extracting(info -> info.gameId).containsExactly(vsAi.gameId);
+        assertThat(games.isKept(vsAi.gameId)).isFalse();
+    }
 }
