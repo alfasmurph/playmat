@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { estimateBracket, type Bracket, type BracketEstimate, type BracketLists } from '../../core/decks/bracket';
+import type { Bracket, BracketEstimate, BracketLists } from '../../core/decks/bracket';
 import { useDecks, type RosterDeck } from './decks';
 
 /**
@@ -42,6 +42,8 @@ export const useBrackets = create<BracketsState>((set, get) => ({
       return;
     }
     if (!get().lists) set({ lists });
+    // the rules load with the first deck they judge, not with the app
+    const { estimateBracket } = await import('../../core/decks/bracket');
     const found: Record<string, BracketEstimate> = {};
     for (const deck of wanted) {
       const list = await useDecks.getState().loadList(deck.id).catch(() => null);

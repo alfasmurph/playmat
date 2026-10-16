@@ -1,5 +1,5 @@
 import { ChevronRight, Crown, Download, PencilRuler, Search, SlidersHorizontal, Star, Trophy } from 'lucide-react';
-import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { findPrecon, rosterOf, sleeveFor, useDecks, type DeckKind, type RosterDeck } from '../stores/decks';
 import { activeKind, arrange, pickOn, shelfOf, SHELF_TOOLS_AFTER, useShelf, type ShelfSort } from '../stores/shelf';
@@ -16,10 +16,12 @@ import { useImportDrop, useImportPaste } from '../decks/import/useImportShortcut
 import { openImport, useImportSheet } from '../stores/importSheet';
 import { aiDeckName, describeAi } from './aiSetup';
 import { bracketOf, useBrackets } from '../stores/brackets';
-import { BracketPicker } from '../decks/BracketPicker';
 import { slotsFull, useGameSlots, useServerInfo } from '../queries';
 import { UnfinishedGames } from './UnfinishedGames';
 import styles from './HomeScreen.module.css';
+
+// the bracket menu is only for the deck in view: it loads with it
+const BracketPicker = lazy(() => import('../decks/BracketPicker').then((module) => ({ default: module.BracketPicker })));
 
 type Mode = 'ai' | 'practice' | 'friend';
 
@@ -351,7 +353,7 @@ export function HomeScreen() {
             )}
           </div>
           <p className={styles.deckNote}>{selected?.fromStarter ? t('decks.fromStarter', { count: selected.cardCount }) : selected?.note ?? ' '}</p>
-          {selectedBracket && selected && <BracketPicker deck={selected} info={selectedBracket} />}
+          {selectedBracket && selected && <Suspense fallback={null}><BracketPicker deck={selected} info={selectedBracket} /></Suspense>}
         </div>
 
         <div className={styles.playZone} role="group" aria-labelledby="play-zone-label">

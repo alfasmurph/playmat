@@ -65,8 +65,10 @@ import { gzipSync } from 'node:zlib';
 // app raised 2026-10-16 from 486 kB for the Commander precons browser (lazy), visual cues and the mana readout, Undo to
 // your last turn, the signed-in-elsewhere screen, saved games (Unfinished games on Play, Play on after a restart) and
 // the campaign forks' upgrade packs; measured 486.2 kB
+// entry raised 2026-10-16 from 66 kB for Commander brackets on Home: every deck box on the shelf shows its bracket, and
+// the store that estimates them (the rules and the selected deck's bracket menu are lazy); measured entry 66.7 kB
 const BUDGET_KB = {
-  entry: 66,
+  entry: 67,
   initial: 212,
   app: 495,
 };
