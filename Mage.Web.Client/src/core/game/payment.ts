@@ -1,4 +1,4 @@
-import type { ManaPoolView, ManaType, PlayerView } from '../../protocol/generated/views';
+import type { CardView, GameView, ManaPoolView, ManaType, PlayerView } from '../../protocol/generated/views';
 import type { PlayManaPrompt } from './prompt';
 import { stripMarkup } from './prompt';
 
@@ -46,4 +46,17 @@ export function parsePayment(prompt: Pick<PlayManaPrompt, 'message'>): Payment {
     sourceId: /object_id='([^']+)'/.exec(tail)?.[1] ?? null,
     sourceName: stripMarkup(tail).replace(/\s*\[[0-9a-f]{3}\]/gi, '').trim(),
   };
+}
+
+/**
+ * The spell a payment is for, from the stack (a spell is put there before its cost is paid, and the prompt names it
+ * by its card's id); null when the cost is an ability's or the spell isn't in the view.
+ */
+export function spellPaidFor(view: Pick<GameView, 'stack'> | null | undefined, sourceId: string | null): CardView | null {
+  if (!sourceId) return null;
+  for (const [id, card] of Object.entries(view?.stack ?? {})) {
+    if (card.isAbility || card.mageObjectType?.startsWith('ABILITY')) continue;
+    if (id === sourceId || card.id === sourceId || card.cardId === sourceId) return card;
+  }
+  return null;
 }

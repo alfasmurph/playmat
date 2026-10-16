@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { GameView } from '../../protocol/generated/views';
 import { deriveInteraction } from './interaction';
-import { parsePayment, poolId, poolTypes } from './payment';
+import { parsePayment, poolId, poolTypes, spellPaidFor } from './payment';
 import { parsePrompt } from './prompt';
 
 const PAY = "Pay {2}{G}<div style='font-size:11pt'><font color='#6fbb7c' object_id='elves-1'>Llanowar Elves</font> [e1f]</div>";
@@ -10,6 +10,16 @@ describe('paying a cost', () => {
   test('reads what is still owed and what it pays for', () => {
     expect(parsePayment({ message: PAY })).toEqual({ cost: '{2}{G}', sourceId: 'elves-1', sourceName: 'Llanowar Elves' });
     expect(parsePayment({ message: 'Pay {X}' })).toEqual({ cost: '{X}', sourceId: null, sourceName: '' });
+  });
+
+  test('finds the spell being paid for on the stack by its card id, but not an ability', () => {
+    const stack: GameView['stack'] = {
+      'spell-1': { id: 'spell-1', cardId: 'card-1', cardTypes: ['ARTIFACT'], mageObjectType: 'SPELL' },
+      'ability-1': { id: 'ability-1', cardId: 'vault-1', mageObjectType: 'ABILITY_STACK_FROM_CARD' },
+    };
+    expect(spellPaidFor({ stack }, 'card-1')?.cardTypes).toEqual(['ARTIFACT']);
+    expect(spellPaidFor({ stack }, 'vault-1')).toBeNull();
+    expect(spellPaidFor({ stack }, null)).toBeNull();
   });
 
   test('lists the kinds of floating mana', () => {
