@@ -1,50 +1,24 @@
-import {
-  AlertTriangle, ArrowDownToLine, Ban, BellRing, BookOpen, Dot, Flag, Flame, Heart, HeartCrack, MessageCircle,
-  MessageSquare, Mountain, Shield, Shuffle, Skull, Sparkles, Swords, Trophy, Archive, Zap, X, type LucideIcon,
-} from 'lucide-react';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { MessageSquare, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DelayedRelay } from '../../core/game/broadcastDelay';
 import type { GameNotice } from '../../core/game/gameSession';
 import {
-  buildLogRows, cardInk, collectCards, EMOTES, findLogCard, isEmote, noticeEntry, parseChatMessage, presenceChange,
-  type LogEntry, type LogIcon, type LogSegment,
+  buildLogRows, collectCards, EMOTES, isEmote, noticeEntry, parseChatMessage, presenceChange, type LogEntry,
 } from '../../core/game/gameLog';
 import type { CardView, ChatMessage, GameView } from '../../protocol/generated/views';
 import { api, events } from '../connection';
 import { useSession } from '../stores/session';
 import { useSocial } from '../stores/social';
 import { IconButton } from '../ui/Button';
-import { PromptText } from '../ui/PromptText';
 import { useEmotes } from './emotes';
+import { gameLogOf, MAX_LOG_LINES, useGameLog } from './gameLogStore';
+import { LogRows } from './LogLine';
 import { useMatchUi } from './matchUi';
 import { usePresence } from './presence';
 import styles from './GameLog.module.css';
 
-const MAX_LINES = 300;
-
-const ICONS: Record<LogIcon, LucideIcon> = {
-  turn: Dot,
-  cast: Sparkles,
-  land: Mountain,
-  ability: Zap,
-  trigger: BellRing,
-  attack: Swords,
-  block: Shield,
-  damage: Flame,
-  lifeGain: Heart,
-  lifeLoss: HeartCrack,
-  draw: BookOpen,
-  discard: ArrowDownToLine,
-  counter: Ban,
-  destroy: Skull,
-  exile: Archive,
-  mulligan: Shuffle,
-  win: Trophy,
-  lose: Flag,
-  chat: MessageCircle,
-  error: AlertTriangle,
-  info: Dot,
-};
+/** parsed lines get keys that stay unique across rejoins, as the log outlives the drawer */
+let chatSeq = 0;
 
 /** Game chat and the game's running log, joined once per game (not for replays, which bring their own log). */
 function useGameChat(gameId: string, view: GameView | null, live: boolean, delayMs: number) {
@@ -54,7 +28,7 @@ function useGameChat(gameId: string, view: GameView | null, live: boolean, delay
     latest.current = view;
   }, [view]);
   const [chatId, setChatId] = useState<string | null>(null);
-  const [entries, setEntries] = useState<LogEntry[]>([]);
+  const entries = useGameLog(gameLogOf(gameId));
   const [unread, setUnread] = useState(0);
   // watching with a broadcast delay: the log keeps pace with the delayed board, or it would give the game away
   const [relay] = useState(() => new DelayedRelay<() => void>((show) => show()));
@@ -83,10 +57,9 @@ function useGameChat(gameId: string, view: GameView | null, live: boolean, delay
 
   useEffect(() => {
     if (!chatId) return;
-    let seq = 0;
     return events.on('CHATMESSAGE', (message: ChatMessage, event) => {
       if (event.objectId !== chatId) return;
-      const parsed = parseChatMessage(message, `c${seq++}`);
+      const parsed = parseChatMessage(message, `c${chatSeq++}`);
       if (!parsed) return;
       const me = useSession.getState().userName;
       const fromOther = parsed.tone !== 'chat' || parsed.who !== me;
@@ -95,7 +68,7 @@ function useGameChat(gameId: string, view: GameView | null, live: boolean, delay
         const entry = parsed.turn !== null && parsed.turn === current?.turn && current.activePlayerName
           ? { ...parsed, turnOwner: current.activePlayerName }
           : parsed;
-        setEntries((current) => [...current, entry].slice(-MAX_LINES));
+        useGameLog.getState().add(gameId, entry);
         const presence = message.messageType === 'STATUS' ? presenceChange(entry.text) : null;
         if (presence) usePresence.getState().set(presence.name, presence.online);
         if (entry.tone !== 'chat') return;
@@ -130,7 +103,7 @@ function replayEntries(log: readonly ChatMessage[]): LogEntry[] {
     }
     if (entry) entries.push(entry);
   }
-  return entries.slice(-MAX_LINES);
+  return entries.slice(-MAX_LOG_LINES);
 }
 
 export function GameLog({ gameId, notices, canChat, view, replayLog, delayMs = 0 }: {
@@ -198,16 +171,7 @@ export function GameLog({ gameId, notices, canChat, view, replayLog, delayMs = 0
               <IconButton label="Close log" icon={<X size={20} />} onClick={() => toggle(false)} />
             </div>
           </header>
-          <ol ref={list} className={styles.lines}>
-            {rows.length === 0 && <li className={styles.empty}>The game's events will show here.</li>}
-            {rows.map((row) => (row.kind === 'separator'
-              ? (
-                <li key={row.key} className={[styles.separator, row.mine ? styles.separatorMine : ''].join(' ')}>
-                  <span>Turn {row.turn}{row.player ? ` · ${row.mine ? 'You' : row.player}` : ''}</span>
-                </li>
-              )
-              : <LogLine key={row.key} entry={row.entry} cards={cards} />))}
-          </ol>
+          <LogRows rows={rows} cards={cards} listRef={list} className={styles.lines} />
           {canChat && (
             <footer className={styles.foot}>
               <div className={styles.emotes}>
@@ -238,45 +202,5 @@ export function GameLog({ gameId, notices, canChat, view, replayLog, delayMs = 0
         </aside>
       )}
     </>
-  );
-}
-
-const LogLine = memo(function LogLine({ entry, cards }: { entry: LogEntry; cards: { current: Map<string, CardView> } }) {
-  const Icon = ICONS[entry.icon];
-  return (
-    <li className={[styles.line, styles[entry.tone]].join(' ')}>
-      <Icon className={[styles.icon, styles[`icon_${entry.icon}`] ?? ''].join(' ')} size={16} aria-hidden="true" />
-      <span className={styles.body}>
-        {entry.who && <b>{entry.who}: </b>}
-        {entry.segments.map((segment, index) => <Segment key={index} segment={segment} cards={cards} />)}
-      </span>
-    </li>
-  );
-});
-
-function Segment({ segment, cards }: { segment: LogSegment; cards: { current: Map<string, CardView> } }) {
-  const setZoom = useMatchUi((state) => state.setZoom);
-  const openDetail = useMatchUi((state) => state.openDetail);
-  if (segment.kind === 'text') return <PromptText text={segment.text} />;
-  if (segment.kind === 'player') return <span className={styles.player}>{segment.name}</span>;
-  // looked up when used: the card may have moved since the line was written
-  const find = () => findLogCard(cards.current, segment);
-  return (
-    <button
-      type="button"
-      className={[styles.card, styles[`ink_${cardInk(segment.color) ?? 'none'}`] ?? ''].join(' ')}
-      onPointerEnter={(event) => {
-        const card = find();
-        if (card) setZoom({ card, x: event.clientX, y: event.clientY, anchor: event.currentTarget });
-      }}
-      onPointerLeave={() => setZoom(null)}
-      onClick={() => {
-        const card = find();
-        if (card?.id) openDetail({ id: card.id, card });
-      }}
-      aria-label={`${segment.name}, show card`}
-    >
-      {segment.name}
-    </button>
   );
 }

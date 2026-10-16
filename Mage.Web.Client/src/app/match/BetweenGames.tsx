@@ -7,10 +7,12 @@ import styles from './BetweenGames.module.css';
  * The pause between games of a match: the result, the score, and the next game on its way. The server starts the
  * next game (or sideboarding) by itself, and the client follows; leaving here gives up the rest of the match.
  */
-export function BetweenGames({ progress, won, onLeave, leaveLabel = 'Leave match', concedes = true }: {
+export function BetweenGames({ progress, won, reason = null, onLeave, leaveLabel = 'Leave match', concedes = true }: {
   progress: MatchProgress;
   /** null for a draw */
   won: boolean | null;
+  /** why the game ended, when the log said */
+  reason?: string | null;
   onLeave(): void;
   leaveLabel?: string;
   /** leaving gives up the rest of the match (not in events, where the event decides) */
@@ -23,6 +25,7 @@ export function BetweenGames({ progress, won, onLeave, leaveLabel = 'Leave match
       <div className={styles.center}>
         <p className={styles.kicker}>Game {progress.gameNumber} of {progress.bestOf}</p>
         <h2 id="between-games-title" className={[styles.title, won ? styles.won : ''].join(' ')}>{result}</h2>
+        {reason && <p className={styles.reason}>{reason}</p>}
         <p className={styles.score} aria-label={`Match score ${progress.wins} to ${progress.losses}`}>
           <span>{progress.wins}</span>
           <span className={styles.dash}>–</span>

@@ -13,6 +13,7 @@ import { askedAboutCards } from '../../core/game/reveals';
 import { delayLabel, isBroadcastDelay } from '../../core/game/broadcastDelay';
 import { spectatorHand } from '../../core/game/spectatorHand';
 import { matchProgress } from '../../core/game/matchProgress';
+import { endReason } from '../../core/game/gameLog';
 import { manaReadout, type ManaReadout } from '../../core/game/manaReadout';
 import { previousTurnsBack } from '../../core/game/rollback';
 import { pregameChoice } from '../../core/game/pregame';
@@ -46,12 +47,15 @@ import { damageCorner, useDamageSplit } from './useDamageSplit';
 import { EmoteBubbles } from './EmoteBubbles';
 import { useOpponentVoice } from './useOpponentVoice';
 import { setCardMotion, useFlipOrigin } from './flip';
+import { endReasonText } from './endReasonText';
 import { GameLog } from './GameLog';
+import { gameLogOf, useGameLog } from './gameLogStore';
 import { Hand } from './Hand';
 import './matchMessages';
 import { useMatchUi } from './matchUi';
 import { PortraitContext, usePortraits } from './portraits';
 import { useGameCues } from './useGameCues';
+import { useGameRecord } from './useGameRecord';
 import { useWarmImages } from './useWarmImages';
 import { useAutoPay } from './useAutoPay';
 import { useAutoPass } from './useAutoPass';
@@ -129,7 +133,7 @@ function useSleeves() {
     const chosen = chosenSleeve(sleeves, deckId);
     const mine = chosen ?? 'var(--sleeve-default)';
     const theirs = SLEEVE_COLORS.find((color) => color !== chosen && color !== SLEEVE_COLORS[0]) ?? SLEEVE_COLORS[2];
-    return { mine, theirs, chosen, cover: deck?.cover ?? null };
+    return { mine, theirs, chosen, cover: deck?.cover ?? null, deckName: deck?.name ?? null };
   }, [deckId, sleeves, saved, starters, shared, precons]);
 }
 
@@ -301,6 +305,19 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
   const deckId = usePlay((play) => play.deckId);
   // players see who is watching them too
   const watchers = useWatchers(state.gameId, mode === 'play' && !state.gameOver);
+  // the end screen says what happened from the log the drawer kept, and the game is remembered with it
+  const logEntries = useGameLog(gameLogOf(state.gameId));
+  const myName = board.me?.player.name ?? null;
+  const opponentNames = useMemo(() => board.opponents.map((opponent) => opponent.player.name ?? '').filter(Boolean), [board.opponents]);
+  useGameRecord(state, { myName, opponents: opponentNames, deckName: sleeves.deckName, vsAi });
+  const betweenReason = useMemo(() => {
+    const reason = state.gameOver ? endReason(logEntries.filter((entry) => entry.tone === 'game'), myName) : null;
+    return reason ? endReasonText(t, reason) : null;
+  }, [state.gameOver, logEntries, myName, t]);
+  const watchReplay = useCallback(() => {
+    useGames.getState().close(state.gameId);
+    navigate(`/replay/${encodeURIComponent(state.gameId)}`);
+  }, [navigate, state.gameId]);
   // between games of a match the server deals the next game by itself: show the score, not a way out
   const betweenGames = useMemo(() => {
     const progress = mode === 'play' ? matchProgress(state.endInfo) : null;
@@ -649,6 +666,7 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 <BetweenGames
                   progress={betweenGames}
                   won={state.endInfo?.won ? true : /\bdraw\b/i.test(state.endInfo?.gameInfo ?? '') ? null : false}
+                  reason={betweenReason}
                   onLeave={leave}
                   leaveLabel={eventId ? 'Back to the event' : 'Leave match'}
                   concedes={!eventId}
@@ -658,7 +676,9 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                 <GameOverOverlay
                   message={state.gameOver}
                   endInfo={state.endInfo}
-                  myName={board.me?.player.name ?? null}
+                  myName={myName}
+                  entries={logEntries}
+                  onWatchReplay={mode === 'play' && !onLeave ? watchReplay : undefined}
                   onLeave={leave}
                   leaveLabel={eventId ? 'Back to the event' : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
                   // a rematch is only dealt against the computer; people go back to Tables

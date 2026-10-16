@@ -3,6 +3,7 @@ import type { Command, Interaction } from '../../core/game/interaction';
 import type { Prompt } from '../../core/game/prompt';
 import { abilityChooserSource, stripMarkup } from '../../core/game/prompt';
 import { isStackAbility } from '../../core/game/cards';
+import { buildLogRows, endReason, type LogEntry } from '../../core/game/gameLog';
 import { matchProgress } from '../../core/game/matchProgress';
 import { gameResult, matchResult } from '../../core/game/matchResult';
 import type { CardView, GameEndView } from '../../protocol/generated/views';
@@ -12,6 +13,8 @@ import { AbilityCard } from '../ui/AbilityCard';
 import { CardFace } from '../ui/CardFace';
 import { PromptText } from '../ui/PromptText';
 import { cleanText } from '../ui/text';
+import { endReasonText } from './endReasonText';
+import { LogRows } from './LogLine';
 import './matchMessages';
 import { useMatchUi } from './matchUi';
 import styles from './Overlays.module.css';
@@ -438,7 +441,7 @@ const END_GAME: Record<string, MessageKey> = { won: 'match.end.wonGame', lost: '
 const END_MATCH: Record<string, MessageKey> = { won: 'match.end.wonMatch', lost: 'match.end.lostMatch', draw: 'match.end.drawMatch' };
 
 /** The end of a game: who won, the match score, and where to go next. */
-export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain, saved = null }: {
+export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain, onWatchReplay, entries, saved = null }: {
   message: string;
   endInfo: GameEndView | null;
   /** the player's name, to tell from the server's message who won when there is no end-of-game info */
@@ -446,6 +449,10 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
   onLeave(): void;
   leaveLabel?: string;
   onPlayAgain?(): void;
+  /** the server kept this game's replay (every game with a person in it): offered beside the buttons */
+  onWatchReplay?(): void;
+  /** the game's log, to say why it ended and what happened */
+  entries?: readonly LogEntry[];
   /** the game didn't end: it was lost with the server and is saved at a turn's start, to play on from there */
   saved?: { turn: number; playOn(): void } | null;
 }) {
@@ -459,6 +466,9 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
     : result ? t(END_GAME[result]) : stripMarkup(endInfo?.gameInfo) || message;
   // why a match ended early ("Bob has quit the match.")
   const extra = stripMarkup(endInfo?.additionalInfo);
+  // only game lines: what a player types in chat doesn't say how the game ended
+  const happened = useMemo(() => (entries ?? []).filter((entry) => entry.tone === 'game'), [entries]);
+  const reason = useMemo(() => endReason(happened, myName), [happened, myName]);
   if (saved) {
     return (
       <div className={[styles.scrim, styles.endScrim].join(' ')} role="dialog" aria-modal="true" aria-labelledby="game-over-title">
@@ -480,13 +490,31 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
           {t(result ? END_TITLE[result] : 'match.end.over')}
         </h2>
         <p className={styles.subtitle}>{line}</p>
+        {reason && <p className={styles.reason}>{endReasonText(t, reason)}</p>}
         {extra && <p className={styles.score}>{extra}</p>}
         <div className={styles.buttons}>
           <Button variant="print" size="lg" onClick={onLeave}>{leaveLabel}</Button>
-          {onPlayAgain && <Button variant="decision" size="xl" onClick={onPlayAgain}>Play again</Button>}
+          {onWatchReplay && <Button variant="print" size="lg" onClick={onWatchReplay}>{t('match.end.watchReplay')}</Button>}
+          {onPlayAgain && <Button variant="decision" size="xl" onClick={onPlayAgain}>{t('match.end.playAgain')}</Button>}
         </div>
+        {happened.length > 0 && <WhatHappened entries={happened} myName={myName} reasonKey={reason?.key ?? null} />}
       </div>
     </div>
+  );
+}
+
+/** The game's log under the result, open at its end where the reason sits. */
+function WhatHappened({ entries, myName, reasonKey }: { entries: readonly LogEntry[]; myName: string | null; reasonKey: string | null }) {
+  const t = useT();
+  const list = useRef<HTMLOListElement>(null);
+  const rows = useMemo(() => buildLogRows(entries, myName), [entries, myName]);
+  const toEnd = () => list.current?.scrollTo({ top: list.current.scrollHeight });
+  useEffect(toEnd, [rows.length]);
+  return (
+    <details className={styles.happened} open onToggle={toEnd}>
+      <summary>{t('match.end.whatHappened')}</summary>
+      <LogRows rows={rows} highlight={reasonKey} listRef={list} className={styles.happenedLog} label={t('match.end.whatHappened')} />
+    </details>
   );
 }
 

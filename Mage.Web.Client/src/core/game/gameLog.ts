@@ -217,7 +217,7 @@ export function classifyLog(text: string): LogIcon {
   return 'info';
 }
 
-function parseTurnStart(text: string): LogEntry['turnStart'] {
+export function parseTurnStart(text: string): LogEntry['turnStart'] {
   // "TURN 5 for Bob (20 - 18)", "TURN 6 (extra) for Bob (20 - 18)"
   const match = /^TURN (\d+)( \(extra\))? for (.+?)(?: \([\d\s-]+\))?$/.exec(text);
   return match ? { turn: Number(match[1]), player: match[3], extra: !!match[2] } : null;
@@ -335,4 +335,76 @@ export function presenceChange(text: string): { name: string; online: boolean } 
   if (offline) return { name: offline[1], online: false };
   const online = /^(.+?) has joined$/.exec(text);
   return online ? { name: online[1], online: true } : null;
+}
+
+/** Why a player's game ended, from the engine's own log lines. */
+export type EndReasonKind = 'life' | 'library' | 'poison' | 'conceded' | 'timeout' | 'card' | 'lost' | 'drawLoop';
+
+export interface EndReason {
+  kind: EndReasonKind;
+  /** the player it happened to (empty for a drawn game) */
+  player: string;
+  /** that player is the viewer */
+  mine: boolean;
+  /** the log line it was read from, to point at it */
+  key: string;
+  /** 'card': the card whose "or you lose the game" made them lose (a Pact unpaid at upkeep) */
+  card?: string;
+}
+
+/** The engine's phrasings (GameImpl.checkStateBasedActions, concede; PlayerImpl timeouts and lostForced). */
+const LOSS_REASONS: [RegExp, EndReasonKind][] = [
+  [/^(.+?) lost the game due to having 0 or less life\b/i, 'life'],
+  [/^(.+?) lost the game due (?:to )?drawing from an empty library\b/i, 'library'],
+  [/^(.+?) lost the game due to having \d+ or more poison counters?\b/i, 'poison'],
+  [/^(.+?) has conceded\b/i, 'conceded'],
+  [/^(.+?) has run out of time\b/i, 'timeout'],
+];
+const GENERIC_LOSS = /^(.+?) has lost the game\b/i;
+/** a trigger that makes its controller lose when they can't pay, e.g. a Pact at the next upkeep */
+const CARD_LOSS = /^(.+?) - Ability triggers: (.+?)(?: \[[0-9a-z]+\])? - .*\byou lose the game\b/i;
+const DRAW_LOOP = /^(.+?) has confirmed that the game is a draw because of infinite looping\b/i;
+/** the engine adds its generic "has lost the game" line right after the specific one; how far back to look for it */
+const SPECIFIC_WITHIN = 8;
+
+function matchLoss(text: string): { kind: EndReasonKind; player: string } | null {
+  for (const [pattern, kind] of LOSS_REASONS) {
+    const player = pattern.exec(text)?.[1];
+    if (player) return { kind, player };
+  }
+  return null;
+}
+
+/**
+ * Why the game ended, from the last line that says a player lost (or that the game is a drawn loop). Only game
+ * lines count: a player typing "X has conceded." in chat changes nothing. Null when the log doesn't say.
+ */
+export function endReason(entries: readonly LogEntry[], myName: string | null): EndReason | null {
+  const mine = (player: string) => !!myName && player.toLowerCase() === myName.toLowerCase();
+  for (let index = entries.length - 1; index >= 0; index--) {
+    const entry = entries[index];
+    if (entry.tone !== 'game') continue;
+    const loss = matchLoss(entry.text);
+    if (loss) return { ...loss, mine: mine(loss.player), key: entry.key };
+    const loop = DRAW_LOOP.exec(entry.text);
+    if (loop) return { kind: 'drawLoop', player: '', mine: false, key: entry.key };
+    const generic = GENERIC_LOSS.exec(entry.text)?.[1];
+    if (!generic) continue;
+    // the specific line comes just before the generic one
+    for (let back = index - 1; back >= Math.max(0, index - SPECIFIC_WITHIN); back--) {
+      const earlier = entries[back];
+      const specific = earlier.tone === 'game' ? matchLoss(earlier.text) : null;
+      if (specific && specific.player.toLowerCase() === generic.toLowerCase()) return { ...specific, mine: mine(specific.player), key: earlier.key };
+      const card = earlier.tone === 'game' ? CARD_LOSS.exec(earlier.text) : null;
+      if (card && card[1].toLowerCase() === generic.toLowerCase()) return { kind: 'card', player: card[1], card: card[2], mine: mine(card[1]), key: earlier.key };
+    }
+    return { kind: 'lost', player: generic, mine: mine(generic), key: entry.key };
+  }
+  return null;
+}
+
+/** A saved log line (plain text and the icon it had) as an entry again, so it shows like a live one. */
+export function savedEntry(key: string, text: string, icon: LogIcon): LogEntry {
+  const turnStart = parseTurnStart(text);
+  return { key, at: 0, tone: 'game', who: null, segments: [{ kind: 'text', text }], text, icon, turn: turnStart?.turn ?? null, turnStart };
 }

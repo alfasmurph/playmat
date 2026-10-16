@@ -99,3 +99,9 @@
     animation: none;
   }
 }
+
+/* why the game ended, in the log's words */
+.reason {
+  font-size: 24px;
+  color: var(--ink-soft);
+}

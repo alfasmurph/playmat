@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import type { CardView, GameView } from '../../protocol/generated/views';
+import type { CardView, ChatMessage, GameView } from '../../protocol/generated/views';
 import {
   buildLogRows,
   presenceChange,
   cardInk,
   classifyLog,
   collectCards,
+  endReason,
   findLogCard,
   isEmote,
   parseChatMessage,
   parseLogHtml,
   parseTurnInfo,
+  savedEntry,
   type LogSegment,
 } from './gameLog';
 
@@ -176,5 +178,83 @@ describe('presenceChange', () => {
   it('ignores other lines', () => {
     expect(presenceChange('bashbob casts Lightning Bolt')).toBeNull();
     expect(presenceChange('Bob has joined the game as a watcher')).toBeNull();
+  });
+});
+
+describe('endReason', () => {
+  const line = (text: string, key = text, tone: 'game' | 'chat' = 'game') => ({ ...savedEntry(key, text, 'info'), tone });
+  const player = (name: string) => `<font color='#20B2AA'>${name}</font>`;
+  const fromEngine = (html: string, key: string) => {
+    const entry = parseChatMessage({ message: html, messageType: 'GAME', time: 1 } as ChatMessage, key);
+    if (!entry) throw new Error('no entry');
+    return entry;
+  };
+
+  it('reads an empty library as the opponent drawing from it', () => {
+    const entries = [line('TURN 7 for Najeela'), line('Najeela lost the game due drawing from an empty library', 'k1'), line('Najeela has lost the game', 'k2'), line('Bob has won the game')];
+    expect(endReason(entries, 'Bob')).toEqual({ kind: 'library', player: 'Najeela', mine: false, key: 'k1' });
+  });
+
+  it('reads the same line as mine when I am the one who drew', () => {
+    const entries = [line('Bob lost the game due drawing from an empty library', 'k1')];
+    expect(endReason(entries, 'Bob')).toMatchObject({ kind: 'library', player: 'Bob', mine: true });
+    expect(endReason(entries, 'bob')).toMatchObject({ mine: true });
+  });
+
+  it.each([
+    ['Najeela lost the game due to having 0 or less life', 'life'],
+    ['Najeela lost the game due to having 10 or more poison counters', 'poison'],
+    ['Najeela has conceded.', 'conceded'],
+    ['Najeela has run out of time, losing the match.', 'timeout'],
+  ])('reads "%s"', (text, kind) => {
+    expect(endReason([line(text)], 'Bob')).toMatchObject({ kind, player: 'Najeela', mine: false });
+  });
+
+  it('names the card when a pay-or-lose trigger made them lose (a Pact unpaid at upkeep)', () => {
+    const entries = [
+      fromEngine("<font color='#20B2AA'>Najeela</font> - Ability triggers: <font color='#87CEFA' object_id='373e0afa-070f-4852-baf2-84928b87cebf'>Pact of Negation</font> [373] - <br>At the beginning of your next upkeep, pay {3}{U}{U}. If you don't, you lose the game.", 'k1'),
+      fromEngine("<font color='#20B2AA'>Najeela</font> has lost the game", 'k2'),
+    ];
+    expect(endReason(entries, 'stag')).toEqual({ kind: 'card', player: 'Najeela', card: 'Pact of Negation', mine: false, key: 'k1' });
+  });
+
+  it('falls back to the generic loss line when no cause came before it', () => {
+    expect(endReason([line('Najeela has lost the game', 'k1')], 'Bob')).toEqual({ kind: 'lost', player: 'Najeela', mine: false, key: 'k1' });
+  });
+
+  it('prefers the specific line over the generic one for the same player only', () => {
+    const entries = [line('Najeela lost the game due to having 0 or less life', 'life'), line('Bob has lost the game', 'bob')];
+    expect(endReason(entries, 'Bob')).toMatchObject({ kind: 'lost', player: 'Bob', key: 'bob' });
+  });
+
+  it('reads an infinite-loop draw', () => {
+    expect(endReason([line('Bob has confirmed that the game is a draw because of infinite looping.')], 'Bob')).toMatchObject({ kind: 'drawLoop', player: '' });
+  });
+
+  it('takes the last loss when several players lost', () => {
+    const entries = [line('Ana lost the game due to having 0 or less life'), line('Cy has conceded.', 'last')];
+    expect(endReason(entries, null)).toMatchObject({ kind: 'conceded', player: 'Cy', mine: false, key: 'last' });
+  });
+
+  it('ignores what players type in chat', () => {
+    expect(endReason([line('Bob has conceded.', 'chat', 'chat')], 'Ann')).toBeNull();
+  });
+
+  it('is null when the log says nothing about it', () => {
+    expect(endReason([], 'Bob')).toBeNull();
+    expect(endReason([line('TURN 3 for Bob'), line('Bob draws a card')], 'Bob')).toBeNull();
+  });
+
+  it('reads lines as the engine sends them, with player markup', () => {
+    const entries = [fromEngine(`${player('Najeela')} lost the game due drawing from an empty library`, 'e1')];
+    expect(endReason(entries, 'Bob')).toMatchObject({ kind: 'library', player: 'Najeela' });
+  });
+});
+
+describe('savedEntry', () => {
+  it('makes a turn line a separator again', () => {
+    const rows = buildLogRows([savedEntry('a', 'TURN 5 for Bob (20 - 18)', 'turn'), savedEntry('b', 'Bob plays Mountain', 'land')], 'Bob');
+    expect(rows.map((row) => row.kind)).toEqual(['separator', 'entry']);
+    expect(rows[0]).toMatchObject({ turn: 5, player: 'Bob', mine: true });
   });
 });

@@ -8,10 +8,13 @@ export function readJson<T>(key: string, fallback: T): T {
   }
 }
 
-export function writeJson<T>(key: string, value: T): void {
+/** Saves a value; false when storage refused it (blocked, or full), for callers that can save less. */
+export function writeJson<T>(key: string, value: T): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
     // storage unavailable: settings last for this visit only
+    return false;
   }
 }

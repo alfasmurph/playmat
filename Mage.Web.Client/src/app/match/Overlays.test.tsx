@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import type { Command, Interaction } from '../../core/game/interaction';
+import { savedEntry } from '../../core/game/gameLog';
 import { parsePrompt } from '../../core/game/prompt';
 import type { CardView, GameClientMessage } from '../../protocol/generated/views';
 import { CardPicker, ChoicePanel, GameOverOverlay, HandList, MulliganOverlay, StartingPlayerOverlay, ZoneViewer } from './Overlays';
@@ -308,6 +309,57 @@ describe('GameOverOverlay', () => {
     render(<GameOverOverlay message="Player bashalice is the winner" endInfo={null} myName="bashbob" onLeave={vi.fn()} />);
     expect(screen.getByRole('heading', { name: 'Defeat' })).toBeTruthy();
     expect(screen.getByText('You lost the game.')).toBeTruthy();
+  });
+
+  describe('what happened', () => {
+    const log = [
+      savedEntry('a', 'TURN 7 for Najeela', 'turn'),
+      savedEntry('b', 'Najeela draws a card', 'draw'),
+      savedEntry('c', 'Najeela lost the game due drawing from an empty library', 'lose'),
+      savedEntry('d', 'Najeela has lost the game', 'lose'),
+    ];
+    const endInfo = { won: true, wins: 1, loses: 0, winsNeeded: 1, gameInfo: 'You won the game.' };
+
+    test('says why the game ended and lists the log with that line marked', () => {
+      render(<GameOverOverlay message="You won the game" endInfo={endInfo} myName="me" onLeave={vi.fn()} entries={log} />);
+      expect(screen.getByText('Najeela drew from an empty library.', { selector: 'p' })).toBeTruthy();
+      const list = screen.getByRole('list', { name: 'What happened' });
+      const items = within(list).getAllByRole('listitem');
+      expect(items.map((item) => item.textContent)).toEqual([
+        'Turn 7 · Najeela',
+        'Najeela draws a card',
+        'Najeela lost the game due drawing from an empty library',
+        'Najeela has lost the game',
+      ]);
+      // the line the reason was read from stands out; keyboard users can scroll the list
+      expect(items[2].className).not.toBe(items[3].className);
+      expect(list.getAttribute('tabindex')).toBe('0');
+    });
+
+    test('the log folds away behind its heading', () => {
+      render(<GameOverOverlay message="You won the game" endInfo={endInfo} myName="me" onLeave={vi.fn()} entries={log} />);
+      const details = screen.getByText('What happened', { selector: 'summary' }).closest('details');
+      expect(details?.open).toBe(true);
+    });
+
+    test('offers the replay when there is one', () => {
+      const onWatchReplay = vi.fn();
+      render(<GameOverOverlay message="You won the game" endInfo={endInfo} myName="me" onLeave={vi.fn()} entries={log} onWatchReplay={onWatchReplay} />);
+      fireEvent.click(button('Watch replay'));
+      expect(onWatchReplay).toHaveBeenCalledTimes(1);
+    });
+
+    test('without a log or a replay, shows neither', () => {
+      render(<GameOverOverlay message="You won the game" endInfo={endInfo} myName="me" onLeave={vi.fn()} />);
+      expect(screen.queryByText('What happened')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Watch replay' })).toBeNull();
+    });
+
+    test('a loss of mine reads in the second person', () => {
+      const mine = [savedEntry('a', 'me lost the game due to having 0 or less life', 'lose')];
+      render(<GameOverOverlay message="You lost the game" endInfo={null} myName="me" onLeave={vi.fn()} entries={mine} />);
+      expect(screen.getByText('Your life total reached 0.', { selector: 'p' })).toBeTruthy();
+    });
   });
 });
 

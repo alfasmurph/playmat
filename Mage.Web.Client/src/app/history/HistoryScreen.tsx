@@ -7,9 +7,11 @@ import { formatRules } from '../../core/decks/formats';
 import { matchPlayers, matchWinner } from '../../core/history/matchRecord';
 import { describeResult, replayWinner } from '../../core/replay/timeline';
 import { api } from '../connection';
+import { useGameRecords } from '../stores/gameRecords';
 import { useSession } from '../stores/session';
 import { Button } from '../ui/Button';
 import { Zone } from '../ui/Zone';
+import { RecentGames } from './RecentGames';
 import styles from './HistoryScreen.module.css';
 
 function when(time: number | undefined): string {
@@ -24,6 +26,7 @@ export function HistoryScreen() {
   const me = useSession((state) => state.userName);
   const connected = useSession((state) => state.connection === 'open');
   const [mineOnly, setMineOnly] = useState(true);
+  const recent = useGameRecords((state) => state.records);
 
   const matches = useQuery({
     queryKey: ['finishedMatches', roomId],
@@ -59,6 +62,7 @@ export function HistoryScreen() {
           <button type="button" role="radio" aria-checked={!mineOnly} onClick={() => setMineOnly(false)}>Everyone</button>
         </div>
       </header>
+      <RecentGames records={recent} me={me} replayIds={replayIds} onReplay={(gameId) => navigate(`/replay/${gameId}`)} />
       <div className={styles.columns}>
         <Zone label="Finished matches" className={styles.zone}>
           {matches.isPending && <p className={styles.empty}>Loading…</p>}

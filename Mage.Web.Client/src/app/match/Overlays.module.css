@@ -438,3 +438,48 @@
 :global([data-touch]) .option {
   min-height: var(--touch-target, 0px);
 }
+
+/* why the game ended: the log's own words, under the result */
+.reason {
+  max-width: 900px;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+/* the log of the game, open under the buttons */
+.happened {
+  width: min(900px, 92%);
+  margin-top: 6px;
+  border-radius: 12px;
+  background: rgb(var(--mat-rgb) / 0.7);
+  box-shadow: inset 0 0 0 1.5px var(--ink-faint);
+  text-align: left;
+}
+
+.happened summary {
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-family: var(--font-print);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-print);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.happened summary:hover {
+  color: var(--ink-strong);
+}
+
+.happenedLog {
+  max-height: 300px;
+  padding: 4px 16px 14px;
+  overflow-y: auto;
+  font-size: 19px;
+  line-height: 1.4;
+  /* the table blocks panning; a list that scrolls takes the finger back */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
