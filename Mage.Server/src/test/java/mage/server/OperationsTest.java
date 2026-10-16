@@ -28,6 +28,13 @@ public class OperationsTest {
     }
 
     @Test
+    void theRestartNoticeReadsItsQuery() {
+        assertThat(Health.query("minutes=2&message=Back%20in%20a%20minute%21")).containsEntry("minutes", "2").containsEntry("message", "Back in a minute!");
+        assertThat(Health.query(null)).isEmpty();
+        assertThat(Health.query("bad=%zz&ok=1")).containsOnlyKeys("ok");
+    }
+
+    @Test
     void backupStatusSaysWhatIsWrong() throws Exception {
         long now = TimeUnit.DAYS.toMillis(100);
         Path file = dir.resolve("backup-status.json");

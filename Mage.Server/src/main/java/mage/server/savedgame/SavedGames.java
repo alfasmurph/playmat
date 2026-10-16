@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -48,6 +50,8 @@ public final class SavedGames {
     private static volatile SavedGames instance;
 
     private final Path dir;
+    /** games stopped on a server error since the server started (see keepAfterCrash) */
+    private final Set<String> crashed = ConcurrentHashMap.newKeySet();
 
     /** What a saved game is, without loading it: shown in the list of unfinished games. */
     public static class Info implements Serializable {
@@ -190,6 +194,19 @@ public final class SavedGames {
         } catch (ClassNotFoundException | ClassCastException e) {
             throw new IOException("That saved game can't be read by this version of the server.", e);
         }
+    }
+
+    /**
+     * A game stopped on a server error (out of memory, a bug): its last save is all that's left of it, so it stays
+     * when the game is ended, to play on from the start of that turn.
+     */
+    public void keepAfterCrash(String gameId) {
+        crashed.add(gameId);
+    }
+
+    /** A game ended: its save goes, unless it ended because the server failed it (keepAfterCrash). */
+    public boolean ended(String gameId) {
+        return !crashed.remove(gameId) && remove(gameId);
     }
 
     /** Forgets a game (it ended, or the player threw it away). */

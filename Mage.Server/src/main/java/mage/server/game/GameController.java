@@ -1,5 +1,7 @@
 package mage.server.game;
 
+import mage.server.savedgame.SavedGames;
+
 import mage.MageException;
 import mage.abilities.Ability;
 import mage.cards.Card;
@@ -1133,6 +1135,8 @@ public class GameController implements GameCallback {
     public void endGameWithError(Throwable error) {
         try {
             // must inform users about critical error and finish a game, a match decides by itself what's next
+            // its last save (the start of this turn) stays, to play on from after a restart
+            SavedGames.get().keepAfterCrash(game.getId().toString());
 
             // send error
             error("Game stopped due server error and can't be continued", error, game);

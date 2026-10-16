@@ -895,8 +895,8 @@ public class TableController {
         managerFactory.gameManager().removeGame(game.getId());
         ServerMessagesUtil.instance.incGamesEnded();
         payCareer(game);
-        // a game that ended needs no save to come back to
-        SavedGames.get().remove(game.getId().toString());
+        // a game that ended needs no save to come back to (one the server failed keeps it)
+        SavedGames.get().ended(game.getId().toString());
 
         try {
             if (!match.hasEnded()) {

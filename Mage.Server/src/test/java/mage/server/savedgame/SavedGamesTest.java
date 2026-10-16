@@ -99,4 +99,21 @@ public class SavedGamesTest {
         assertThat(games.list("alice")).isEmpty();
         assertThat(games.remove("not-a-game")).isFalse();
     }
+
+    @Test
+    void aGameTheServerFailedKeepsItsSave() {
+        SavedGames games = new SavedGames(dir);
+        SavedGames.Info crashed = info("alice", 20, 1000);
+        SavedGames.Info finished = info("alice", 9, 2000);
+        save(games, crashed);
+        save(games, finished);
+        games.keepAfterCrash(crashed.gameId);
+        assertThat(games.ended(crashed.gameId)).isFalse();
+        assertThat(games.ended(finished.gameId)).isTrue();
+        assertThat(games.list("alice")).extracting(info -> info.gameId).containsExactly(crashed.gameId);
+        // played on and ended for real: then it goes
+        save(games, crashed);
+        assertThat(games.ended(crashed.gameId)).isTrue();
+        assertThat(games.list("alice")).isEmpty();
+    }
 }

@@ -7,9 +7,11 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +30,10 @@ public final class Health {
     public static final String PORT_PROP = "xmage.healthPort";
     public static final String COMMIT_PROP = "xmage.commit";
     static final int DEFAULT_PORT = 17173;
+
+    /** the header a /maintenance request must carry (see start) */
+    static final String LOCAL_HEADER = "X-Playmat-Local";
+    static final String RESTART_MESSAGE = "Playmat restarts for an update. Games against the AI are saved: pick them up under Unfinished games.";
 
     private static volatile String commit;
 
@@ -101,12 +107,63 @@ public final class Health {
                     out.write(body);
                 }
             });
+            // the server's own machine announces a restart before it happens (see Maintenance): players get the warnings
+            // and the banner. Loopback only, like /healthz; a web page can't send a request with this header (it would
+            // need a CORS preflight, which isn't answered), and one that says where it comes from is turned away.
+            server.createContext("/maintenance", exchange -> {
+                int status;
+                String answer;
+                if (!"POST".equals(exchange.getRequestMethod()) || exchange.getRequestHeaders().containsKey("Origin")
+                        || !"1".equals(exchange.getRequestHeaders().getFirst(LOCAL_HEADER))) {
+                    status = 403;
+                    answer = "{\"status\":\"refused\"}";
+                } else {
+                    Map<String, String> query = query(exchange.getRequestURI().getRawQuery());
+                    long minutes = Math.max(0, Math.min(120, parseLong(query.get("minutes"), 1)));
+                    String message = query.getOrDefault("message", RESTART_MESSAGE);
+                    Maintenance.MaintenancePlan plan = Maintenance.get().announce(managers, minutes, message, false, "the server's owner");
+                    status = 200;
+                    answer = gson.toJson(plan);
+                }
+                byte[] body = answer.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(status, body.length);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(body);
+                }
+            });
             server.setExecutor(null);
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop(0), "Health shutdown"));
             logger.info("Health check on http://127.0.0.1:" + port + "/healthz");
         } catch (IOException e) {
             logger.warn("Health check endpoint not started on port " + port + ": " + e.getMessage());
+        }
+    }
+
+    static Map<String, String> query(String raw) {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (raw == null || raw.isEmpty()) {
+            return values;
+        }
+        for (String pair : raw.split("&")) {
+            int at = pair.indexOf('=');
+            String key = at < 0 ? pair : pair.substring(0, at);
+            String value = at < 0 ? "" : pair.substring(at + 1);
+            try {
+                values.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8"));
+            } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+                // a malformed pair is left out
+            }
+        }
+        return values;
+    }
+
+    private static long parseLong(String text, long fallback) {
+        try {
+            return text == null ? fallback : Long.parseLong(text.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
         }
     }
 }
