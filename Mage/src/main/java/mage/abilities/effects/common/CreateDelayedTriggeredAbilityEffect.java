@@ -39,6 +39,10 @@ public class CreateDelayedTriggeredAbilityEffect extends OneShotEffect {
         this.rulePrefix = effect.rulePrefix;
     }
 
+    public DelayedTriggeredAbility getDelayedAbility() {
+        return ability;
+    }
+
     @Override
     public CreateDelayedTriggeredAbilityEffect copy() {
         return new CreateDelayedTriggeredAbilityEffect(this);

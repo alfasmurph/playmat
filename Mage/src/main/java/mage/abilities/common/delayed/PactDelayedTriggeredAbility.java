@@ -3,6 +3,7 @@ package mage.abilities.common.delayed;
 import mage.abilities.Ability;
 import mage.abilities.DelayedTriggeredAbility;
 import mage.abilities.costs.mana.ManaCosts;
+import mage.abilities.effects.Effect;
 import mage.abilities.effects.OneShotEffect;
 import mage.constants.Outcome;
 import mage.game.Game;
@@ -37,6 +38,18 @@ public class PactDelayedTriggeredAbility extends DelayedTriggeredAbility {
     public boolean checkTrigger(GameEvent event, Game game) {
         return game.isActivePlayer(this.getControllerId());
     }
+
+    /**
+     * Mana that must be paid at the next upkeep to not lose the game (AI uses it to check if a pact can be paid)
+     */
+    public ManaCosts getPactCost() {
+        for (Effect effect : getEffects()) {
+            if (effect instanceof PactEffect) {
+                return ((PactEffect) effect).getCost();
+            }
+        }
+        return null;
+    }
 }
 
 class PactEffect extends OneShotEffect {
@@ -52,6 +65,10 @@ class PactEffect extends OneShotEffect {
     protected PactEffect(final PactEffect effect) {
         super(effect);
         this.cost = effect.cost.copy();
+    }
+
+    public ManaCosts getCost() {
+        return cost;
     }
 
     @Override

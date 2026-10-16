@@ -48,6 +48,11 @@ public final class GameStateEvaluator2 {
             }
         }
 
+        // a pact that can't be paid loses the game at the next upkeep, which is beyond the search depth
+        if (PactPaymentChecker.hasUnpayablePact(playerId, game)) {
+            return new PlayerEvaluateScore(playerId, LOSE_GAME_SCORE);
+        }
+
         int playerLifeScore = 0;
         int opponentLifeScore = 0;
         if (player.getLife() <= 0) { // we don't want a tie
