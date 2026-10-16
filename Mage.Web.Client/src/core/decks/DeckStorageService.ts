@@ -8,6 +8,8 @@ export interface DeckSummary {
     description?: string;
     format?: string;
     updatedAt: number;
+    /** the bracket its owner gave it */
+    bracket?: number;
     cardCount?: number;
     sideboardCount?: number;
     coverCard?: {
@@ -53,6 +55,8 @@ interface DeckMeta {
     description?: string;
     format?: string;
     updatedAt: number;
+    /** the bracket its owner gave it */
+    bracket?: number;
     cardCount?: number;
     sideboardCount?: number;
     coverCard?: {
@@ -128,6 +132,7 @@ export class LocalDeckStorage implements IDeckStorage {
             colors: deck.colors,
             source: deck.source,
             shared: deck.shared || undefined,
+            bracket: deck.bracket,
         };
         const newMeta = meta.filter(m => m.id !== deck.id);
         newMeta.push(newMetaItem);
@@ -227,6 +232,7 @@ export class LocalDeckStorage implements IDeckStorage {
             colors: m.colors,
             source: m.source,
             shared: m.shared,
+            bracket: m.bracket,
         })).sort((a, b) => b.updatedAt - a.updatedAt);
     }
 

@@ -10,10 +10,13 @@
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// Node runs the app's TypeScript rules as they are: one estimate for precons and players' decks
+import { estimateBracket } from '../src/core/decks/bracket.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(here, '../../Mage.Client/release/sample-decks/Commander');
 const OUT = join(here, '../public/precons');
+const BRACKET_LISTS = JSON.parse(readFileSync(join(here, '../public/data/brackets.json'), 'utf8'));
 
 /**
  * The smallest changes that make a precon legal today, each said on the deck: a card banned since is swapped for a
@@ -82,6 +85,7 @@ for (const set of readdirSync(SOURCE, { withFileTypes: true }).filter((entry) =>
     let main = 0;
     const commanders = [];
     const unknown = [];
+    const cardNames = [];
     for (const raw of text.split(/\r?\n/)) {
       const line = raw.trim();
       if (!line || line.startsWith('NAME:') || line.startsWith('LAYOUT')) continue;
@@ -93,6 +97,7 @@ for (const set of readdirSync(SOURCE, { withFileTypes: true }).filter((entry) =>
       const [, sideboard, amount, setCode, number, cardName] = parsed;
       const known = printings.has(`${setCode}:${number.replace(/\*$/, '')}`.toLowerCase()) || names.has(cardName.toLowerCase());
       if (!known) unknown.push(cardName);
+      cardNames.push(cardName);
       if (sideboard) commanders.push({ name: cardName, setCode, cardNumber: number.replace(/\*$/, '') });
       else main += Number(amount);
     }
@@ -106,6 +111,7 @@ for (const set of readdirSync(SOURCE, { withFileTypes: true }).filter((entry) =>
     writeFileSync(join(OUT, slug(set), out), `NAME:${name}\n${text.replace(/^NAME:.*\r?\n/m, '')}`);
     decks.push({
       file: `${slug(set)}/${out}`, name, cards: total, commanders: commanders.map((commander) => commander.name), cover: commanders[0],
+      bracket: estimateBracket(cardNames, BRACKET_LISTS).bracket,
       ...(fix ? { changes: [fix.note] } : {}),
     });
   }

@@ -6,6 +6,7 @@ import { PRECON_PREFIX, preconToRoster, useDecks, type PreconSet } from '../stor
 import { useShelf } from '../stores/shelf';
 import { notify } from '../stores/toasts';
 import { Button } from '../ui/Button';
+import type { Bracket } from '../../core/decks/bracket';
 import { DeckBox } from '../ui/DeckBox';
 import { Dialog } from '../ui/Dialog';
 import styles from './PreconsDialog.module.css';
@@ -82,7 +83,7 @@ export function PreconsDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                   const entry = { ...preconToRoster(preconSet, deck), note: deck.commanders.join(' & ') };
                   return (
                     <div key={id} role="listitem">
-                      <DeckBox deck={entry} sleeve="var(--sleeve-default)" selected={chosen === id} onSelect={() => setChosen(id)} onActivate={() => setChosen(id)} />
+                      <DeckBox deck={entry} sleeve="var(--sleeve-default)" bracket={deck.bracket ? { bracket: deck.bracket as Bracket, set: false } : null} selected={chosen === id} onSelect={() => setChosen(id)} onActivate={() => setChosen(id)} />
                       {chosen === id && deck.changes?.map((change) => <p key={change} className={styles.change}>{change}</p>)}
                     </div>
                   );

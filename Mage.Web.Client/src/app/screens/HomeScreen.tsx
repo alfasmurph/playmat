@@ -1,7 +1,7 @@
 import { ChevronRight, Crown, Download, PencilRuler, Search, SlidersHorizontal, Star, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { rosterOf, sleeveFor, useDecks, type DeckKind, type RosterDeck } from '../stores/decks';
+import { findPrecon, rosterOf, sleeveFor, useDecks, type DeckKind, type RosterDeck } from '../stores/decks';
 import { activeKind, arrange, pickOn, shelfOf, SHELF_TOOLS_AFTER, useShelf, type ShelfSort } from '../stores/shelf';
 import { useCoach } from '../stores/coach';
 import { usePlay, type AiOptions } from '../stores/play';
@@ -15,6 +15,8 @@ import { AiSettingsDialog } from './AiSettingsDialog';
 import { useImportDrop, useImportPaste } from '../decks/import/useImportShortcuts';
 import { openImport, useImportSheet } from '../stores/importSheet';
 import { aiDeckName, describeAi } from './aiSetup';
+import { bracketOf, useBrackets } from '../stores/brackets';
+import { BracketPicker } from '../decks/BracketPicker';
 import { slotsFull, useGameSlots, useServerInfo } from '../queries';
 import { UnfinishedGames } from './UnfinishedGames';
 import styles from './HomeScreen.module.css';
@@ -134,6 +136,12 @@ export function HomeScreen() {
   const counts = useMemo(() => ({ commander: shelfOf(roster, 'commander').length, standard: shelfOf(roster, 'standard').length }), [roster]);
   const tools = shelf.length > SHELF_TOOLS_AFTER;
   const listed = useMemo(() => arrange(shelf, tools ? query : '', shelfState.sort), [shelf, tools, query, shelfState.sort]);
+  // Commander decks' brackets, worked out from their cards as the shelf shows them
+  const estimates = useBrackets((state) => state.estimates);
+  useEffect(() => {
+    void useBrackets.getState().ensure(shelf);
+  }, [shelf]);
+  const bracketFor = (deck: RosterDeck) => bracketOf(deck, estimates, deck.precon ? findPrecon(decks.precons, deck.id)?.deck.bracket : undefined);
   const selected = pickOn(shelf, shelfState.picks[kind], decks.selectedId);
   const sleeve = sleeveFor(decks.sleeves, selected);
   const commanders = useCommanders(selected);
@@ -201,6 +209,7 @@ export function HomeScreen() {
     }
   }
 
+  const selectedBracket = selected ? bracketFor(selected) : null;
   // the AI seats' decks, by name (one of the other kind plays a random starter)
   const aiDeckNames = play.aiOptions.opponentDeckIds.map((id) => {
     const onShelf = roster.find((deck) => deck.id === id);
@@ -283,6 +292,7 @@ export function HomeScreen() {
                     deck={deck}
                     sleeve={sleeveFor(decks.sleeves, deck)}
                     selected={deck.id === selected?.id}
+                    bracket={bracketFor(deck)}
                     onSelect={() => choose(deck)}
                     onActivate={() => {
                       choose(deck);
@@ -341,6 +351,7 @@ export function HomeScreen() {
             )}
           </div>
           <p className={styles.deckNote}>{selected?.fromStarter ? t('decks.fromStarter', { count: selected.cardCount }) : selected?.note ?? ' '}</p>
+          {selectedBracket && selected && <BracketPicker deck={selected} info={selectedBracket} />}
         </div>
 
         <div className={styles.playZone} role="group" aria-labelledby="play-zone-label">

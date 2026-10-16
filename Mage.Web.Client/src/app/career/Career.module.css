@@ -108,6 +108,27 @@
   display: inline-flex;
 }
 
+.skip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid rgb(var(--brass-rgb) / 0.45);
+  border-radius: var(--radius-zone);
+  background: rgb(var(--brass-rgb) / 0.08);
+}
+
+.skip p {
+  margin: var(--space-2) 0 0;
+}
+
+.skipTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
 .starters {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));

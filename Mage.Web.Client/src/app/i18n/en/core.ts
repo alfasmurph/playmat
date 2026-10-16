@@ -173,6 +173,12 @@ export default {
   'ai.pod.four': '4 players',
   'ai.pod.detail': 'With a commander deck, play a free-for-all against two or three AIs. Other decks always play one on one.',
   // the one-line summary on Play: "Normal AI · random starter deck · best of one"
+  'bracket.label': 'Commander bracket',
+  'bracket.estimate': 'Estimated: {bracket} · {name}',
+  'bracket.estimateUnknown': 'Estimated',
+  'bracket.option': '{bracket} · {name}',
+  'bracket.plain': 'No Game Changers, land denial or extra turns',
+  'bracket.saveFailed': "The bracket wasn't saved",
   'ai.summary.pod': '{count} {difficulty} AIs',
   'ai.summary.randomDecks': 'random starter decks',
   'ai.summary.random': 'random',

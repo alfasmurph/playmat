@@ -16,7 +16,7 @@ import {
   importCareer, rerollQuest, setCountAiGames, startCareer, useCareerAchievements, useCareerLevels, useCareerLook, useCareerOpponents,
   useCareerQuests, useCareerShop, useCareerStarters, useCareerState, useCareerUnlocks, useCareerWeekly,
 } from './careerData';
-import { useCampaigns, useChallenge, useGauntlet, useLimited, usePuzzles } from './careerModesData';
+import { MODE_PATHS, useCampaigns, useChallenge, useGauntlet, useLimited, usePuzzles } from './careerModesData';
 import { focusNode, graduated, schoolsOf, storiesOf } from './careerModesModel';
 import { useRotatingSceneArt } from './careerScene';
 import { playCareerCue } from './careerSound';
@@ -91,13 +91,32 @@ function Intro() {
 }
 
 
-function StarterPicker() {
+/** the Commander's Road campaign's id */
+const ROAD = 'commander-road';
+
+export function StarterPicker() {
   const t = useT();
   const starters = useCareerStarters(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // the pick is for good, so it's confirmed first
   const [chosen, setChosen] = useState<CareerStarter | null>(null);
+
+  // the Commander's Road brings its own decks: the Career opens with the first starter, unasked, and goes straight there
+  const navigate = useNavigate();
+  async function skipToRoad() {
+    const first = starters.data?.[0];
+    if (!first?.id) return;
+    setBusy(ROAD);
+    setError(null);
+    try {
+      await startCareer(first.id, first.name ?? '');
+      navigate(`${MODE_PATHS.campaign}?story=${ROAD}`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+      setBusy(null);
+    }
+  }
 
   async function pick(starter: CareerStarter) {
     setBusy(starter.id ?? null);
@@ -120,10 +139,16 @@ function StarterPicker() {
         <div>
           <h1 className={styles.pageTitle}>{t('career.starter.title')}</h1>
           <p className={styles.lead}>{t('career.starter.lead', { coins: 100 })}</p>
-          <p className={styles.lead}>{t('career.starter.campaigns')}</p>
         </div>
         <ImportButton />
       </header>
+      <section className={styles.skip} aria-labelledby="road-skip">
+        <div>
+          <h2 id="road-skip" className={styles.skipTitle}>{t('career.starter.road')}</h2>
+          <p className={styles.note}>{t('career.starter.road.detail')}</p>
+        </div>
+        <Button variant="decision" busy={busy === ROAD} disabled={busy !== null || !starters.data?.length} onClick={() => void skipToRoad()}>{t('career.starter.road.go')}</Button>
+      </section>
       {error && <p className={styles.error} role="alert">{error}</p>}
       {starters.isPending && <p className={styles.note}>{t('career.loading')}</p>}
       {starters.data?.length === 0 && <p className={styles.note}>{t('career.starter.none')}</p>}

@@ -1,0 +1,21 @@
+.badge {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  min-width: 26px;
+  height: 18px;
+  padding: 0 4px;
+  border: 1px dashed rgb(var(--brass-rgb) / 0.8);
+  border-radius: var(--radius-chip);
+  font-family: var(--font-print);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--brass-ink);
+}
+
+.set {
+  border-style: solid;
+  background: rgb(var(--brass-rgb) / 0.22);
+}

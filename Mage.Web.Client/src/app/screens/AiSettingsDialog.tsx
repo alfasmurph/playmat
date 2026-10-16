@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { PRECON_PREFIX, rosterOf, useDecks, type DeckKind } from '../stores/decks';
+import { PRECON_PREFIX, rosterOf, useDecks, type DeckKind, type RosterDeck } from '../stores/decks';
+import { bracketOf, useBrackets } from '../stores/brackets';
 import { useT } from '../i18n';
 import { DEFAULT_AI_OPTIONS, usePlay } from '../stores/play';
 import { AI_TYPES, DIFFICULTIES, difficultyOf, offeredAiTypes } from './aiSetup';
@@ -48,6 +49,15 @@ export function AiSettingsDialog({ open, onOpenChange, kind }: { open: boolean; 
   useEffect(() => {
     if (open && kind === 'commander') void useDecks.getState().loadPrecons();
   }, [open, kind]);
+  // each deck's bracket beside its name, to set up an even table
+  const estimates = useBrackets((state) => state.estimates);
+  useEffect(() => {
+    if (open && kind === 'commander') void useBrackets.getState().ensure(roster);
+  }, [open, kind, roster]);
+  const labelOf = (deck: RosterDeck) => {
+    const bracket = bracketOf(deck, estimates);
+    return bracket ? `${deck.name} · B${bracket.bracket}` : deck.name;
+  };
   // one deck per AI seat; a deck of the other kind is never the AI's in this kind of game: it gets a random starter
   const seats = kind === 'commander' ? options.opponents : 1;
   const known = (id: string | null | undefined) => !!id && (roster.some((deck) => deck.id === id) || precons.some((set) => set.decks.some((deck) => PRECON_PREFIX + deck.file === id)));
@@ -111,17 +121,17 @@ export function AiSettingsDialog({ open, onOpenChange, kind }: { open: boolean; 
               <option value="">{t('ai.deck.random')}</option>
               {starters.length > 0 && (
                 <optgroup label={t(kind === 'commander' ? 'ai.deck.commanderStarters' : 'ai.deck.starters')}>
-                  {starters.map((deck) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
+                  {starters.map((deck) => <option key={deck.id} value={deck.id}>{labelOf(deck)}</option>)}
                 </optgroup>
               )}
               {mine.length > 0 && (
                 <optgroup label={t('ai.deck.yours')}>
-                  {mine.map((deck) => <option key={deck.id} value={deck.id}>{deck.name}</option>)}
+                  {mine.map((deck) => <option key={deck.id} value={deck.id}>{labelOf(deck)}</option>)}
                 </optgroup>
               )}
               {precons.map((set) => (
                 <optgroup key={set.id} label={t('ai.deck.precons', { set: set.name, year: set.year })}>
-                  {set.decks.map((deck) => <option key={deck.file} value={PRECON_PREFIX + deck.file}>{deck.name}</option>)}
+                  {set.decks.map((deck) => <option key={deck.file} value={PRECON_PREFIX + deck.file}>{deck.bracket ? `${deck.name} · B${deck.bracket}` : deck.name}</option>)}
                 </optgroup>
               ))}
             </select>

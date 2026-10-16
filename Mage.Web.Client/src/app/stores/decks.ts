@@ -27,6 +27,8 @@ export interface PreconDeck {
   cover: { name: string; setCode: string; cardNumber: string };
   /** what was changed to make it legal today (a card banned since swapped for a basic land) */
   changes?: string[];
+  /** its estimated Commander bracket (see core/decks/bracket) */
+  bracket?: number;
 }
 
 /** A product line's precons, as released (the index is oldest first). */
@@ -60,6 +62,8 @@ export interface RosterDeck {
   source?: DeckImportSource;
   /** your deck, shared with everyone on the server */
   shared?: boolean;
+  /** the Commander bracket its owner gave it (without one, its estimate shows) */
+  bracket?: number;
   /** someone else's deck they share with everyone: who; it plays and copies, but only they change it */
   sharedBy?: string;
   /** pinned to the top of the shelf (this browser's choice) */
@@ -109,6 +113,7 @@ function summaryToRoster(deck: DeckSummary): RosterDeck {
     starter: null,
     source: deck.source,
     shared: deck.shared,
+    bracket: deck.bracket,
   };
 }
 
@@ -133,6 +138,7 @@ function sharedToRoster(entry: SharedDeckEntry): { roster: RosterDeck; list: Dec
     sideboardCount: sideboard.reduce((sum, card) => sum + (card.amount ?? 0), 0),
     coverCard: deck.coverCard,
     colors: deck.colors,
+    bracket: deck.bracket,
   });
   return {
     roster: { ...summary, note: `Shared by ${by} · ${summary.note}`, shared: true, sharedBy: by },
@@ -193,6 +199,8 @@ export interface DeckLibraryState {
   /** a saved copy of a deck under a new name ("Burn (copy)"), with the same sleeve; selected, returns its id */
   duplicate(id: string): Promise<string>;
   rename(id: string, name: string): Promise<void>;
+  /** gives a saved deck its Commander bracket (1-5), or null to show its estimate again */
+  setBracket(id: string, bracket: number | null): Promise<void>;
   /** the full deck list of a roster deck (saved or starter) without saving anything */
   loadList(id: string): Promise<DeckCardLists>;
 }
@@ -368,6 +376,13 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     if (sleeve) get().setSleeve(newId, sleeve);
     get().select(newId);
     return newId;
+  },
+
+  async setBracket(id, bracket) {
+    const deck = await deckStorage.loadDeck(id);
+    if (!deck) throw new Error('That deck is no longer saved.');
+    await deckStorage.saveDeck({ ...deck, id, bracket: bracket ?? undefined });
+    await get().refresh();
   },
 
   async rename(id, name) {
