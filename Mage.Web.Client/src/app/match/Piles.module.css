@@ -155,13 +155,14 @@ button.chip:disabled {
 
 /* visual cues (a setting): a commander or top card you can cast pulses faintly green */
 :global([data-cues]) .castable .stack {
-  box-shadow: 0 0 0 2px rgb(var(--cue-rgb) / 0.8), 0 0 14px 3px rgb(var(--cue-rgb) / 0.35);
+  /* strong enough to find at a glance across the table: a solid ring and a wide halo, breathing between the two */
+  box-shadow: 0 0 0 3px rgb(var(--cue-rgb)), 0 0 24px 6px rgb(var(--cue-rgb) / 0.6);
   animation: cue-pulse 2.4s ease-in-out infinite;
 }
 
 @keyframes cue-pulse {
   50% {
-    box-shadow: 0 0 0 2px rgb(var(--cue-rgb) / 0.45), 0 0 6px 1px rgb(var(--cue-rgb) / 0.15);
+    box-shadow: 0 0 0 3px rgb(var(--cue-rgb) / 0.8), 0 0 14px 3px rgb(var(--cue-rgb) / 0.35);
   }
 }
 

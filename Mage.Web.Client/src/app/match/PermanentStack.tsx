@@ -289,6 +289,16 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
       )}
       {!isCreature && loyalty && <span className={[styles.pt, styles.loyalty].join(' ')}>{loyalty}</span>}
       {count !== undefined && <span className={styles.count}>×{count}</span>}
+      {/* visual cues: how much mana this source makes right now (Sol Ring 2, an imprinted Ugin's Labyrinth 2) */}
+      {!tapped && (permanent.manaAmount ?? 0) > 0 && (
+        <span
+          className={[styles.manaWorth, (permanent.manaAmount ?? 0) > 1 ? styles.manaWorthMore : ''].join(' ')}
+          title={`Makes ${permanent.manaAmount} mana`}
+          aria-hidden="true"
+        >
+          {permanent.manaAmount}
+        </span>
+      )}
     </div>
   );
 }

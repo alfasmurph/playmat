@@ -68,8 +68,14 @@ enum UginsLabyrinthCondition implements Condition {
 
     @Override
     public boolean apply(Game game, Ability source) {
+        // working out what the player can cast reads the mana ability without activating it: then it has no stack
+        // moment, and the exile zone is the one of the Labyrinth as it is now (where its imprint put the card)
+        int zcc = source.getStackMomentSourceZCC();
+        if (zcc == 0) {
+            zcc = game.getState().getZoneChangeCounter(source.getSourceId());
+        }
         return Optional
-                .ofNullable(CardUtil.getExileZoneId(game, source))
+                .ofNullable(CardUtil.getExileZoneId(game, source.getSourceId(), zcc))
                 .map(game.getExile()::getExileZone)
                 .map(x -> !x.isEmpty())
                 .orElse(false);

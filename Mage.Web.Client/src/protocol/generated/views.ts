@@ -1162,6 +1162,7 @@ export interface ObjectColor extends Serializable, Copyable<ObjectColor>, Compar
 }
 
 export interface PermanentView extends CardView {
+    manaAmount?: number;
     attachedControllerDiffers?: boolean;
     attachedTo?: string;
     attachedToPermanent?: boolean;

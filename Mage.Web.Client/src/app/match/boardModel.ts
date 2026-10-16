@@ -45,6 +45,16 @@ function isLand(permanent: PermanentView): boolean {
  * Permanents look the same when a player could not tell them apart at a glance. Tapped state is left out on
  * purpose: tapping one land of a stack turns it in place instead of splitting the stack and reshuffling the row.
  */
+/** what each of your mana sources made when last seen untapped (the server sends no amount while it's tapped) */
+const knownManaAmount = new Map<string, number>();
+
+/** the mana a source makes, remembered through its taps, so a stack doesn't split and rejoin as lands are tapped */
+function manaAmountOf(permanent: PermanentView): number {
+  const id = permanent.id ?? '';
+  if (!permanent.tapped && (permanent.manaAmount ?? 0) > 0) knownManaAmount.set(id, permanent.manaAmount!);
+  return knownManaAmount.get(id) ?? permanent.manaAmount ?? 0;
+}
+
 function stackSignature(permanent: PermanentView): string | null {
   const counters = (permanent.counters ?? []).length;
   const attached = (permanent.attachments ?? []).length;
@@ -57,6 +67,8 @@ function stackSignature(permanent: PermanentView): string | null {
     permanent.isToken ? 'token' : 'card',
     permanent.power ?? '',
     permanent.toughness ?? '',
+    // an imprinted Ugin's Labyrinth makes two where the others make one: it isn't one of the same
+    manaAmountOf(permanent),
   ].join('|');
 }
 

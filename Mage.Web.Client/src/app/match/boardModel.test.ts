@@ -37,6 +37,16 @@ describe('buildPlayerBoard', () => {
     expect(tapped.back[0].members.map((p) => p.id)).toEqual(['a', 'b']);
   });
 
+  it('keeps a land that makes more apart (an imprinted Ugin\'s Labyrinth), even once it taps', () => {
+    const lab = (id: string, manaAmount: number, tapped = false) =>
+      permanent(id, { name: "Ugin's Labyrinth", manaAmount: tapped ? 0 : manaAmount, tapped });
+    const untapped = buildPlayerBoard(player('me', [lab('l1', 1), lab('l2', 1), lab('l3', 2)]), true);
+    expect(untapped.back.map((group) => group.members.map((p) => p.id))).toEqual([['l1', 'l2'], ['l3']]);
+    // tapped, the server sends no amount: the one that made two still stands apart
+    const tapped = buildPlayerBoard(player('me', [lab('l1', 1), lab('l2', 1), lab('l3', 2, true)]), true);
+    expect(tapped.back.map((group) => group.members.map((p) => p.id))).toEqual([['l1', 'l2'], ['l3']]);
+  });
+
   it('tucks attachments behind their host', () => {
     const board = buildPlayerBoard(player('me', [
       permanent('bear', { name: 'Bear', cardTypes: ['CREATURE'] }),

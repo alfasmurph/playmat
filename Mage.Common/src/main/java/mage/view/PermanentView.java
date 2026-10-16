@@ -39,6 +39,8 @@ public class PermanentView extends CardView {
     private final boolean attachedControllerDiffers;
     private final MutateView mutateView;
     private final boolean mutated;
+    /** your own untapped mana source: the most mana one activation makes now (Sol Ring 2, an imprinted Ugin's Labyrinth 2); 0 otherwise */
+    private final int manaAmount;
 
     public PermanentView(Permanent permanent, Card card, UUID createdForPlayerId, Game game) {
         super(permanent, game, CardUtil.canShowAsControlled(permanent, createdForPlayerId));
@@ -116,11 +118,33 @@ public class PermanentView extends CardView {
         }
         this.attachedToPermanent = attachedToPermanent;
         this.attachedControllerDiffers = attachedControllerDiffers;
+        this.manaAmount = this.controlled && game != null ? manaAmountOf(permanent, game) : 0;
+    }
+
+    /** the most mana any one of the permanent's mana abilities it can activate now would make */
+    private static int manaAmountOf(Permanent permanent, Game game) {
+        if (permanent.isTapped()) {
+            return 0;
+        }
+        int most = 0;
+        try {
+            for (mage.abilities.mana.ActivatedManaAbilityImpl ability
+                    : permanent.getAbilities(game).getAvailableActivatedManaAbilities(mage.constants.Zone.BATTLEFIELD, permanent.getControllerId(), game)) {
+                for (mage.Mana mana : ability.getNetMana(game)) {
+                    most = Math.max(most, mana.count());
+                }
+            }
+        } catch (RuntimeException e) {
+            // a card's mana that can't be worked out here just shows no amount
+            return 0;
+        }
+        return most;
     }
 
     public PermanentView(PermanentView permanentView, Card card, UUID createdForPlayerId, Game game) {
         super(permanentView);
         this.controlled = permanentView.controlled;
+        this.manaAmount = permanentView.manaAmount;
         this.tapped = permanentView.isTapped();
         this.flipped = permanentView.isFlipped();
         this.phasedIn = permanentView.isPhasedIn();
@@ -251,5 +275,9 @@ public class PermanentView extends CardView {
         // tapped, flipped and the mutate button are drawn by the panel, not baked into the image
         appendField(sb, hasSummoningSickness());
         appendField(sb, getDamage());
+    }
+
+    public int getManaAmount() {
+        return manaAmount;
     }
 }
