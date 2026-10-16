@@ -28,6 +28,8 @@ export interface DeckSummary {
     source?: DeckImportSource;
     /** shared with everyone on the server */
     shared?: boolean;
+    /** pinned to the top of the owner's shelf */
+    favorite?: boolean;
 }
 
 export interface IDeckStorage {
@@ -75,6 +77,8 @@ interface DeckMeta {
     source?: DeckImportSource;
     /** shared with everyone on the server */
     shared?: boolean;
+    /** pinned to the top of the owner's shelf */
+    favorite?: boolean;
 }
 
 export class LocalDeckStorage implements IDeckStorage {
@@ -132,6 +136,7 @@ export class LocalDeckStorage implements IDeckStorage {
             colors: deck.colors,
             source: deck.source,
             shared: deck.shared || undefined,
+            favorite: deck.favorite || undefined,
             bracket: deck.bracket,
         };
         const newMeta = meta.filter(m => m.id !== deck.id);
@@ -232,6 +237,7 @@ export class LocalDeckStorage implements IDeckStorage {
             colors: m.colors,
             source: m.source,
             shared: m.shared,
+            favorite: m.favorite,
             bracket: m.bracket,
         })).sort((a, b) => b.updatedAt - a.updatedAt);
     }

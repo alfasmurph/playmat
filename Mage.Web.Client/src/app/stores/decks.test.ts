@@ -189,15 +189,37 @@ describe('sharing and favorites', () => {
     expect(copy?.sharedBy).toBeUndefined();
   });
 
-  test('a favorite is pinned to the top of the roster', async () => {
+  test('a favorite is pinned to the top of the roster, and the pin is kept in the deck', async () => {
     const first = await deckStorage.saveDeck(BURN, { forceNew: true });
     const second = await deckStorage.saveDeck({ ...BURN, name: 'Zoo' }, { forceNew: true });
     await useDecks.getState().refresh();
-    useDecks.getState().toggleFavorite(first);
+    await useDecks.getState().toggleFavorite(first);
     const roster = rosterOf(useDecks.getState());
     expect(roster[0]).toMatchObject({ id: first, favorite: true });
     expect(roster.find((deck) => deck.id === second)?.favorite).toBeUndefined();
-    expect(JSON.parse(localStorage.getItem('playmat.favoriteDecks') ?? '[]')).toEqual([first]);
+    // the pin travels with the deck (deck sync), not in this browser
+    expect((await deckStorage.loadDeck(first))?.favorite).toBe(true);
+    expect(JSON.parse(localStorage.getItem('playmat.favoriteDecks') ?? '[]')).toEqual([]);
+    await useDecks.getState().toggleFavorite(first);
+    expect((await deckStorage.loadDeck(first))?.favorite).toBeUndefined();
+    expect(rosterOf(useDecks.getState()).find((deck) => deck.id === first)?.favorite).toBeUndefined();
+  });
+
+  test('a pin this browser kept for your deck moves into the deck', async () => {
+    const id = await deckStorage.saveDeck(BURN, { forceNew: true });
+    localStorage.setItem('playmat.favoriteDecks', JSON.stringify([id, 'starter:elves.dck']));
+    useDecks.setState({ favorites: [id, 'starter:elves.dck'] });
+    await useDecks.getState().refresh();
+    expect((await deckStorage.loadDeck(id))?.favorite).toBe(true);
+    expect(useDecks.getState().favorites).toEqual(['starter:elves.dck']);
+    expect(rosterOf(useDecks.getState())[0]).toMatchObject({ id, favorite: true });
+  });
+
+  test("a duplicate doesn't take its original's pin", async () => {
+    const id = await deckStorage.saveDeck({ ...BURN, favorite: true }, { forceNew: true });
+    await useDecks.getState().refresh();
+    const copyId = await useDecks.getState().duplicate(id);
+    expect((await deckStorage.loadDeck(copyId))?.favorite).toBeUndefined();
   });
 });
 

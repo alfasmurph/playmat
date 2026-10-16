@@ -72,6 +72,7 @@ export interface RosterDeck {
 
 const SELECTED_KEY = 'playmat.selectedDeck';
 const SLEEVES_KEY = 'playmat.sleeves';
+/** pins of decks that aren't yours to save (starters, precons, others' shared decks); your own carry theirs */
 const FAVORITES_KEY = 'playmat.favoriteDecks';
 const PLAYING_KEY = 'playmat.playingDeck';
 export const STARTER_PREFIX = 'starter:';
@@ -98,6 +99,12 @@ export function deckKind(deck: { format?: string | null; cards: number; sideboar
   return deck.sideboard >= 1 && deck.sideboard <= 2 && total >= 98 && total <= 101 ? 'commander' : 'standard';
 }
 
+/** Pin or unpin one of your saved decks, in the deck itself. */
+async function setFavorite(id: string, favorite: boolean): Promise<void> {
+  const deck = await deckStorage.loadDeck(id);
+  if (deck) await deckStorage.saveDeck({ ...deck, id, favorite: favorite || undefined });
+}
+
 function summaryToRoster(deck: DeckSummary): RosterDeck {
   const colors = COLOR_ORDER.filter((color) => deck.colors?.[color]).map((color) => COLOR_LETTER[color]);
   const size = `${deck.cardCount ?? 0} cards${deck.sideboardCount ? ` + ${deck.sideboardCount}` : ''}`;
@@ -113,6 +120,7 @@ function summaryToRoster(deck: DeckSummary): RosterDeck {
     starter: null,
     source: deck.source,
     shared: deck.shared,
+    favorite: deck.favorite || undefined,
     bracket: deck.bracket,
   };
 }
@@ -180,7 +188,7 @@ export interface DeckLibraryState {
   refresh(): Promise<void>;
   /** the decks other players share (servers with accounts); quietly none when the server can't say */
   refreshShared(): Promise<void>;
-  toggleFavorite(id: string): void;
+  toggleFavorite(id: string): Promise<void>;
   /** share your deck with everyone on the server, or stop; `by` is your account name as you spell it */
   setShared(ids: readonly string[], on: boolean, by: string): Promise<void>;
   select(id: string): void;
@@ -249,11 +257,20 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     set({ shared, sharedLists });
   },
 
-  toggleFavorite(id) {
-    const current = get().favorites;
-    const favorites = current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id];
-    writeJson(FAVORITES_KEY, favorites);
-    set({ favorites });
+  async toggleFavorite(id) {
+    const own = get().saved.find((deck) => deck.id === id);
+    if (!own) {
+      const current = get().favorites;
+      const favorites = current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id];
+      writeJson(FAVORITES_KEY, favorites);
+      set({ favorites });
+      return;
+    }
+    // your own deck keeps its pin in the deck itself, so it follows the deck to every browser and address
+    const favorite = !own.favorite;
+    set({ saved: get().saved.map((deck) => (deck.id === id ? { ...deck, favorite: favorite || undefined } : deck)) });
+    await setFavorite(id, favorite);
+    await get().refresh();
   },
 
   async setShared(ids, on, by) {
@@ -281,7 +298,18 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
 
   async refresh() {
     const [summaries, starters] = await Promise.all([deckStorage.listDecks(), get().starters.length ? get().starters : fetchStarters()]);
-    const saved = summaries.map(summaryToRoster);
+    // pins this browser kept for your own decks before decks carried them: moved into the decks, once
+    const pinned = new Set(get().favorites);
+    const moved = summaries.filter((deck) => pinned.has(deck.id));
+    for (const deck of moved) {
+      if (!deck.favorite) await setFavorite(deck.id, true);
+    }
+    if (moved.length > 0) {
+      const favorites = get().favorites.filter((id) => !moved.some((deck) => deck.id === id));
+      writeJson(FAVORITES_KEY, favorites);
+      set({ favorites });
+    }
+    const saved = (moved.some((deck) => !deck.favorite) ? await deckStorage.listDecks() : summaries).map(summaryToRoster);
     let selectedId = get().selectedId;
     // a precon being tried out stays selected while it's still in the index
     if (selectedId?.startsWith(PRECON_PREFIX)) await get().loadPrecons();
@@ -324,6 +352,8 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     if (id.startsWith(STARTER_PREFIX)) {
       const deck = await get().loadList(id);
       deck.format = starterFormat(get().starters, id);
+      // a pinned starter stays pinned as your copy
+      if (get().favorites.includes(id)) deck.favorite = true;
       const savedId = await deckStorage.saveDeck(deck, { forceNew: true });
       const sleeve = get().sleeves[id];
       await get().refresh();
@@ -368,7 +398,7 @@ export const useDecks = create<DeckLibraryState>((set, get) => ({
     const preconName = id.startsWith(PRECON_PREFIX) && !get().saved.some((entry) => entry.name === deck.name);
     const name = preconName ? deck.name : copyName(deck.name, taken);
     // a copy is the player's own deck: it no longer follows the site it was imported from
-    const copy: DeckCardLists = { ...deck, id: undefined, name, source: undefined, createdAt: undefined, shared: undefined, sharedBy: undefined };
+    const copy: DeckCardLists = { ...deck, id: undefined, name, source: undefined, createdAt: undefined, shared: undefined, sharedBy: undefined, favorite: undefined };
     if (starter) copy.format = starterFormat(get().starters, id);
     if (id.startsWith(PRECON_PREFIX)) copy.format = COMMANDER_FORMAT;
     const newId = await deckStorage.saveDeck(copy, { forceNew: true });
@@ -461,7 +491,7 @@ export function rosterOf(state: Pick<DeckLibraryState, 'saved' | 'starters'> & P
     ...state.starters.filter((starter) => !savedNames.has(starter.name)).map(starterToRoster),
   ];
   const favorites = new Set(state.favorites ?? []);
-  if (favorites.size === 0) return all;
+  if (favorites.size === 0 && !all.some((deck) => deck.favorite)) return all;
   // favorites first, each group in its own order
   const marked = all.map((deck) => (favorites.has(deck.id) ? { ...deck, favorite: true } : deck));
   return [...marked.filter((deck) => deck.favorite), ...marked.filter((deck) => !deck.favorite)];

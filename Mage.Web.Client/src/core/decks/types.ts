@@ -46,6 +46,8 @@ export interface DeckCardLists {
   shared?: boolean;
   /** the owner's account name as they spell it, written when the deck is shared */
   sharedBy?: string;
+  /** the owner pinned it to the top of their shelf (deck sync carries it, so the pin follows the deck everywhere) */
+  favorite?: boolean;
   /** the Commander bracket (1-5) the owner gives it; without one, it shows its estimate (see core/decks/bracket) */
   bracket?: number;
   colors?: {
