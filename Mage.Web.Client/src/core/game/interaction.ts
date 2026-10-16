@@ -58,6 +58,8 @@ export interface Interaction {
 const PASS: Command = { type: 'boolean', value: false };
 const EMPTY_MAP: ReadonlyMap<string, Command> = new Map();
 const EMPTY_SET: ReadonlySet<string> = new Set();
+/** HumanPlayer.passWithManaPoolCheck's question */
+const FLOATING_MANA_LOST = /mana in your mana pool and it will be lost/i;
 
 function uuid(id: string | null): Command {
   return { type: 'uuid', id };
@@ -222,6 +224,20 @@ export function deriveInteraction(view: GameView | null | undefined, prompt: Pro
     }
 
     case 'ask':
+      // the server's "mana will be lost, pass anyway?" comes when a step you don't stop at goes by with mana
+      // floating (paying {4} with five mana for Mana Vault): moving on is the usual answer, and "No" leads back to
+      // the same pass and the same question
+      if (FLOATING_MANA_LOST.test(prompt.text)) {
+        return {
+          mode: 'question',
+          prompt,
+          headline: 'Your floating mana will be lost if you move on.',
+          clickable: EMPTY_MAP,
+          selected: EMPTY_SET,
+          mainButton: { label: 'Move on', command: { type: 'boolean', value: true }, tone: 'primary' },
+          secondaryButtons: [{ label: 'Stay to use it', command: { type: 'boolean', value: false }, tone: 'secondary' }],
+        };
+      }
       return {
         mode: prompt.isMulligan ? 'mulligan' : 'question',
         prompt,

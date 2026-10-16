@@ -66,6 +66,18 @@ describe('interaction model', () => {
     expect(interaction.mainButton).toMatchObject({ label: 'To Combat', command: { type: 'boolean', value: false } });
   });
 
+  test("the floating-mana question moves on by default instead of looping back to the same pass", () => {
+    // HumanPlayer.passWithManaPoolCheck, as GameLog.getPlayerConfirmColoredText writes it
+    const prompt = parsePrompt('GAME_ASK', { message: "<font color='#ffff00'>You still have mana in your mana pool and it will be lost. Pass anyway?</font>" });
+    const interaction = deriveInteraction(view(), prompt);
+    expect(interaction.headline).toBe('Your floating mana will be lost if you move on.');
+    expect(interaction.mainButton).toMatchObject({ label: 'Move on', command: { type: 'boolean', value: true }, tone: 'primary' });
+    expect(interaction.secondaryButtons).toEqual([expect.objectContaining({ label: 'Stay to use it', command: { type: 'boolean', value: false } })]);
+    // other questions keep their own words and an explicit "No" first
+    const other = deriveInteraction(view(), parsePrompt('GAME_ASK', { message: 'Pay {4} to untap Mana Vault?' }));
+    expect(other.mainButton).toMatchObject({ label: 'No', command: { type: 'boolean', value: false } });
+  });
+
   test('main button follows Arena wording', () => {
     expect(passLabel(view({ stack: { s: { name: 'Bolt' } } }))).toBe('Resolve');
     expect(passLabel(view({ activePlayerId: OPPONENT }))).toBe('Pass');
