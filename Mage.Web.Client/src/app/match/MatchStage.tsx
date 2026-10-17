@@ -16,6 +16,8 @@ import { matchProgress } from '../../core/game/matchProgress';
 import { endReason } from '../../core/game/gameLog';
 import { manaReadout, type ManaReadout } from '../../core/game/manaReadout';
 import { previousTurnsBack } from '../../core/game/rollback';
+import { campaignPlacePath, canReplayCareer, lastCampaignPlace, replayCareer, useNextCampaignStop } from '../career/careerModesData';
+import { rewardsPath } from '../career/progressModel';
 import { pregameChoice } from '../../core/game/pregame';
 import { offBoardTargets } from '../../core/game/offBoardTargets';
 import type { CardView, ChatMessage, GameView, PlayerView } from '../../protocol/generated/views';
@@ -329,6 +331,22 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
     exit(false);
     if (deckId) void usePlay.getState().playVsAi(deckId, lastOptions);
   }, [exit, deckId]);
+  // Career: the same game again (the same stop, duel or run game), whatever the result; it opens like the first
+  const campaignPlace = career ? lastCampaignPlace() : null;
+  const playCareerAgain = useCallback(() => {
+    useGames.getState().close(state.gameId);
+    navigate(campaignPlace ? campaignPlacePath(campaignPlace) : returnPath ?? '/career');
+    void replayCareer().catch(() => undefined);
+  }, [navigate, state.gameId, campaignPlace, returnPath]);
+  // a campaign won: on to the next stop, through what the win paid
+  const nextStop = useNextCampaignStop(mode === 'play' && career && !!state.gameOver);
+  const next = useMemo(() => (nextStop ? {
+    name: nextStop.name,
+    go: () => {
+      useGames.getState().close(state.gameId);
+      navigate(rewardsPath(usePlay.getState().tableId, true, nextStop.path));
+    },
+  } : null), [nextStop, navigate, state.gameId]);
   // a game that didn't end but went with the server (a restart): when it was saved at a turn's start, play on from there
   const absent = mode === 'play' && !!state.gameOver && !state.endInfo;
   const savedGames = useQuery({ queryKey: ['savedGames', 'game', state.gameId], queryFn: () => api.savedGameList(), enabled: absent, staleTime: 0 });
@@ -683,9 +701,10 @@ export function MatchStage({ session, state, replayLog, onLeave }: MatchStagePro
                   entries={logEntries}
                   onWatchReplay={mode === 'play' && !onLeave ? watchReplay : undefined}
                   onLeave={leave}
-                  leaveLabel={eventId ? 'Back to the event' : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
+                  leaveLabel={eventId ? 'Back to the event' : campaignPlace ? t('match.end.backToCampaign') : career ? 'Back to Career' : vsPeople ? t('match.end.backToTables') : 'Back to Play'}
                   // a rematch is only dealt against the computer; people go back to Tables
-                  onPlayAgain={mode === 'play' && deckId && !eventId && vsAi ? playAgain : undefined}
+                  onPlayAgain={mode !== 'play' || eventId || !vsAi ? undefined : career ? (canReplayCareer() ? playCareerAgain : undefined) : deckId ? playAgain : undefined}
+                  next={next}
                   saved={savedHere}
                 />
               )}

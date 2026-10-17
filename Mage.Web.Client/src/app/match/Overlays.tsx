@@ -441,7 +441,7 @@ const END_GAME: Record<string, MessageKey> = { won: 'match.end.wonGame', lost: '
 const END_MATCH: Record<string, MessageKey> = { won: 'match.end.wonMatch', lost: 'match.end.lostMatch', draw: 'match.end.drawMatch' };
 
 /** The end of a game: who won, the match score, and where to go next. */
-export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain, onWatchReplay, entries, saved = null }: {
+export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel = 'Back to Play', onPlayAgain, onWatchReplay, entries, saved = null, next = null }: {
   message: string;
   endInfo: GameEndView | null;
   /** the player's name, to tell from the server's message who won when there is no end-of-game info */
@@ -455,6 +455,8 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
   entries?: readonly LogEntry[];
   /** the game didn't end: it was lost with the server and is saved at a turn's start, to play on from there */
   saved?: { turn: number; playOn(): void } | null;
+  /** a campaign won: on to its next stop */
+  next?: { name: string; go(): void } | null;
 }) {
   const t = useT();
   // a match of several games ends on the match's result; a single game on the game's
@@ -495,7 +497,13 @@ export function GameOverOverlay({ message, endInfo, myName, onLeave, leaveLabel 
         <div className={styles.buttons}>
           <Button variant="print" size="lg" onClick={onLeave}>{leaveLabel}</Button>
           {onWatchReplay && <Button variant="print" size="lg" onClick={onWatchReplay}>{t('match.end.watchReplay')}</Button>}
-          {onPlayAgain && <Button variant="decision" size="xl" onClick={onPlayAgain}>{t('match.end.playAgain')}</Button>}
+          {/* play again is always there, won or lost; after a campaign win the next stop leads */}
+          {onPlayAgain && (
+            <Button variant={next && result === 'won' ? 'print' : 'decision'} size={next && result === 'won' ? 'lg' : 'xl'} onClick={onPlayAgain}>
+              {t('match.end.playAgain')}
+            </Button>
+          )}
+          {next && result === 'won' && <Button variant="decision" size="xl" onClick={next.go}>{t('match.end.next', { name: next.name })}</Button>}
         </div>
         {happened.length > 0 && <WhatHappened entries={happened} myName={myName} reasonKey={reason?.key ?? null} />}
       </div>

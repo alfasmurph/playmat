@@ -329,6 +329,8 @@ export default {
   'career.campaign.opensSet': 'Beating {boss} opens {set} packs in the shop',
   'career.campaign.setOpened': '{set} packs are in the shop',
   'career.campaign.path': 'The path',
+  'career.results.playAgain': 'Play again',
+  'career.results.next': 'Next: {name}',
   'career.campaign.details': 'Details',
   'career.campaign.closeDetails': 'Close the details',
   'career.campaign.youPlay': 'You play {deck}, the chapter deck.',

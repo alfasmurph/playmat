@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Coins, Gift, GraduationCap, Package, Sparkles, Trophy, Unlock } from 'lucide-react';
+import { ArrowRight, Coins, Gift, GraduationCap, Package, RotateCcw, Sparkles, Trophy, Unlock } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import type { CareerGameResult } from '../../protocol/generated/views';
@@ -9,7 +9,7 @@ import messages from '../i18n/en/career';
 import { useSession } from '../stores/session';
 import { Button } from '../ui/Button';
 import { refreshCareer, useCareerOpponents, useCareerState } from './careerData';
-import { useCampaigns } from './careerModesData';
+import { canReplayCareer, replayCareer, useCampaigns, useNextCampaignStop } from './careerModesData';
 import { achievementMoment, useCeremonies } from './ceremonies';
 import { markSeen } from './hubModel';
 import { useSceneArt } from './careerScene';
@@ -67,10 +67,14 @@ export function CareerRewardsScreen() {
   );
 }
 
-function ContinueButton({ back }: { back: string }) {
+function ContinueButton({ back, quiet = false }: { back: string; quiet?: boolean }) {
   const t = useT();
   const navigate = useNavigate();
-  return <Button variant="decision" size="lg" autoFocus onClick={() => navigate(back, { replace: true })} data-nav>{t('career.rewards.continue')}</Button>;
+  return (
+    <Button variant={quiet ? 'print' : 'decision'} size="lg" autoFocus={!quiet} onClick={() => navigate(back, { replace: true })} data-nav>
+      {t('career.rewards.continue')}
+    </Button>
+  );
 }
 
 /** Who the game was against, as a face and their last word: a roster opponent, or a campaign duel's closing line. */
@@ -109,6 +113,8 @@ function Results({ result, back }: { result: CareerGameResult; back: string }) {
   const foe = useFoe(result);
   useSceneArt(foe?.cover);
   const won = !!result.won;
+  // a campaign stop won: its next one, a tap away
+  const nextStop = useNextCampaignStop(won && result.mode?.kind === 'campaign');
   const quests = result.quests ?? [];
   const achievements = useMemo(() => result.achievements ?? [], [result.achievements]);
   const levelRewards = result.levelRewards ?? [];
@@ -267,7 +273,20 @@ function Results({ result, back }: { result: CareerGameResult; back: string }) {
                 {t('career.results.openPacks', { count: packs })}
               </Button>
             )}
-            <ContinueButton back={back} />
+            {/* the same game again, won or lost; after a campaign win, on to the next stop */}
+            {result.career && canReplayCareer() && (
+              <Button variant="print" icon={<RotateCcw size={16} />} onClick={() => void replayCareer().catch(() => undefined)} data-nav>
+                {t('career.results.playAgain')}
+              </Button>
+            )}
+            {nextStop ? (
+              <>
+                <ContinueButton back={back} quiet />
+                <Button variant="decision" size="lg" autoFocus icon={<ArrowRight size={16} />} onClick={() => navigate(nextStop.path, { replace: true })} data-nav>
+                  {t('career.results.next', { name: nextStop.name })}
+                </Button>
+              </>
+            ) : <ContinueButton back={back} />}
           </>
         ) : (
           <Button variant="quiet" onClick={skipAll}>{t('career.results.skip')}</Button>

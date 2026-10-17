@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import type {
-  CareerGameResult, CareerGauntletState, CareerLimitedRun, CareerLimitedState, CareerMatch, CareerRun, DeckCardLists as WireDeck,
+  CareerCampaign, CareerChapter, CareerGameResult, CareerGauntletState, CareerLimitedRun, CareerLimitedState, CareerMatch, CareerRun, DeckCardLists as WireDeck,
 } from '../../protocol/generated/views';
 import { api } from '../connection';
 import { queryClient } from '../queries';
@@ -61,6 +62,26 @@ export function useLimited(enabled: boolean) {
   return useQuery({ queryKey: KEY.limited, queryFn: () => api.careerLimited(), enabled: useSignedIn() && enabled, staleTime: 0 });
 }
 
+/**
+ * After a campaign game: the stop to go on to, from the campaigns fetched again (the win opens it; the server settles a
+ * game a moment after it ends, so it asks a few times until the stop played shows as done). Null when there's none.
+ */
+export function useNextCampaignStop(enabled: boolean): { name: string; path: string } | null {
+  const place = lastCampaignPlace();
+  const played = (campaigns: CareerCampaign[] | undefined) => (campaigns ?? [])
+    .find((campaign) => campaign.id === place?.campaignId)?.chapters?.flatMap((chapter) => chapter.nodes ?? [])
+    .find((node) => node.id === place?.nodeId);
+  const campaigns = useQuery({
+    queryKey: [...KEY.campaigns, 'next', place?.campaignId ?? '', place?.nodeId ?? ''],
+    queryFn: () => api.careerCampaigns(),
+    enabled: useSignedIn() && enabled && !!place,
+    staleTime: 0,
+    refetchInterval: (query) => (played(query.state.data)?.state !== 'done' && query.state.dataUpdateCount < 6 ? 1500 : false),
+  });
+  // switched off (a loss), it offers nothing, whatever an earlier look at the campaigns left in the cache
+  return useMemo(() => (enabled && place && campaigns.data ? nextCampaignStop(campaigns.data, place) : null), [enabled, place, campaigns.data]);
+}
+
 /** coins changed: the wallet shows it */
 function walletChanged(): void {
   void queryClient.invalidateQueries({ queryKey: KEY.state });
@@ -71,6 +92,75 @@ function walletChanged(): void {
 /** the mode game started last in this tab, to show what it paid when the player comes back */
 let lastPlayed: { kind: ModeKind; gameKey: string } | null = null;
 
+/** A campaign stop, as a game started from it remembers it. */
+export interface CampaignPlace {
+  /** the campaign screen the stop is on (the story page or a school's) */
+  base: string;
+  campaignId: string;
+  chapterId: string;
+  nodeId: string;
+}
+
+/** The campaign page open at a chapter's stop; {@code versus} opens straight on its face-off, ready to fight. */
+export function campaignPlacePath(place: CampaignPlace, versus = false): string {
+  const [path, query = ''] = place.base.split('?');
+  const params = new URLSearchParams(query);
+  if (path === MODE_PATHS.campaign) params.set('story', place.campaignId);
+  params.set('chapter', place.chapterId);
+  params.set('node', place.nodeId);
+  if (versus) params.set('versus', '1');
+  else params.delete('versus');
+  return `${path}?${params.toString()}`;
+}
+
+/** the last Career game started in this tab, to play it again from its end screen */
+let lastLaunch: {
+  kind: ModeKind;
+  start: () => Promise<CareerMatch>;
+  voice: VoiceLines | null;
+  options: { back: string; lessons: Omit<CareerLessonPlan, 'tableId'> | null; place: CampaignPlace | null };
+} | null = null;
+
+/** Whether there's a Career game to play again (the one last started in this tab). */
+export function canReplayCareer(): boolean {
+  return lastLaunch !== null;
+}
+
+/** Starts the last Career game again: the same stop, opponents and deck, whatever the result was. */
+export function replayCareer(): Promise<void> {
+  if (!lastLaunch) return Promise.resolve();
+  const { kind, start, voice, options } = lastLaunch;
+  return playMode(kind, start, voice, options);
+}
+
+/** the campaign stop the last Career game was started from, if it was one */
+export function lastCampaignPlace(): CampaignPlace | null {
+  return lastLaunch?.options.place ?? null;
+}
+
+/**
+ * The stop after a campaign win: the chapter's next open stop, else (the chapter done) the next chapter's; null when
+ * there's nothing open to go on to. {@code campaigns} must be fresh (fetched after the win).
+ */
+export function nextCampaignStop(campaigns: readonly CareerCampaign[] | undefined, place: CampaignPlace): { name: string; path: string } | null {
+  const campaign = (campaigns ?? []).find((item) => item.id === place.campaignId);
+  if (!campaign) return null;
+  const chapters = campaign.chapters ?? [];
+  const chapter = chapters.find((item) => item.id === place.chapterId);
+  const openIn = (item: CareerChapter | undefined) => (item?.nodes ?? []).find((node) => node.state === 'open' && node.id !== place.nodeId);
+  let next = openIn(chapter);
+  let nextChapter = chapter;
+  if (!next) {
+    nextChapter = chapters.find((item) => item.id !== place.chapterId && !item.done && openIn(item));
+    next = openIn(nextChapter);
+  }
+  if (!next || !nextChapter) return null;
+  return {
+    name: next.name ?? '',
+    path: campaignPlacePath({ ...place, chapterId: nextChapter.id ?? '', nodeId: next.id ?? '' }, true),
+  };
+}
+
 /**
  * Start a mode's game: the server sets the table up and starts it; the game opens like any other, and leaving it comes
  * back to the mode's screen (or {@code back}). A school duel brings its tips along.
@@ -79,8 +169,14 @@ export async function playMode(
   kind: ModeKind,
   start: () => Promise<CareerMatch>,
   voice: VoiceLines | null = null,
-  { back = MODE_PATHS[kind], lessons = null }: { back?: string; lessons?: Omit<CareerLessonPlan, 'tableId'> | null } = {},
+  { back = MODE_PATHS[kind], lessons = null, place = null }: {
+    back?: string;
+    lessons?: Omit<CareerLessonPlan, 'tableId'> | null;
+    /** a campaign stop: where it is, so the end of the game can lead back to it or on to the next one */
+    place?: CampaignPlace | null;
+  } = {},
 ): Promise<void> {
+  lastLaunch = { kind, start, voice, options: { back, lessons, place } };
   useEvents.setState({ currentTournamentId: null });
   useCareerVoice.getState().speak(voice);
   useCareerLessons.getState().teach(lessons ? { ...lessons, tableId: null } : null);

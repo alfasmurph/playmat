@@ -11,7 +11,7 @@ import { usePlay } from '../stores/play';
 import { notify } from '../stores/toasts';
 import { Button } from '../ui/Button';
 import { useCareerState } from './careerData';
-import { MODE_PATHS, chooseOption, playMode, playPrologue, useCampaigns } from './careerModesData';
+import { MODE_PATHS, campaignPlacePath, chooseOption, playMode, playPrologue, useCampaigns, type CampaignPlace } from './careerModesData';
 import {
   chapterDone, chapterPath, focusChapter, focusNode, graduated, legCurve, nodeState, rewardLines, schoolsOf, storiesOf, twistLines,
   type NodeState, type PathStop,
@@ -121,7 +121,19 @@ function AcademyDoor({ schools }: { schools: CareerCampaign[] }) {
 export function Campaign({ campaign, back, children }: { campaign: CareerCampaign; back: string; children?: ReactNode }) {
   const t = useT();
   const chapters = useMemo(() => campaign.chapters ?? [], [campaign.chapters]);
-  const [chosenId, setChosenId] = useState<string | null>(null);
+  // a link back from a game (or on to the next stop) names the chapter and stop: ?chapter=…&node=…[&versus=1]
+  const [params, setParams] = useSearchParams();
+  const linkedChapter = params.get('chapter');
+  const linkedNode = params.get('node');
+  // the face-off opens once: the link forgets it, so coming back to the chapter later doesn't open it again
+  const [linkedVersus, setLinkedVersus] = useState(() => params.get('versus') === '1');
+  useEffect(() => {
+    if (params.get('versus') !== '1') return;
+    const next = new URLSearchParams(params);
+    next.delete('versus');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+  const [chosenId, setChosenId] = useState<string | null>(linkedChapter);
   const chapter = chapters.find((item) => item.id === chosenId) ?? focusChapter(chapters);
   // a Commander story takes a deck of the player's own instead of the chapter's
   const deck = useCampaignDeck(campaign);
@@ -148,7 +160,10 @@ export function Campaign({ campaign, back, children }: { campaign: CareerCampaig
               type="button"
               className={[styles.chapterTab, item.id === chapter?.id ? styles.chapterTabOn : ''].join(' ')}
               aria-pressed={item.id === chapter?.id}
-              onClick={() => setChosenId(item.id ?? null)}
+              onClick={() => {
+                setChosenId(item.id ?? null);
+                setLinkedVersus(false);
+              }}
             >
               <Crest name={item.name ?? ''} colors={item.color} size={40} />
               <span className={styles.chapterTabText}>
@@ -161,7 +176,17 @@ export function Campaign({ campaign, back, children }: { campaign: CareerCampaig
         })}
       </div>
 
-      {chapter && <Chapter key={chapter.id} campaignId={campaign.id ?? ''} school={!!campaign.school} chapter={chapter} back={back} deck={deck} />}
+      {chapter && (
+        <Chapter
+          key={chapter.id}
+          campaignId={campaign.id ?? ''}
+          school={!!campaign.school}
+          chapter={chapter}
+          back={back}
+          deck={deck}
+          linked={chapter.id === linkedChapter ? { nodeId: linkedNode, versus: linkedVersus } : null}
+        />
+      )}
     </section>
   );
 }
@@ -198,11 +223,16 @@ function Prologue() {
   );
 }
 
-function Chapter({ campaignId, school, chapter, back, deck }: { campaignId: string; school: boolean; chapter: CareerChapter; back: string; deck: CampaignDeckState }) {
+function Chapter({ campaignId, school, chapter, back, deck, linked = null }: {
+  campaignId: string; school: boolean; chapter: CareerChapter; back: string; deck: CampaignDeckState;
+  /** the stop a link named (back from a game, or on to the next one), and whether to open on its face-off */
+  linked?: { nodeId: string | null; versus: boolean } | null;
+}) {
   const t = useT();
   const nodes = useMemo(() => chapter.nodes ?? [], [chapter.nodes]);
-  const [chosenId, setChosenId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [chosenId, setChosenId] = useState<string | null>(linked?.nodeId ?? null);
+  // on a phone the stop's details (and its face-off) live in the sheet: a link to fight opens it
+  const [sheetOpen, setSheetOpen] = useState(!!linked?.versus);
   const side = useMediaQuery(SIDE_PANEL_QUERY);
   const [measure, room] = useWidth();
   const path = useMemo(() => chapterPath(nodes, room || 960), [nodes, room]);
@@ -253,7 +283,7 @@ function Chapter({ campaignId, school, chapter, back, deck }: { campaignId: stri
 
         {node && side && (
           <aside className={styles.sidePanel} aria-label={node.name}>
-            <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} />
+            <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} versusAtOnce={!!linked?.versus && node.id === linked.nodeId} />
           </aside>
         )}
       </div>
@@ -282,7 +312,7 @@ function Chapter({ campaignId, school, chapter, back, deck }: { campaignId: stri
                     <X size={20} aria-hidden="true" />
                   </RadixDialog.Close>
                 </div>
-                <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} />
+                <NodeDetail key={node.id} campaignId={campaignId} school={school} chapter={chapter} node={node} back={back} deck={deck} versusAtOnce={!!linked?.versus && node.id === linked.nodeId} />
               </RadixDialog.Content>
             </RadixDialog.Portal>
           </RadixDialog.Root>
@@ -371,13 +401,15 @@ function Stop({ stop, colors, selected, onSelect }: { stop: PathStop; colors?: s
   );
 }
 
-function NodeDetail({ campaignId, school, chapter, node, back, deck }: {
+function NodeDetail({ campaignId, school, chapter, node, back, deck, versusAtOnce = false }: {
   campaignId: string; school: boolean; chapter: CareerChapter; node: CareerNode; back: string; deck: CampaignDeckState;
+  /** opened from a "next stop" link: straight to the face-off, a tap from the fight */
+  versusAtOnce?: boolean;
 }) {
   const t = useT();
   const state: NodeState = nodeState(node);
   const playing = usePlay((play) => play.phase !== 'idle');
-  const [versus, setVersus] = useState(false);
+  const [versus, setVersus] = useState(versusAtOnce && nodeState(node) !== 'locked');
   const [list, setList] = useState(false);
   const twists = twistLines(node.twists);
   const reward = rewardLines(node.reward);
@@ -399,8 +431,11 @@ function NodeDetail({ campaignId, school, chapter, node, back, deck }: {
     const { deck: list } = await useDecks.getState().loadForPlay(own.id);
     return api.careerCampaignPlay(campaignId, node.id!, toWire(list));
   };
+  // the game comes back to this stop (and knows it, to offer the next one after a win)
+  const place: CampaignPlace = { base: back, campaignId, chapterId: chapter.id ?? '', nodeId: node.id ?? '' };
   const start = () => playMode('campaign', play, trial ? null : { intro: node.before, lose: node.after, speaker: others.length > 0 ? opponentName : undefined }, {
-    back,
+    back: campaignPlacePath(place),
+    place,
     lessons: node.tips?.length || node.sideboard ? { tips: node.tips ?? [], sideboard: node.sideboard ?? null } : null,
   });
 
