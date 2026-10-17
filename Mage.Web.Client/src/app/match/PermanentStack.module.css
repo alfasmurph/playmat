@@ -217,7 +217,8 @@
 }
 
 /* visual cues: in a card's bottom-right corner, the mana an untapped source of yours makes (gold for more than
-   one), with what other cards add when it taps in a green circle beside it (+1 from Forsaken Monument or Kinnan) */
+   one), then to its right what other cards add when it taps (+1 from Forsaken Monument or Kinnan). Translucent,
+   so they sit on the card rather than shout over it */
 .manaWorth {
   display: none;
   position: absolute;
@@ -254,22 +255,26 @@
 }
 
 .manaBase {
-  background: rgb(var(--shade-rgb) / 0.72);
-  box-shadow: inset 0 0 0 1.5px rgb(var(--gloss-rgb) / 0.45), 0 2px 6px rgb(var(--shade-rgb) / 0.5);
-  color: rgb(var(--gloss-rgb) / 0.95);
+  background: rgb(var(--shade-rgb) / 0.5);
+  box-shadow: inset 0 0 0 1.5px rgb(var(--gloss-rgb) / 0.3), 0 1px 4px rgb(var(--shade-rgb) / 0.35);
+  color: rgb(var(--gloss-rgb) / 0.92);
+  backdrop-filter: blur(2px);
 }
 
 .manaBaseMore {
-  background: rgb(214 179 106 / 0.95);
-  box-shadow: inset 0 0 0 1.5px rgb(255 240 200 / 0.6), 0 0 10px rgb(214 179 106 / 0.5);
-  color: #1d1608;
+  background: rgb(214 179 106 / 0.6);
+  box-shadow: inset 0 0 0 1.5px rgb(255 240 200 / 0.45), 0 1px 4px rgb(var(--shade-rgb) / 0.35);
+  color: #fff7e6;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
 }
 
 .manaBonus {
-  background: rgb(var(--cue-rgb) / 0.95);
-  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.5), 0 0 10px rgb(var(--cue-rgb) / 0.5);
-  color: #062611;
+  background: rgb(var(--cue-rgb) / 0.55);
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.35), 0 1px 4px rgb(var(--shade-rgb) / 0.35);
+  color: #f2fff6;
   font-size: 14px;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(2px);
 }
 
 .count {

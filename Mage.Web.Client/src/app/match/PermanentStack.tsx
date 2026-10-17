@@ -301,8 +301,8 @@ function PlacedCard({ permanent, width, sleeve, clickable, selected, quiet, atta
           title={`Makes ${permanent.manaAmount} mana${bonus > 0 ? `, and ${bonus} more from other cards` : ''}`}
           aria-hidden="true"
         >
-          {bonus > 0 && <span className={styles.manaBonus}>+{bonus}</span>}
           <span className={[styles.manaBase, (permanent.manaAmount ?? 0) > 1 ? styles.manaBaseMore : ''].join(' ')}>{permanent.manaAmount}</span>
+          {bonus > 0 && <span className={styles.manaBonus}>+{bonus}</span>}
         </span>
       )}
     </div>

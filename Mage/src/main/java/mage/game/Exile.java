@@ -15,12 +15,44 @@ import java.util.stream.Collectors;
  */
 public class Exile implements Serializable, Copyable<Exile> {
 
-    private static final UUID PERMANENT = UUID.randomUUID();
+    /** pinned: saved games are this class serialized (see GameImpl) */
+    private static final long serialVersionUID = 968132318574358067L;
+
+    /**
+     * The main exile zone's id. Fixed: it was a new random id each time the server started, so a game saved before a
+     * restart kept its main zone under an id the new server didn't know, and the first card exiled after playing on
+     * failed the game (see permanentZone, which mends such a save).
+     */
+    private static final UUID PERMANENT = UUID.nameUUIDFromBytes("mage.game.Exile#PERMANENT".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    private static final String PERMANENT_NAME = "Permanent";
 
     private final Map<UUID, ExileZone> exileZones = new HashMap<>();
 
     public Exile() {
-        createZone(PERMANENT, "Permanent");
+        createZone(PERMANENT, PERMANENT_NAME);
+    }
+
+    /**
+     * The main exile zone. A game saved by an older server has it under another id: it's found by its name and
+     * moved under the fixed id (or made, if there's none).
+     */
+    private ExileZone permanentZone() {
+        ExileZone zone = exileZones.get(PERMANENT);
+        if (zone != null) {
+            return zone;
+        }
+        String name = PERMANENT_NAME + " - Exile";
+        for (Iterator<Entry<UUID, ExileZone>> it = exileZones.entrySet().iterator(); it.hasNext(); ) {
+            Entry<UUID, ExileZone> entry = it.next();
+            if (name.equals(entry.getValue().getName())) {
+                // a fresh zone under the fixed id takes its cards: nothing keeps the old id
+                it.remove();
+                ExileZone fresh = createZone(PERMANENT, PERMANENT_NAME);
+                fresh.addAll(entry.getValue());
+                return fresh;
+            }
+        }
+        return createZone(PERMANENT, PERMANENT_NAME);
     }
 
     protected Exile(final Exile exile) {
@@ -34,7 +66,7 @@ public class Exile implements Serializable, Copyable<Exile> {
     }
 
     public ExileZone getPermanentExile() {
-        return exileZones.get(PERMANENT);
+        return permanentZone();
     }
 
     public void add(UUID id, String name, Card card) {
@@ -42,7 +74,7 @@ public class Exile implements Serializable, Copyable<Exile> {
     }
 
     public void add(Card card) {
-        exileZones.get(PERMANENT).add(card);
+        permanentZone().add(card);
     }
 
     public ExileZone createZone(UUID id, String name) {
@@ -151,7 +183,7 @@ public class Exile implements Serializable, Copyable<Exile> {
     }
 
     public void moveToMainExileZone(Card card, Game game) {
-        moveToAnotherZone(card, game, getExileZone(PERMANENT));
+        moveToAnotherZone(card, game, permanentZone());
     }
 
     @Override
@@ -176,7 +208,7 @@ public class Exile implements Serializable, Copyable<Exile> {
 
     public void cleanupEndOfTurnZones(Game game) {
         // moves cards from outdated zone to main exile zone
-        ExileZone mainZone = getExileZone(PERMANENT);
+        ExileZone mainZone = permanentZone();
         for (ExileZone zone : exileZones.values()) {
             if (zone.isCleanupOnEndTurn()) {
                 for (Card card : zone.getCards(game)) {
